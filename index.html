@@ -1,0 +1,2982 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Handdrawn Line Study</title>
+    <style>
+      :root {
+        --ui-shell-top: rgba(247, 245, 240, 0.96);
+        --ui-shell-bottom: rgba(238, 243, 247, 0.92);
+        --ui-shell-border: rgba(198, 203, 210, 0.88);
+        --ui-shell-shadow: 0 20px 46px rgba(79, 91, 104, 0.16);
+        --ui-card-bg: rgba(255, 255, 255, 0.66);
+        --ui-card-border: rgba(205, 211, 218, 0.82);
+        --ui-text: #4d5560;
+        --ui-muted: #7c8692;
+        --ui-accent: #6a8fb3;
+        --ui-accent-strong: #4f7398;
+        --ui-accent-soft: rgba(172, 195, 216, 0.34);
+        --ui-secondary: #d6c4b1;
+        --ui-secondary-soft: rgba(220, 209, 194, 0.3);
+        --ui-button-border: rgba(198, 203, 210, 0.8);
+        --ui-tooltip-bg: rgba(73, 82, 92, 0.94);
+        --ui-tooltip-text: rgba(248, 249, 250, 0.98);
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #f6f0e5;
+        font-family: "Avenir Next Rounded", "Trebuchet MS", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        color: var(--ui-text);
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      body::before {
+        z-index: 0;
+        background:
+          radial-gradient(circle at 18% 16%, rgba(214, 225, 235, 0.34), transparent 26%),
+          radial-gradient(circle at 82% 18%, rgba(234, 225, 214, 0.28), transparent 22%),
+          radial-gradient(circle at 74% 78%, rgba(255, 255, 255, 0.14), transparent 20%);
+      }
+
+      body::after {
+        z-index: 0;
+        background:
+          linear-gradient(130deg, rgba(255, 255, 255, 0.08), transparent 28%),
+          linear-gradient(320deg, rgba(255, 255, 255, 0.12), transparent 32%);
+      }
+
+      canvas {
+        display: block;
+        position: relative;
+        z-index: 1;
+      }
+
+      .controls,
+      .controls * {
+        box-sizing: border-box;
+      }
+
+      .controls {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        width: min(360px, calc(100vw - 20px));
+        max-height: calc(100vh - 32px);
+        border: 1.5px solid var(--ui-shell-border);
+        border-radius: 18px;
+        background: linear-gradient(180deg, var(--ui-shell-top), var(--ui-shell-bottom));
+        backdrop-filter: blur(14px) saturate(1.02);
+        color: var(--ui-text);
+        font-size: 14px;
+        box-shadow: var(--ui-shell-shadow);
+        overflow: hidden;
+        transition:
+          transform 180ms ease,
+          opacity 180ms ease,
+          background-color 180ms ease,
+          box-shadow 180ms ease,
+          border-color 180ms ease;
+      }
+
+      .controls::before,
+      .controls::after {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+      }
+
+      .controls::before {
+        top: -16px;
+        left: 18px;
+        right: 18px;
+        height: 48px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(210, 219, 228, 0.3), rgba(225, 216, 206, 0.22));
+        filter: blur(14px);
+        opacity: 0.8;
+      }
+
+      .controls::after {
+        top: 12px;
+        right: 16px;
+        width: 80px;
+        height: 80px;
+        border-radius: 999px;
+        background:
+          radial-gradient(circle at 30% 34%, rgba(255, 255, 255, 0.62), transparent 20%),
+          radial-gradient(circle at 66% 42%, rgba(210, 219, 228, 0.34), transparent 24%),
+          radial-gradient(circle at 52% 70%, rgba(223, 212, 201, 0.28), transparent 26%);
+        opacity: 0.72;
+      }
+
+      .controls.is-collapsed .controls-body {
+        display: none;
+      }
+
+      .controls.is-collapsed {
+        width: auto;
+        max-height: none;
+        transform: translateX(10px) scale(0.985);
+        opacity: 0.8;
+        background: linear-gradient(180deg, rgba(249, 247, 243, 0.76), rgba(241, 244, 247, 0.72));
+        border-color: rgba(201, 206, 212, 0.62);
+        box-shadow: 0 14px 28px rgba(84, 94, 104, 0.12);
+      }
+
+      .controls.is-collapsed:hover {
+        opacity: 0.96;
+      }
+
+      .controls-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 16px 12px;
+        flex: 0 0 auto;
+        position: relative;
+        z-index: 1;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0));
+        border-bottom: 1px solid rgba(214, 218, 223, 0.38);
+      }
+
+      .controls-title-wrap {
+        display: grid;
+        gap: 4px;
+      }
+
+      .controls-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .controls-title {
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+      }
+
+      .controls-subtitle {
+        font-size: 11px;
+        color: var(--ui-muted);
+        letter-spacing: 0.08em;
+      }
+
+      .controls-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 26px;
+        padding: 0 10px;
+        border: 1px solid rgba(255, 255, 255, 0.72);
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(245, 247, 248, 0.95), rgba(234, 238, 242, 0.9));
+        color: var(--ui-accent-strong);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        box-shadow: 0 6px 14px rgba(84, 94, 104, 0.1);
+      }
+
+      .controls-toggle {
+        border: 1px solid var(--ui-button-border);
+        border-radius: 999px;
+        min-height: 34px;
+        padding: 0 14px;
+        color: var(--ui-text);
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        box-shadow: 0 8px 18px rgba(84, 94, 104, 0.08);
+        transition:
+          transform 120ms ease,
+          box-shadow 120ms ease,
+          background-color 120ms ease;
+      }
+
+      .controls.is-collapsed .controls-header {
+        justify-content: flex-end;
+        padding: 8px 10px;
+      }
+
+      .controls.is-collapsed .controls-title {
+        display: none;
+      }
+
+      .controls.is-collapsed .controls-title-wrap {
+        display: none;
+      }
+
+      .controls.is-collapsed .controls-subtitle,
+      .controls.is-collapsed .controls-badge {
+        display: none;
+      }
+
+      .controls-toggle:hover,
+      .file-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 22px rgba(84, 94, 104, 0.12);
+      }
+
+      .controls-body {
+        display: grid;
+        gap: 12px;
+        min-height: 0;
+        padding: 0 16px 16px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
+        position: relative;
+        z-index: 1;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+      }
+
+      .control-group {
+        display: grid;
+        gap: 10px;
+        padding: 12px;
+        border: 1px solid var(--ui-card-border);
+        border-radius: 14px;
+        background: var(--ui-card-bg);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.72),
+          0 10px 22px rgba(84, 94, 104, 0.05);
+      }
+
+      .group-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .group-title {
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: var(--ui-text);
+        text-transform: uppercase;
+      }
+
+      .group-help {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.82);
+        border-radius: 999px;
+        background: linear-gradient(135deg, rgba(246, 248, 250, 0.98), rgba(236, 240, 244, 0.92));
+        color: var(--ui-accent-strong);
+        font-size: 11px;
+        font-weight: 800;
+        cursor: help;
+        user-select: none;
+        box-shadow: 0 6px 12px rgba(84, 94, 104, 0.08);
+      }
+
+      .group-help::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        top: calc(100% + 10px);
+        width: min(240px, calc(100vw - 32px));
+        padding: 9px 11px;
+        border-radius: 14px;
+        background: var(--ui-tooltip-bg);
+        color: var(--ui-tooltip-text);
+        font-size: 11px;
+        line-height: 1.45;
+        text-align: center;
+        box-shadow: 0 14px 24px rgba(54, 61, 68, 0.22);
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -6px);
+        transition:
+          opacity 140ms ease,
+          transform 140ms ease;
+        z-index: 3;
+      }
+
+      .group-help:hover::after {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .control-block {
+        display: grid;
+        gap: 7px;
+      }
+
+      .control-block[data-tooltip] {
+        position: relative;
+      }
+
+      .control-block[data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 10px);
+        width: min(260px, calc(100vw - 32px));
+        padding: 9px 11px;
+        border-radius: 12px;
+        background: var(--ui-tooltip-bg);
+        color: var(--ui-tooltip-text);
+        font-size: 11px;
+        line-height: 1.45;
+        text-align: center;
+        box-shadow: 0 14px 24px rgba(54, 61, 68, 0.22);
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 6px);
+        transition:
+          opacity 140ms ease,
+          transform 140ms ease;
+        z-index: 2;
+      }
+
+      .control-block[data-tooltip]:hover::after {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .control-block.is-hidden,
+      .control-note.is-hidden,
+      .control-group.is-hidden {
+        display: none;
+      }
+
+      .control-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--ui-text);
+      }
+
+      .range-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .range-value {
+        min-width: 32px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        color: var(--ui-accent-strong);
+        font-weight: 700;
+      }
+
+      .controls select,
+      .controls input[type="file"],
+      .controls input[type="color"] {
+        width: 100%;
+        border: 1px solid var(--ui-button-border);
+        border-radius: 10px;
+        padding: 9px 11px;
+        background: rgba(255, 255, 255, 0.8);
+        color: var(--ui-text);
+        font: inherit;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+      }
+
+      .controls select:focus,
+      .controls input[type="color"]:focus {
+        outline: none;
+        border-color: rgba(99, 129, 160, 0.86);
+        box-shadow:
+          0 0 0 3px rgba(172, 195, 216, 0.22),
+          inset 0 1px 0 rgba(255, 255, 255, 0.88);
+      }
+
+      .controls input[type="range"] {
+        width: 100%;
+        appearance: none;
+        background: transparent;
+      }
+
+      .controls input[type="color"] {
+        min-height: 42px;
+        padding: 6px;
+        cursor: pointer;
+      }
+
+      .controls input[type="file"] {
+        display: none;
+      }
+
+      .swatch-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .upload-row {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+      }
+
+      .file-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        border: 1px solid var(--ui-button-border);
+        border-radius: 11px;
+        padding: 0 14px;
+        color: var(--ui-text);
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        box-shadow: 0 8px 16px rgba(84, 94, 104, 0.06);
+        transition:
+          transform 120ms ease,
+          box-shadow 120ms ease,
+          background-color 120ms ease;
+      }
+
+      .action-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .action-button {
+        width: 100%;
+        min-height: 42px;
+        border: 1px solid var(--ui-button-border);
+        border-radius: 11px;
+        padding: 0 14px;
+        background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(241, 244, 247, 0.92));
+        color: var(--ui-text);
+        font: inherit;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 0 8px 18px rgba(84, 94, 104, 0.08);
+        transition:
+          opacity 120ms ease,
+          transform 120ms ease,
+          background-color 120ms ease,
+          box-shadow 120ms ease;
+      }
+
+      .action-button:hover:not(:disabled) {
+        transform: translateY(-1px);
+        background: linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(235, 240, 244, 0.96));
+        box-shadow: 0 12px 22px rgba(84, 94, 104, 0.12);
+      }
+
+      .action-button:disabled {
+        cursor: progress;
+        opacity: 0.58;
+      }
+
+      .export-status {
+        color: var(--ui-muted);
+      }
+
+      .file-summary {
+        min-width: 0;
+        color: var(--ui-muted);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .image-name {
+        font-size: 12px;
+        color: var(--ui-muted);
+        line-height: 1.4;
+        overflow-wrap: anywhere;
+      }
+
+      .control-note {
+        font-size: 11px;
+        color: var(--ui-muted);
+        line-height: 1.45;
+      }
+
+      .controls input[type="range"]::-webkit-slider-runnable-track {
+        height: 10px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--ui-accent-soft), var(--ui-secondary-soft));
+        border: 1px solid rgba(255, 255, 255, 0.72);
+      }
+
+      .controls input[type="range"]::-webkit-slider-thumb {
+        appearance: none;
+        width: 18px;
+        height: 18px;
+        margin-top: -6px;
+        border: 2px solid rgba(255, 255, 255, 0.96);
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--ui-accent), var(--ui-secondary));
+        box-shadow: 0 6px 14px rgba(84, 94, 104, 0.18);
+        cursor: pointer;
+      }
+
+      .controls input[type="range"]::-moz-range-track {
+        height: 10px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, var(--ui-accent-soft), var(--ui-secondary-soft));
+        border: 1px solid rgba(255, 255, 255, 0.72);
+      }
+
+      .controls input[type="range"]::-moz-range-thumb {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.96);
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--ui-accent), var(--ui-secondary));
+        box-shadow: 0 6px 14px rgba(84, 94, 104, 0.18);
+        cursor: pointer;
+      }
+
+      @media (max-width: 640px) {
+        .controls {
+          top: max(8px, env(safe-area-inset-top));
+          right: 8px;
+          left: 8px;
+          width: auto;
+          max-height: min(76vh, calc(100vh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom)));
+          border-radius: 14px;
+        }
+
+        .controls::before,
+        .controls::after {
+          display: none;
+        }
+
+        .controls-header {
+          align-items: flex-start;
+          gap: 10px;
+          padding: 12px 12px 10px;
+        }
+
+        .controls-title {
+          font-size: 14px;
+        }
+
+        .controls-subtitle {
+          font-size: 10px;
+        }
+
+        .controls-header-actions {
+          gap: 6px;
+        }
+
+        .controls-badge {
+          min-height: 24px;
+          padding: 0 8px;
+        }
+
+        .controls-body {
+          gap: 10px;
+          padding: 0 12px 12px;
+        }
+
+        .control-group {
+          gap: 9px;
+          padding: 10px;
+          border-radius: 12px;
+        }
+
+        .group-head {
+          gap: 8px;
+        }
+
+        .group-title {
+          font-size: 11px;
+        }
+
+        .controls select,
+        .controls input[type="color"] {
+          min-height: 38px;
+          padding: 8px 10px;
+        }
+
+        .controls input[type="color"] {
+          min-height: 38px;
+        }
+
+        .controls-toggle,
+        .file-button,
+        .action-button {
+          min-height: 38px;
+          padding: 0 12px;
+        }
+
+        .controls input[type="range"]::-webkit-slider-thumb {
+          width: 16px;
+          height: 16px;
+          margin-top: -5px;
+        }
+
+        .controls input[type="range"]::-moz-range-thumb {
+          width: 16px;
+          height: 16px;
+        }
+
+        .upload-row {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        .file-summary {
+          font-size: 12px;
+        }
+
+        .swatch-row,
+        .action-row {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .controls-header {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .controls-header-actions {
+          justify-content: space-between;
+        }
+
+        .controls-toggle {
+          flex: 1 1 auto;
+        }
+
+        .range-head {
+          gap: 10px;
+        }
+
+        .range-value {
+          min-width: 40px;
+          font-size: 12px;
+        }
+      }
+
+      body.is-retro-layout::before {
+        background-image: radial-gradient(circle, rgba(0, 0, 0, 0.26) 0.9px, transparent 0.9px);
+        background-size: 6px 6px;
+        opacity: 0.16;
+      }
+
+      body.is-retro-layout .controls,
+      body.is-retro-layout .controls.is-collapsed {
+        top: auto;
+        right: auto;
+        left: auto;
+        width: min(1480px, calc(100vw - 36px));
+        max-height: none;
+        transform: none;
+        opacity: 1;
+        border: 3px solid #000;
+        border-radius: 0;
+        background: linear-gradient(180deg, var(--ui-shell-top), var(--ui-shell-bottom));
+        box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.28);
+      }
+
+      body.is-retro-layout .controls::before,
+      body.is-retro-layout .controls::after {
+        display: none;
+      }
+
+      .workspace-shell {
+        position: fixed;
+        inset: 0;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 18px;
+        pointer-events: none;
+      }
+
+      .workspace-shell > .controls {
+        pointer-events: auto;
+      }
+
+      .app-window {
+        height: min(940px, calc(100vh - 36px));
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      body.is-retro-layout .controls-header,
+      body.is-retro-layout .controls.is-collapsed .controls-header {
+        display: flex;
+      }
+
+      .window-chrome {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 10px 12px;
+        border-bottom: 3px solid #000;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(222, 222, 222, 0.98));
+      }
+
+      .window-meta,
+      .window-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .window-meta {
+        min-width: 0;
+        flex: 1;
+      }
+
+      .window-dots {
+        display: flex;
+        gap: 6px;
+        flex-shrink: 0;
+      }
+
+      .window-dot {
+        width: 14px;
+        height: 14px;
+        border: 2px solid #000;
+        background: #fff;
+      }
+
+      .window-title-wrap {
+        display: grid;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .window-title {
+        font-size: 20px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+      }
+
+      .window-subtitle {
+        font-size: 12px;
+        color: var(--ui-muted);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .window-badge,
+      .toolbar-chip,
+      .meta-chip {
+        min-height: 30px;
+        padding: 0 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border: 2px solid #000;
+        background: #fff;
+        font-size: 11px;
+        font-weight: 800;
+        min-width: 0;
+      }
+
+      .window-badge {
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .window-toggle,
+      .panel-toggle,
+      .panel-close,
+      .menu-button,
+      .toolbar-button,
+      .toolbar-label,
+      .action-button {
+        border: 2px solid #000;
+        background: linear-gradient(180deg, #ffffff, #dfdfdf);
+        color: var(--ui-text);
+        font: inherit;
+        font-weight: 800;
+        cursor: pointer;
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.18);
+        white-space: nowrap;
+      }
+
+      .window-panel-toggle {
+        display: none;
+      }
+
+      .toolbar-label {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .window-toggle,
+      .panel-toggle,
+      .panel-close,
+      .toolbar-button,
+      .toolbar-label,
+      .action-button {
+        min-height: 36px;
+        padding: 0 12px;
+      }
+
+      .window-toggle:hover,
+      .panel-toggle:hover,
+      .panel-close:hover,
+      .menu-button:hover,
+      .toolbar-button:hover,
+      .toolbar-label:hover,
+      .action-button:hover {
+        background: #000;
+        color: #fff;
+      }
+
+      .menu-bar {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 6px 8px;
+        border-bottom: 2px solid #000;
+        background: #f8f8f8;
+      }
+
+      .menu-button {
+        min-height: 30px;
+        padding: 0 12px;
+        font-size: 12px;
+      }
+
+      .workspace-main {
+        flex: 1;
+        min-height: 0;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 352px;
+        position: relative;
+        background: #bfbfbf;
+      }
+
+      body.is-retro-layout .controls.is-collapsed .workspace-main {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      .canvas-shell {
+        min-width: 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 24%), #d9d9d9;
+      }
+
+      .canvas-topbar,
+      .toolbar,
+      .status-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .canvas-topbar {
+        justify-content: space-between;
+        padding: 10px 12px 0;
+      }
+
+      .canvas-stage {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+        margin: 12px;
+        border: 3px solid #000;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), transparent 24%), #fff;
+        overflow: hidden;
+      }
+
+      .canvas-stage-grid {
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(to right, rgba(0, 0, 0, 0.04) 1px, transparent 1px),
+          linear-gradient(to bottom, rgba(0, 0, 0, 0.04) 1px, transparent 1px);
+        background-size: 32px 32px;
+        pointer-events: none;
+      }
+
+      .canvas-mount {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+      }
+
+      .canvas-mount canvas {
+        display: block;
+      }
+
+      .canvas-overlay-chip,
+      .canvas-overlay-card {
+        position: absolute;
+        z-index: 4;
+        border: 2px solid #000;
+        background: rgba(255, 255, 255, 0.92);
+        box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.16);
+      }
+
+      .canvas-overlay-chip {
+        top: 14px;
+        padding: 8px 10px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        max-width: calc(50% - 24px);
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .canvas-overlay-chip.is-left {
+        left: 14px;
+      }
+
+      .canvas-overlay-chip.is-right {
+        right: 14px;
+      }
+
+      .canvas-overlay-card {
+        left: 14px;
+        bottom: 14px;
+        width: min(320px, calc(100% - 28px));
+        padding: 12px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .canvas-overlay-title {
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+      }
+
+      .canvas-overlay-copy,
+      .toolbar-chip,
+      .image-name,
+      .file-summary,
+      .export-status {
+        font-size: 11px;
+        line-height: 1.45;
+        color: var(--ui-muted);
+      }
+
+      .canvas-overlay-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .toolbar {
+        padding: 0 12px 12px;
+      }
+
+      .toolbar-divider {
+        width: 2px;
+        height: 34px;
+        background: #000;
+      }
+
+      .toolbar-spacer {
+        flex: 1;
+      }
+
+      .control-panel {
+        min-width: 0;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        border-left: 3px solid #000;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.22), transparent 18%), #e7e7e7;
+      }
+
+      body.is-retro-layout .controls.is-collapsed .control-panel {
+        display: none;
+      }
+
+      .panel-header {
+        display: grid;
+        gap: 10px;
+        padding: 12px;
+        border-bottom: 3px solid #000;
+        background: #f4f4f4;
+      }
+
+      .panel-header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .panel-title-wrap {
+        display: grid;
+        gap: 2px;
+        min-width: 0;
+      }
+
+      .panel-title {
+        font-size: 13px;
+        font-weight: 900;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .panel-subtitle {
+        font-size: 11px;
+        color: var(--ui-muted);
+      }
+
+      .tab-strip {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 6px;
+      }
+
+      .tab-button {
+        min-height: 42px;
+        padding: 8px 6px;
+        border: 2px solid #000;
+        background: #fff;
+        font: inherit;
+        font-size: 11px;
+        font-weight: 900;
+        cursor: pointer;
+      }
+
+      .tab-button.is-active,
+      .tab-button:hover {
+        background: #000;
+        color: #fff;
+      }
+
+      .tab-button:focus-visible,
+      .window-toggle:focus-visible,
+      .panel-toggle:focus-visible,
+      .panel-close:focus-visible,
+      .toolbar-button:focus-visible,
+      .toolbar-label:focus-visible,
+      .action-button:focus-visible,
+      .controls select:focus-visible,
+      .controls input[type="color"]:focus-visible,
+      .group-help:focus-visible {
+        outline: 3px solid #2f62d8;
+        outline-offset: 2px;
+      }
+
+      body.is-retro-layout .controls-body,
+      body.is-retro-layout .controls.is-collapsed .controls-body {
+        display: flex !important;
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 10px;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      body.is-retro-layout .control-group {
+        gap: 10px;
+        padding: 10px;
+        border: 2px solid #000;
+        border-radius: 0;
+        background: #fff;
+        box-shadow: none;
+      }
+
+      body.is-retro-layout .group-head {
+        margin: -10px -10px 0;
+        padding: 8px 10px;
+        border-bottom: 2px solid #000;
+        background: #d7d7d7;
+      }
+
+      body.is-retro-layout .group-help,
+      body.is-retro-layout .controls select,
+      body.is-retro-layout .controls input[type="color"],
+      body.is-retro-layout .file-button,
+      body.is-retro-layout .action-button {
+        border: 2px solid #000;
+        border-radius: 0;
+        box-shadow: none;
+      }
+
+      body.is-retro-layout .controls select,
+      body.is-retro-layout .controls input[type="color"] {
+        min-height: 40px;
+        padding: 0 10px;
+        background: #fff;
+      }
+
+      body.is-retro-layout .controls input[type="color"] {
+        padding: 5px;
+      }
+
+      body.is-retro-layout .controls input[type="range"]::-webkit-slider-runnable-track,
+      body.is-retro-layout .controls input[type="range"]::-moz-range-track {
+        height: 8px;
+        border-radius: 0;
+        border: 2px solid #000;
+      }
+
+      body.is-retro-layout .controls input[type="range"]::-webkit-slider-thumb,
+      body.is-retro-layout .controls input[type="range"]::-moz-range-thumb {
+        width: 16px;
+        height: 20px;
+        border: 2px solid #000;
+        border-radius: 0;
+        background: #fff;
+        box-shadow: none;
+      }
+
+      body.is-retro-layout .controls input[type="range"]::-webkit-slider-thumb {
+        margin-top: -8px;
+      }
+
+      .control-group.is-tab-hidden {
+        display: none !important;
+      }
+
+      .status-bar {
+        justify-content: space-between;
+        padding: 8px 12px;
+        border-top: 3px solid #000;
+        background: #f8f8f8;
+        font-size: 11px;
+        font-weight: 800;
+      }
+
+      .status-section {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-width: 0;
+      }
+
+      .status-dot {
+        width: 9px;
+        height: 9px;
+        border: 1.5px solid #000;
+        border-radius: 50%;
+        background: #79b654;
+        flex-shrink: 0;
+      }
+
+      .status-value,
+      .meta-chip span,
+      .canvas-overlay-chip span,
+      .toolbar-chip span {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      @media (max-width: 1180px) {
+        body.is-retro-layout .controls,
+        body.is-retro-layout .controls.is-collapsed {
+          width: calc(100vw - 24px);
+          height: calc(100vh - 24px);
+        }
+
+        .workspace-main {
+          grid-template-columns: minmax(0, 1fr) 324px;
+        }
+      }
+
+      @media (max-width: 960px) {
+        .workspace-shell {
+          padding: 8px;
+        }
+
+        body.is-retro-layout .controls,
+        body.is-retro-layout .controls.is-collapsed {
+          width: 100%;
+          height: 100%;
+          border-width: 2px;
+        }
+
+        .window-chrome {
+          flex-wrap: wrap;
+          align-items: flex-start;
+        }
+
+        .window-actions {
+          width: 100%;
+          justify-content: space-between;
+        }
+
+        .menu-bar {
+          overflow-x: auto;
+          white-space: nowrap;
+        }
+
+        .workspace-main {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        .canvas-topbar {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .canvas-stage {
+          min-height: 320px;
+          margin: 10px;
+        }
+
+        .canvas-overlay-chip {
+          max-width: calc(100% - 28px);
+          font-size: 10px;
+        }
+
+        .canvas-overlay-chip.is-right {
+          top: 58px;
+          left: 14px;
+          right: auto;
+        }
+
+        .toolbar-divider,
+        .toolbar-spacer {
+          display: none;
+        }
+
+        .control-panel {
+          position: absolute;
+          left: 8px;
+          right: 8px;
+          bottom: 8px;
+          max-height: min(64vh, 520px);
+          border: 2px solid #000;
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+          z-index: 15;
+          transform: translateY(0);
+          opacity: 1;
+          transition: transform 180ms ease, opacity 180ms ease;
+        }
+
+        body.is-retro-layout .controls.is-collapsed .control-panel {
+          display: flex;
+          transform: translateY(calc(100% + 16px));
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        .swatch-row,
+        .action-row,
+        .upload-row {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 640px) {
+        .workspace-shell {
+          padding: 4px;
+        }
+
+        .window-badge {
+          display: none;
+        }
+
+        .toolbar {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .toolbar-button,
+        .toolbar-label,
+        .panel-toggle {
+          width: 100%;
+          text-align: center;
+        }
+
+        .panel-header-top {
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .status-section {
+          width: 100%;
+          justify-content: space-between;
+        }
+      }
+
+      body.is-retro-layout {
+        background: #dddddd;
+      }
+
+      body.is-retro-layout::before {
+        background-image: radial-gradient(circle, rgba(0, 0, 0, 0.38) 1px, transparent 1px);
+        background-size: 6px 6px;
+        opacity: 0.22;
+      }
+
+      body.is-retro-layout .controls,
+      body.is-retro-layout .controls.is-collapsed {
+        width: min(1580px, calc(100vw - 42px));
+        height: min(860px, calc(100vh - 42px));
+        border-width: 4px;
+        background: #f7f7f7;
+        box-shadow: 10px 10px 0 rgba(0, 0, 0, 0.88);
+      }
+
+      body.is-retro-layout .window-chrome {
+        min-height: 42px;
+        padding: 6px 10px;
+        border-bottom-width: 4px;
+        background: #fff;
+      }
+
+      body.is-retro-layout .window-meta {
+        gap: 10px;
+      }
+
+      body.is-retro-layout .window-dots {
+        gap: 8px;
+      }
+
+      body.is-retro-layout .window-dot,
+      body.is-retro-layout .window-corner-button {
+        width: 24px;
+        height: 24px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        font-size: 14px;
+        font-weight: 900;
+        line-height: 1;
+        background: #fff;
+        box-shadow: none;
+      }
+
+      body.is-retro-layout .window-title-band {
+        min-width: 0;
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      body.is-retro-layout .window-title-wrap {
+        flex-shrink: 0;
+      }
+
+      body.is-retro-layout .window-title {
+        font-size: 16px;
+        letter-spacing: 0;
+        white-space: nowrap;
+      }
+
+      body.is-retro-layout .title-ornament {
+        flex: 1;
+        min-width: 26px;
+        height: 18px;
+        background:
+          repeating-linear-gradient(
+            90deg,
+            #111 0 2px,
+            transparent 2px 5px
+          );
+      }
+
+      body.is-retro-layout .workspace-main {
+        grid-template-columns: minmax(0, 1fr) 380px;
+        background: #f4f4f4;
+      }
+
+      body.is-retro-layout .canvas-shell {
+        background: #f8f8f8;
+        border-right: 4px solid #000;
+      }
+
+      body.is-retro-layout .canvas-topbar {
+        display: none;
+      }
+
+      body.is-retro-layout .canvas-stage {
+        margin: 10px;
+        border-width: 3px;
+        background: #fff;
+      }
+
+      body.is-retro-layout .canvas-stage::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border: 2px solid #8a8a8a;
+        pointer-events: none;
+      }
+
+      body.is-retro-layout .canvas-stage-grid {
+        display: none;
+      }
+
+      body.is-retro-layout .canvas-empty-state {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 14px;
+        padding: 32px;
+        text-align: center;
+        color: #161616;
+        pointer-events: none;
+      }
+
+      body.is-retro-layout .canvas-empty-state.is-hidden {
+        display: none;
+      }
+
+      body.is-retro-layout .canvas-empty-icon {
+        color: #111;
+      }
+
+      body.is-retro-layout .canvas-empty-copy {
+        font-size: 13px;
+        color: #5d6980;
+      }
+
+      body.is-retro-layout .canvas-empty-types {
+        font-size: 12px;
+        color: #74829b;
+        letter-spacing: 0.04em;
+      }
+
+      body.is-retro-layout .canvas-overlay-chip,
+      body.is-retro-layout .canvas-overlay-card,
+      body.is-retro-layout .toolbar-chip,
+      body.is-retro-layout .window-badge,
+      body.is-retro-layout .menu-bar {
+        display: none !important;
+      }
+
+      body.is-retro-layout .toolbar {
+        min-height: auto;
+        padding: 8px 10px;
+        gap: 8px;
+        align-items: center;
+        border-top: 4px solid #000;
+      }
+
+      body.is-retro-layout .toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      body.is-retro-layout .toolbar-button,
+      body.is-retro-layout .toolbar-label,
+      body.is-retro-layout .panel-toggle,
+      body.is-retro-layout .action-button {
+        min-width: 76px;
+        min-height: 50px;
+        padding: 8px 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 900;
+        background: #fff;
+        box-shadow: none;
+      }
+
+      body.is-retro-layout .toolbar-label {
+        min-width: 104px;
+      }
+
+      body.is-retro-layout .toolbar-button.toolbar-icon-button::before {
+        content: "";
+        display: block;
+        width: 18px;
+        height: 18px;
+        margin-right: 8px;
+        background: currentColor;
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        -webkit-mask-size: contain;
+      }
+
+      body.is-retro-layout #toolbar-export-video::before {
+        -webkit-mask-image: linear-gradient(#000 0 0);
+      }
+
+      body.is-retro-layout .toolbar-button.toolbar-icon-button:last-child::before {
+        -webkit-mask-image: linear-gradient(#000 0 0);
+      }
+
+      body.is-retro-layout .toolbar-spacer {
+        flex: 1;
+      }
+
+      body.is-retro-layout .control-panel {
+        border-left-width: 0;
+        background: #f5f5f5;
+      }
+
+      body.is-retro-layout .panel-header {
+        padding: 0;
+        gap: 0;
+        border-bottom: 3px solid #000;
+        background: #fff;
+      }
+
+      body.is-retro-layout .panel-header-top {
+        min-height: 34px;
+        padding: 0 10px;
+        border-bottom: 1px solid #d7d7d7;
+        background: #fff;
+      }
+
+      body.is-retro-layout .panel-title {
+        font-size: 15px;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+
+      body.is-retro-layout .panel-close {
+        min-width: 24px;
+        min-height: 24px;
+        padding: 0;
+        box-shadow: none;
+        background: #fff;
+      }
+
+      body.is-retro-layout .tab-strip {
+        gap: 0;
+        border-top: 0;
+      }
+
+      body.is-retro-layout .tab-button {
+        min-height: 56px;
+        display: grid;
+        gap: 4px;
+        place-items: center;
+        border-top: 0;
+        border-right-width: 1px;
+        border-bottom: 0;
+        background: #fafafa;
+      }
+
+      body.is-retro-layout .tab-button:first-child {
+        border-left-width: 0;
+      }
+
+      body.is-retro-layout .tab-button:last-child {
+        border-right-width: 0;
+      }
+
+      body.is-retro-layout .tab-icon {
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      body.is-retro-layout .controls-body {
+        padding: 10px;
+        gap: 12px;
+        background: #f3f3f3;
+      }
+
+      body.is-retro-layout .control-group {
+        padding: 0;
+        border-width: 3px;
+        background: #fff;
+      }
+
+      body.is-retro-layout .group-head {
+        margin: 0;
+        min-height: 34px;
+        padding: 0 12px;
+        align-items: center;
+        border-bottom-width: 3px;
+        background: #d9dbe0;
+      }
+
+      body.is-retro-layout .group-title {
+        font-size: 12px;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+
+      body.is-retro-layout .group-help {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+        border-width: 1px;
+      }
+
+      body.is-retro-layout .control-block,
+      body.is-retro-layout .control-note {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      body.is-retro-layout .control-block:first-of-type,
+      body.is-retro-layout .control-note:first-of-type {
+        padding-top: 12px;
+      }
+
+      body.is-retro-layout .control-block:last-of-type,
+      body.is-retro-layout .control-note:last-of-type {
+        padding-bottom: 12px;
+      }
+
+      body.is-retro-layout .control-label {
+        font-size: 11px;
+      }
+
+      body.is-retro-layout .range-head {
+        align-items: flex-end;
+      }
+
+      body.is-retro-layout .range-value {
+        min-width: 52px;
+        padding: 2px 6px;
+        text-align: center;
+        color: #fff;
+        background: #000;
+      }
+
+      body.is-retro-layout .controls select,
+      body.is-retro-layout .controls input[type="color"] {
+        min-height: 40px;
+        border-width: 3px;
+      }
+
+      body.is-retro-layout .controls input[type="range"]::-webkit-slider-runnable-track,
+      body.is-retro-layout .controls input[type="range"]::-moz-range-track {
+        height: 18px;
+        border-width: 3px;
+        background: #efefef;
+      }
+
+      body.is-retro-layout .controls input[type="range"]::-webkit-slider-thumb,
+      body.is-retro-layout .controls input[type="range"]::-moz-range-thumb {
+        width: 22px;
+        height: 28px;
+        background: #fff;
+        border-width: 3px;
+      }
+
+      body.is-retro-layout .controls input[type="range"]::-webkit-slider-thumb {
+        margin-top: -8px;
+      }
+
+      body.is-retro-layout .upload-row {
+        grid-template-columns: 1fr;
+      }
+
+      body.is-retro-layout .file-summary,
+      body.is-retro-layout .image-name,
+      body.is-retro-layout .export-status,
+      body.is-retro-layout .control-note {
+        color: #66758f;
+      }
+
+      body.is-retro-layout .status-bar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: center;
+        padding: 6px 10px;
+        border-top-width: 4px;
+        background: #fff;
+      }
+
+      body.is-retro-layout .status-section-left {
+        justify-self: start;
+      }
+
+      body.is-retro-layout .status-section-center {
+        justify-self: center;
+      }
+
+      body.is-retro-layout .status-pen {
+        font-size: 14px;
+      }
+
+      body.is-retro-layout .status-dot {
+        display: none;
+      }
+
+      body.is-retro-layout .status-value {
+        font-size: 12px;
+      }
+
+      body.is-retro-layout .status-bar .panel-toggle {
+        justify-self: end;
+        min-width: 116px;
+        min-height: 30px;
+        padding: 0 12px;
+      }
+
+      body.is-retro-layout .group-help::after,
+      body.is-retro-layout .control-block[data-tooltip]::after {
+        border: 2px solid #000;
+        border-radius: 0;
+        background: #fffef7;
+        color: #111;
+        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.22);
+      }
+
+      body.is-retro-layout .tab-button:hover:not(.is-active),
+      body.is-retro-layout .window-toggle:hover:not(.is-active),
+      body.is-retro-layout .panel-toggle:hover:not(.is-active),
+      body.is-retro-layout .panel-close:hover:not(.is-active),
+      body.is-retro-layout .toolbar-button:hover:not(.is-active),
+      body.is-retro-layout .toolbar-label:hover:not(.is-active),
+      body.is-retro-layout .action-button:hover:not(.is-active) {
+        background: #111;
+        color: #fff;
+      }
+
+      body.is-retro-layout .tab-button.is-active,
+      body.is-retro-layout .panel-toggle.is-active,
+      body.is-retro-layout .panel-close.is-active,
+      body.is-retro-layout .window-toggle.is-active {
+        background: #2f62d8;
+        color: #fff;
+        box-shadow: inset 0 0 0 2px #fff;
+      }
+
+      body.is-retro-layout .controls select:focus-visible,
+      body.is-retro-layout .controls input[type="color"]:focus-visible,
+      body.is-retro-layout .tab-button:focus-visible,
+      body.is-retro-layout .window-toggle:focus-visible,
+      body.is-retro-layout .panel-toggle:focus-visible,
+      body.is-retro-layout .panel-close:focus-visible,
+      body.is-retro-layout .toolbar-button:focus-visible,
+      body.is-retro-layout .toolbar-label:focus-visible,
+      body.is-retro-layout .action-button:focus-visible,
+      body.is-retro-layout .group-help:focus-visible {
+        outline: 3px solid #f28b39;
+        outline-offset: 2px;
+      }
+
+      @media (max-width: 1180px) {
+        body.is-retro-layout .workspace-main {
+          grid-template-columns: minmax(0, 1fr) 360px;
+        }
+      }
+
+      @media (max-width: 960px) {
+        body.is-retro-layout .controls,
+        body.is-retro-layout .controls.is-collapsed {
+          width: 100%;
+          height: 100%;
+        }
+
+        body.is-retro-layout .workspace-main {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        body.is-retro-layout .canvas-shell {
+          border-right: 0;
+        }
+
+        body.is-retro-layout .window-chrome {
+          display: grid;
+          grid-template-columns: 1fr;
+          justify-items: center;
+          gap: 6px;
+        }
+
+        body.is-retro-layout .window-meta,
+        body.is-retro-layout .window-title-band,
+        body.is-retro-layout .window-actions {
+          width: 100%;
+          justify-content: center;
+        }
+
+        body.is-retro-layout .window-panel-toggle {
+          display: inline-flex;
+        }
+
+        body.is-retro-layout .control-panel {
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: auto;
+          max-height: min(72vh, calc(100% - 0px));
+          border: 3px solid #000;
+          border-top: 0;
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+        }
+
+        body.is-retro-layout .toolbar {
+          min-height: auto;
+        }
+
+        body.is-retro-layout .toolbar-button,
+        body.is-retro-layout .toolbar-label {
+          min-height: 56px;
+          min-width: 0;
+        }
+
+        body.is-retro-layout .status-bar {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        body.is-retro-layout .status-bar .panel-toggle {
+          display: none;
+        }
+
+        body.is-retro-layout .status-section-center,
+        body.is-retro-layout .status-section-left,
+        body.is-retro-layout .status-bar .panel-toggle {
+          justify-self: stretch;
+        }
+
+        body.is-retro-layout .controls.is-collapsed .control-panel {
+          transform: translateY(-12px);
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        body.is-retro-layout .controls.is-collapsed .window-chrome {
+          padding: 4px 8px;
+          gap: 2px;
+          justify-items: stretch;
+        }
+
+        body.is-retro-layout .controls.is-collapsed .window-meta {
+          display: none;
+        }
+
+        body.is-retro-layout .controls.is-collapsed .window-actions {
+          justify-content: flex-start;
+        }
+
+        body.is-retro-layout .controls.is-collapsed .window-toggle {
+          min-height: 30px;
+          min-width: 54px;
+          padding: 0 10px;
+          font-size: 18px;
+          line-height: 1;
+        }
+      }
+
+      @media (max-width: 640px) {
+        body.is-retro-layout .window-title {
+          font-size: 14px;
+          white-space: normal;
+        }
+
+        body.is-retro-layout .title-ornament {
+          min-width: 16px;
+          height: 14px;
+          opacity: 0.72;
+        }
+
+        body.is-retro-layout .toolbar {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          align-items: stretch;
+        }
+
+        body.is-retro-layout .toolbar-group {
+          grid-column: 1 / span 2;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
+
+        body.is-retro-layout .toolbar-button,
+        body.is-retro-layout .toolbar-label {
+          min-height: 44px;
+          width: 100%;
+          padding: 6px 8px;
+        }
+
+        body.is-retro-layout .toolbar-label {
+          grid-column: 3;
+          min-width: 0;
+        }
+
+        body.is-retro-layout .panel-header-top {
+          flex-direction: row;
+          align-items: center;
+        }
+      }
+
+      .mobile-only-control {
+        display: none !important;
+      }
+
+      @media (max-width: 960px) {
+        body.is-retro-layout .mobile-only-control {
+          display: inline-flex !important;
+        }
+      }
+
+      .controls input[type="range"]::-webkit-slider-runnable-track {
+        height: 12px;
+        border: 2px solid #000;
+        border-radius: 0;
+        background: #d6d6d6;
+      }
+
+      .controls input[type="range"]::-webkit-slider-thumb {
+        appearance: none;
+        width: 20px;
+        height: 28px;
+        margin-top: -10px;
+        border: 2px solid #000;
+        border-radius: 0;
+        background: #fff;
+        box-shadow: none;
+      }
+
+      .controls input[type="range"]::-moz-range-track {
+        height: 12px;
+        border: 2px solid #000;
+        border-radius: 0;
+        background: #d6d6d6;
+      }
+
+      .controls input[type="range"]::-moz-range-thumb {
+        width: 20px;
+        height: 28px;
+        border: 2px solid #000;
+        border-radius: 0;
+        background: #fff;
+        box-shadow: none;
+      }
+
+      .window-toggle:hover,
+      .panel-toggle:hover,
+      .panel-close:hover,
+      .menu-button:hover,
+      .toolbar-button:hover,
+      .toolbar-label:hover,
+      .action-button:hover {
+        background: #d3d3d3;
+        color: #000;
+      }
+
+      .tab-button.is-active,
+      .panel-toggle.is-active,
+      .panel-close.is-active,
+      .window-toggle.is-active {
+        background: #000;
+        color: #fff;
+        box-shadow: inset 0 0 0 2px #fff;
+      }
+
+      body.is-retro-layout .tab-button:hover:not(.is-active),
+      body.is-retro-layout .window-toggle:hover:not(.is-active),
+      body.is-retro-layout .panel-toggle:hover:not(.is-active),
+      body.is-retro-layout .panel-close:hover:not(.is-active),
+      body.is-retro-layout .toolbar-button:hover:not(.is-active),
+      body.is-retro-layout .toolbar-label:hover:not(.is-active),
+      body.is-retro-layout .action-button:hover:not(.is-active) {
+        background: #d3d3d3;
+        color: #000;
+      }
+
+      body.is-retro-layout .tab-button.is-active,
+      body.is-retro-layout .panel-toggle.is-active,
+      body.is-retro-layout .panel-close.is-active,
+      body.is-retro-layout .window-toggle.is-active {
+        background: #000;
+        color: #fff;
+        box-shadow: inset 0 0 0 2px #fff;
+      }
+
+      @media (min-width: 961px) {
+        body.is-retro-layout .toolbar-group {
+          display: none !important;
+        }
+      }
+
+      body.is-retro-layout .window-chrome {
+        display: grid;
+        grid-template-columns: 1fr;
+        justify-items: center;
+        gap: 4px;
+        padding: 6px 10px 8px;
+      }
+
+      body.is-retro-layout .window-actions {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+
+      body.is-retro-layout .window-meta {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+      }
+
+      body.is-retro-layout .window-title-band {
+        flex: 0 1 auto;
+        justify-content: center;
+      }
+
+      body.is-retro-layout .window-toggle,
+      body.is-retro-layout .window-corner-button {
+        min-width: 46px;
+        min-height: 26px;
+        padding: 0 10px;
+        border-width: 2px;
+        background: #fff;
+        box-shadow: none;
+        line-height: 1;
+      }
+
+      body.is-retro-layout .window-toggle.is-active {
+        box-shadow: none;
+      }
+
+      @media (max-width: 960px) {
+        body.is-retro-layout .controls.is-collapsed .window-chrome {
+          padding: 4px 8px 6px;
+          gap: 4px;
+          justify-items: center;
+        }
+
+        body.is-retro-layout .controls.is-collapsed .window-meta {
+          display: flex;
+        }
+
+        body.is-retro-layout .controls.is-collapsed .window-actions {
+          justify-content: center;
+        }
+
+        body.is-retro-layout .controls.is-collapsed .window-toggle {
+          min-width: 44px;
+          min-height: 24px;
+          padding: 0 8px;
+          font-size: 14px;
+        }
+      }
+
+      body,
+      body * {
+        -webkit-user-select: none;
+        user-select: none;
+      }
+
+      body.is-retro-layout #ui-shell:not([data-retro-ready="1"]) {
+        opacity: 0;
+      }
+
+      body.is-retro-layout .toolbar-group {
+        display: none !important;
+      }
+
+      body.is-retro-layout .toolbar {
+        justify-content: flex-end;
+        padding: 10px 12px;
+      }
+
+      body.is-retro-layout .toolbar-label {
+        margin-left: auto;
+      }
+
+      body.is-retro-layout .window-chrome {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px 8px;
+      }
+
+      body.is-retro-layout .window-meta {
+        grid-column: 1;
+        justify-self: stretch;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        min-width: 0;
+        gap: 10px;
+      }
+
+      body.is-retro-layout .window-title-band {
+        min-width: 0;
+        flex: 1 1 auto;
+        justify-content: center;
+      }
+
+      body.is-retro-layout .window-actions {
+        grid-column: 2;
+        justify-self: end;
+        width: auto;
+        display: flex;
+        justify-content: flex-end;
+      }
+
+      body.is-retro-layout .status-bar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: center;
+      }
+
+      body.is-retro-layout .status-section-left {
+        justify-self: start;
+      }
+
+      body.is-retro-layout .status-section-center {
+        grid-column: 2;
+        justify-self: center;
+        text-align: center;
+      }
+
+      body.is-retro-layout .action-row-export {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: stretch;
+      }
+
+      body.is-retro-layout .action-row-export .action-button {
+        min-height: 54px;
+      }
+
+      @media (max-width: 960px) {
+        body.is-retro-layout .toolbar-group {
+          display: block !important;
+          width: 100%;
+        }
+
+        body.is-retro-layout .window-chrome,
+        body.is-retro-layout .controls.is-collapsed .window-chrome {
+          grid-template-columns: 1fr;
+          justify-items: center;
+          gap: 6px;
+        }
+
+        body.is-retro-layout .window-actions,
+        body.is-retro-layout .controls.is-collapsed .window-actions {
+          order: -1;
+          grid-column: auto;
+          justify-self: center;
+          width: auto;
+          justify-content: center;
+        }
+
+        body.is-retro-layout .window-meta,
+        body.is-retro-layout .controls.is-collapsed .window-meta {
+          grid-column: auto;
+          justify-self: center;
+          width: 100%;
+        }
+
+        body.is-retro-layout .window-title-band {
+          width: 100%;
+          justify-content: center;
+        }
+
+        body.is-retro-layout .window-toggle,
+        body.is-retro-layout .window-corner-button {
+          min-width: 56px;
+          min-height: 24px;
+          padding: 0 10px;
+          border-width: 2px;
+          box-shadow: none;
+        }
+
+        body.is-retro-layout .toolbar {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          align-items: stretch;
+          justify-content: initial;
+        }
+
+        body.is-retro-layout .toolbar-group .toolbar-button,
+        body.is-retro-layout .toolbar-label {
+          width: 100%;
+        }
+
+        body.is-retro-layout .toolbar-label {
+          margin-left: 0;
+        }
+
+        body.is-retro-layout .status-bar {
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+          gap: 10px;
+        }
+
+        body.is-retro-layout .status-section-left,
+        body.is-retro-layout .status-section-center {
+          width: 100%;
+          justify-self: stretch;
+          justify-content: center;
+          text-align: center;
+        }
+
+        body.is-retro-layout .status-section-center {
+          grid-column: auto;
+          justify-self: stretch;
+          text-align: center;
+        }
+
+        body.is-retro-layout .action-row-export {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      .is-hidden {
+        display: none !important;
+      }
+
+      body.is-retro-layout .canvas-processing-state {
+        position: absolute;
+        inset: auto 18px 18px;
+        z-index: 4;
+        display: grid;
+        gap: 8px;
+        padding: 12px 14px;
+        border: 3px solid #000;
+        background: rgba(255, 253, 245, 0.96);
+        box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.18);
+      }
+
+      body.is-retro-layout .canvas-processing-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      body.is-retro-layout .canvas-processing-badge::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #2f62d8;
+        box-shadow: 0 0 0 2px rgba(47, 98, 216, 0.2);
+        animation: canvas-processing-pulse 1s ease-in-out infinite;
+      }
+
+      body.is-retro-layout .canvas-processing-copy {
+        font-size: 12px;
+        line-height: 1.45;
+        color: #42516b;
+      }
+
+      body.is-retro-layout .canvas-processing-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      body.is-retro-layout .canvas-processing-button {
+        border: 2px solid #000;
+        background: #fffdf6;
+        padding: 7px 10px;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        color: #2f3952;
+        cursor: pointer;
+      }
+
+      body.is-retro-layout .canvas-processing-button.is-secondary {
+        background: #f6efe6;
+        color: #694a34;
+      }
+
+      body.is-retro-layout .canvas-processing-button:hover {
+        transform: translateY(-1px);
+      }
+
+      .file-button.is-disabled,
+      .toolbar-label.is-disabled {
+        opacity: 0.45;
+        pointer-events: none;
+        cursor: not-allowed;
+      }
+
+      .export-estimate {
+        padding: 10px 12px;
+        border: 1px solid rgba(164, 177, 190, 0.45);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.72);
+        color: #586577;
+      }
+
+      .export-estimate[data-level="warning"] {
+        border-color: rgba(196, 145, 77, 0.58);
+        background: rgba(255, 246, 231, 0.92);
+        color: #8a5a1f;
+      }
+
+      .action-row-recovery {
+        margin-top: 4px;
+      }
+
+      @keyframes canvas-processing-pulse {
+        0%,
+        100% {
+          transform: scale(0.9);
+          opacity: 0.7;
+        }
+
+        50% {
+          transform: scale(1.08);
+          opacity: 1;
+        }
+      }
+
+      @media (max-width: 960px) {
+        body.is-retro-layout .toolbar {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+        }
+
+        body.is-retro-layout .toolbar > .mobile-only-control {
+          width: 100%;
+          min-width: 0;
+        }
+
+        body.is-retro-layout .toolbar-button,
+        body.is-retro-layout .toolbar-label {
+          justify-content: center;
+        }
+
+        body.is-retro-layout .canvas-processing-state {
+          inset: auto 12px 12px;
+          padding: 10px 12px;
+        }
+      }
+    </style>
+  </head>
+  <body class="is-retro-layout">
+    <div class="controls" id="ui-shell">
+      <div class="controls-header">
+        <div class="controls-title-wrap">
+          <div class="controls-title">Line Atelier</div>
+          <div class="controls-subtitle">日系线稿工具箱</div>
+        </div>
+        <div class="controls-header-actions">
+          <div class="controls-badge">toolbox</div>
+          <button class="controls-toggle" id="ui-toggle" type="button">收起面板</button>
+        </div>
+      </div>
+      <div class="controls-body">
+        <section class="control-group">
+          <div class="group-head">
+            <div class="group-title">输入与分析</div>
+            <span class="group-help" data-tooltip="选择算法、上传原图、查看叠加参考，并决定原图分析时使用的采样精度。">?</span>
+          </div>
+
+          <div class="control-block">
+            <label class="control-label" for="render-mode">算法</label>
+            <select id="render-mode">
+              <option value="edge-fill">边缘线填充</option>
+              <option value="distortion">SVG 形变</option>
+              <option value="edge">边缘采样</option>
+              <option value="path">中心线路径</option>
+              <option value="color-boundary">色块边界</option>
+              <!-- <option value="region-grow">亮度扩张</option>
+              <option value="color-grow">颜色扩张</option> -->
+              <option value="contour">轮廓描摹</option>
+            </select>
+          </div>
+
+          <div class="control-block" data-modes="contour">
+            <label class="control-label" for="contour-variant">轮廓风格</label>
+            <select id="contour-variant">
+              <option value="contour">标准轮廓</option>
+              <option value="wave-contour">波浪轮廓</option>
+              <option value="wave-shape">波浪形变</option>
+              <option value="rubber-contour">橡皮轮廓</option>
+            </select>
+          </div>
+
+          <div class="control-note" data-modes="edge">
+            沿局部边缘撒短线，抖动感最明显。
+          </div>
+
+          <div class="control-note" data-modes="edge-fill">
+            先找两侧边缘，再补成一条线。
+          </div>
+
+          <div class="control-note" data-modes="region-grow">
+            从暗线往外扩，适合补浅线和断线。
+          </div>
+
+          <div class="control-note" data-modes="color-grow">
+            按颜色差往外扩，适合彩色线和偏色稿。
+          </div>
+
+          <div class="control-note" data-modes="color-boundary">
+            直接找色块交界，适合上色图。
+          </div>
+
+          <div class="control-note" data-modes="distortion">
+            不做线稿提取，直接对原图做 SVG 位移形变。
+          </div>
+
+          <div class="control-note" data-modes="contour-variant-contour">
+            直接沿笔画外轮廓走线。
+          </div>
+
+          <div class="control-note" data-modes="contour-variant-wave-contour">
+            先提取外轮廓，再沿法线做连续波浪位移，适合日式起伏线效果。
+          </div>
+
+          <div class="control-note" data-modes="contour-variant-wave-shape">
+            用整张共享位移场推动轮廓和内部结构，整体更像整块形体在起伏。
+          </div>
+
+          <div class="control-note" data-modes="contour-variant-rubber-contour">
+            轮廓像软橡皮一样被拖拽，形变更圆润、更有弹性。
+          </div>
+
+          <div class="control-note" data-modes="path">
+            先抽中心线，再按粗细去画。
+          </div>
+
+          <div class="control-block">
+            <label class="control-label" for="image-upload">图片</label>
+            <div class="upload-row">
+              <label class="file-button" for="image-upload">选择文件</label>
+            </div>
+            <input id="image-upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
+            <div class="image-name" id="image-name">当前图片: figure.png</div>
+          </div>
+
+          <div class="control-block" data-modes="edge edge-fill region-grow color-grow color-boundary contour path">
+            <label class="control-label" for="reference-overlay">原图叠加</label>
+            <select id="reference-overlay">
+              <option value="off">关闭</option>
+              <option value="on">显示</option>
+            </select>
+          </div>
+
+          <div class="control-block" data-modes="edge edge-fill region-grow color-grow color-boundary contour path" data-requires-overlay="true">
+            <div class="range-head">
+              <label class="control-label" for="reference-overlay-opacity">叠加透明度</label>
+              <span class="range-value" data-readout-for="reference-overlay-opacity">35%</span>
+            </div>
+            <input id="reference-overlay-opacity" type="range" min="0" max="100" step="1" value="35" />
+          </div>
+
+          <div class="control-block" data-modes="edge edge-fill region-grow color-grow color-boundary contour path">
+            <label class="control-label" for="analysis-quality">图像采样质量</label>
+            <select id="analysis-quality">
+              <option value="low">低</option>
+              <option value="medium">中</option>
+              <option value="high">高</option>
+            </select>
+          </div>
+
+          <div class="control-block">
+            <div class="range-head">
+              <label class="control-label" for="scene-scale">主体缩放</label>
+              <span class="range-value" data-readout-for="scene-scale">100%</span>
+            </div>
+            <input id="scene-scale" type="range" min="20" max="240" step="1" value="100" />
+          </div>
+
+          <div class="control-block">
+            <div class="range-head">
+              <label class="control-label" for="scene-offset-x">水平偏移</label>
+              <span class="range-value" data-readout-for="scene-offset-x">0%</span>
+            </div>
+            <input id="scene-offset-x" type="range" min="-80" max="80" step="1" value="0" />
+          </div>
+
+          <div class="control-block">
+            <div class="range-head">
+              <label class="control-label" for="scene-offset-y">垂直偏移</label>
+              <span class="range-value" data-readout-for="scene-offset-y">0%</span>
+            </div>
+            <input id="scene-offset-y" type="range" min="-80" max="80" step="1" value="0" />
+          </div>
+        </section>
+
+        <section class="control-group">
+          <div class="group-head">
+            <div class="group-title">纸张与背景</div>
+            <span class="group-help" data-tooltip="控制纸张底色、渐变和纹理层。它们只影响画面表现，不会改变原图提取结果。">?</span>
+          </div>
+
+          <div class="control-block">
+            <label class="control-label" for="background-preset">背景预设</label>
+            <select id="background-preset">
+              <option value="warm">暖纸</option>
+              <option value="white">白纸</option>
+              <option value="sketchbook">速写本</option>
+              <option value="blue">浅蓝纸</option>
+              <option value="grey">灰底纸</option>
+            </select>
+          </div>
+
+          <div class="control-block">
+            <label class="control-label" for="paper-fill-mode">纸张底色</label>
+            <select id="paper-fill-mode">
+              <option value="solid">纯色</option>
+              <option value="gradient">渐变</option>
+            </select>
+          </div>
+
+          <div class="control-block">
+            <div class="range-head">
+              <label class="control-label" for="paper-gradient-angle">渐变角度</label>
+              <span class="range-value" data-readout-for="paper-gradient-angle">18</span>
+            </div>
+            <input id="paper-gradient-angle" type="range" min="0" max="360" step="1" value="18" />
+          </div>
+
+          <div class="control-block">
+            <div class="control-label">纸张颜色</div>
+            <div class="swatch-row">
+              <input id="paper-color" type="color" value="#f6f0e5" />
+              <input id="paper-accent-color" type="color" value="#efe3cd" />
+            </div>
+          </div>
+
+          <div class="control-block">
+            <label class="control-label" for="paper-texture">纸张纹理</label>
+            <select id="paper-texture">
+              <option value="none">无纹理</option>
+              <option value="grain">细颗粒</option>
+              <option value="speckle">散点噪声</option>
+              <option value="cloud">云雾噪声</option>
+              <option value="crosshatch">交织纤维</option>
+              <option value="upload">上传纹理</option>
+            </select>
+          </div>
+
+          <div class="control-block">
+            <div class="control-label">纹理颜色</div>
+            <div class="swatch-row">
+              <input id="texture-color" type="color" value="#d8c8b0" />
+              <input id="texture-accent-color" type="color" value="#fff7ea" />
+            </div>
+          </div>
+
+          <div class="control-block">
+            <label class="control-label" for="texture-upload">纹理图片</label>
+            <div class="upload-row">
+              <label class="file-button" for="texture-upload">上传纹理</label>
+              <div class="file-summary" id="texture-upload-summary">未选择纹理</div>
+            </div>
+            <input id="texture-upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
+          </div>
+
+          <div class="control-block">
+            <div class="range-head">
+              <label class="control-label" for="paper-texture-strength">纹理强度</label>
+              <span class="range-value" data-readout-for="paper-texture-strength">44</span>
+            </div>
+            <input id="paper-texture-strength" type="range" min="0" max="100" step="1" value="44" />
+          </div>
+
+          <div class="control-block">
+            <div class="range-head">
+              <label class="control-label" for="paper-texture-opacity">纹理透明度</label>
+              <span class="range-value" data-readout-for="paper-texture-opacity">78%</span>
+            </div>
+            <input id="paper-texture-opacity" type="range" min="0" max="100" step="1" value="78" />
+          </div>
+
+          <div class="control-block">
+            <div class="range-head">
+              <label class="control-label" for="paper-texture-scale">纹理尺度</label>
+              <span class="range-value" data-readout-for="paper-texture-scale">42</span>
+            </div>
+            <input id="paper-texture-scale" type="range" min="10" max="100" step="1" value="42" />
+          </div>
+        </section>
+
+        <section class="control-group" data-modes="edge edge-fill contour region-grow color-grow color-boundary path">
+          <div class="group-head">
+            <div class="group-title">轮廓与线稿</div>
+            <span class="group-help" data-tooltip="调节生成线条的整体颜色和透明度，适合做更轻盈或更浓重的描边气质。">?</span>
+          </div>
+
+          <div class="control-block">
+            <label class="control-label" for="ink-color">线稿颜色</label>
+            <input id="ink-color" type="color" value="#2c2b28" />
+          </div>
+
+          <div class="control-block">
+            <div class="range-head">
+              <label class="control-label" for="ink-opacity">线稿透明度</label>
+              <span class="range-value" data-readout-for="ink-opacity">100%</span>
+            </div>
+            <input id="ink-opacity" type="range" min="0" max="100" step="1" value="100" />
+          </div>
+
+          <div class="control-block">
+            <div class="range-head">
+              <label class="control-label" for="line-width-scale">线条宽度</label>
+              <span class="range-value" data-readout-for="line-width-scale">100</span>
+            </div>
+            <input id="line-width-scale" type="range" min="40" max="260" step="1" value="100" />
+          </div>
+
+          <div class="control-note">
+            会同时作用在 edge、path、contour 以及扩张类线稿模式。
+          </div>
+        </section>
+
+        <section class="control-group">
+          <div class="group-head">
+            <div class="group-title">提取与配对</div>
+            <span class="group-help" data-tooltip="这里控制线条提取阈值，以及 edge-fill 模式里两侧边缘如何配对成一条填充线。">?</span>
+          </div>
+
+          <div class="control-block" data-modes="edge edge-fill region-grow color-grow">
+            <div class="range-head">
+              <label class="control-label" for="line-threshold">线亮度阈值</label>
+              <span class="range-value" data-readout-for="line-threshold">228</span>
+            </div>
+            <input id="line-threshold" type="range" min="96" max="254" step="1" value="228" />
+          </div>
+
+          <div class="control-block" data-modes="edge edge-fill contour">
+            <div class="range-head">
+              <label class="control-label" for="edge-threshold">边缘阈值</label>
+              <span class="range-value" data-readout-for="edge-threshold">42</span>
+            </div>
+            <input id="edge-threshold" type="range" min="4" max="180" step="1" value="42" />
+          </div>
+
+          <div class="control-block" data-modes="edge-fill">
+            <div class="range-head">
+              <label class="control-label" for="edge-fill-threshold">填充配对阈值</label>
+              <span class="range-value" data-readout-for="edge-fill-threshold">21</span>
+            </div>
+            <input id="edge-fill-threshold" type="range" min="0" max="55" step="1" value="21" />
+          </div>
+
+          <div class="control-block" data-modes="edge-fill">
+            <div class="range-head">
+              <label class="control-label" for="edge-fill-cell-size">配对搜索网格</label>
+              <span class="range-value" data-readout-for="edge-fill-cell-size">6</span>
+            </div>
+            <input id="edge-fill-cell-size" type="range" min="1" max="24" step="1" value="6" />
+          </div>
+
+          <div class="control-block" data-modes="edge-fill">
+            <div class="range-head">
+              <label class="control-label" for="edge-fill-min-normal-gap">最小法线间距</label>
+              <span class="range-value" data-readout-for="edge-fill-min-normal-gap">11</span>
+            </div>
+            <input id="edge-fill-min-normal-gap" type="range" min="0" max="80" step="1" value="11" />
+          </div>
+
+          <div class="control-block" data-modes="edge-fill">
+            <div class="range-head">
+              <label class="control-label" for="edge-fill-max-normal-gap">最大法线间距</label>
+              <span class="range-value" data-readout-for="edge-fill-max-normal-gap">62</span>
+            </div>
+            <input id="edge-fill-max-normal-gap" type="range" min="1" max="240" step="1" value="62" />
+          </div>
+
+          <div class="control-block" data-modes="edge-fill">
+            <div class="range-head">
+              <label class="control-label" for="edge-fill-max-tangent-gap">最大切线偏移</label>
+              <span class="range-value" data-readout-for="edge-fill-max-tangent-gap">36</span>
+            </div>
+            <input id="edge-fill-max-tangent-gap" type="range" min="0" max="180" step="1" value="36" />
+          </div>
+
+          <div class="control-block" data-modes="edge-fill">
+            <div class="range-head">
+              <label class="control-label" for="edge-fill-min-tangent-dot">最小切线一致性</label>
+              <span class="range-value" data-readout-for="edge-fill-min-tangent-dot">88</span>
+            </div>
+            <input id="edge-fill-min-tangent-dot" type="range" min="0" max="100" step="1" value="88" />
+          </div>
+
+          <div class="control-block" data-modes="edge-fill">
+            <div class="range-head">
+              <label class="control-label" for="edge-fill-max-normal-dot">最大法线同向性</label>
+              <span class="range-value" data-readout-for="edge-fill-max-normal-dot">-35</span>
+            </div>
+            <input id="edge-fill-max-normal-dot" type="range" min="-100" max="100" step="1" value="-35" />
+          </div>
+
+          <div class="control-block" data-modes="edge edge-fill contour region-grow color-grow color-boundary path">
+            <div class="range-head">
+              <label class="control-label" for="edge-smoothness">边缘平滑</label>
+              <span class="range-value" data-readout-for="edge-smoothness">1</span>
+            </div>
+            <input id="edge-smoothness" type="range" min="0" max="6" step="1" value="1" />
+          </div>
+
+          <div class="control-block" data-modes="path contour">
+            <div class="range-head">
+              <label class="control-label" for="ink-threshold">墨线阈值</label>
+              <span class="range-value" data-readout-for="ink-threshold">242</span>
+            </div>
+            <input id="ink-threshold" type="range" min="96" max="254" step="1" value="242" />
+          </div>
+
+          <div class="control-block" data-modes="path contour region-grow color-grow color-boundary">
+            <div class="range-head">
+              <label class="control-label" for="contrast-threshold">局部对比阈值</label>
+              <span class="range-value" data-readout-for="contrast-threshold">8</span>
+            </div>
+            <input id="contrast-threshold" type="range" min="0" max="80" step="1" value="8" />
+          </div>
+
+          <div class="control-block" data-modes="color-grow color-boundary">
+            <div class="range-head">
+              <label class="control-label" for="color-threshold">颜色差阈值</label>
+              <span class="range-value" data-readout-for="color-threshold">24</span>
+            </div>
+            <input id="color-threshold" type="range" min="1" max="160" step="1" value="24" />
+          </div>
+        </section>
+
+        <section class="control-group">
+          <div class="group-head">
+            <div class="group-title">动态与笔触</div>
+            <span class="group-help" data-tooltip="控制沸腾感、边缘抖动和路径笔触粗细变化。它们主要影响绘制表现，不改原图分析。">?</span>
+          </div>
+
+          <div class="control-block" data-modes="edge edge-fill contour region-grow color-grow color-boundary path">
+            <div class="range-head">
+              <label class="control-label" for="boil-hold-frames">抖动速度</label>
+              <span class="range-value" data-readout-for="boil-hold-frames">5</span>
+            </div>
+            <input id="boil-hold-frames" type="range" min="2" max="12" step="1" value="5" />
+          </div>
+
+          <div class="control-block" data-modes="edge edge-fill contour region-grow color-grow color-boundary">
+            <div class="range-head">
+              <label class="control-label" for="edge-jitter-normal">轮廓法线抖动</label>
+              <span class="range-value" data-readout-for="edge-jitter-normal">20</span>
+            </div>
+            <input id="edge-jitter-normal" type="range" min="0" max="200" step="1" value="20" />
+          </div>
+
+          <div class="control-block" data-modes="edge edge-fill contour region-grow color-grow color-boundary">
+            <div class="range-head">
+              <label class="control-label" for="edge-jitter-tangent">轮廓切线抖动</label>
+              <span class="range-value" data-readout-for="edge-jitter-tangent">6</span>
+            </div>
+            <input id="edge-jitter-tangent" type="range" min="0" max="200" step="1" value="6" />
+          </div>
+
+          <div class="control-block" data-modes="contour-variant-wave-contour contour-variant-wave-shape contour-variant-rubber-contour">
+            <div class="range-head">
+              <label class="control-label" for="wave-amplitude">波浪振幅</label>
+              <span class="range-value" data-readout-for="wave-amplitude">14</span>
+            </div>
+            <input id="wave-amplitude" type="range" min="0" max="60" step="1" value="14" />
+          </div>
+
+          <div class="control-block" data-modes="contour-variant-wave-contour contour-variant-wave-shape contour-variant-rubber-contour">
+            <div class="range-head">
+              <label class="control-label" for="wave-frequency">波浪频率</label>
+              <span class="range-value" data-readout-for="wave-frequency">28</span>
+            </div>
+            <input id="wave-frequency" type="range" min="1" max="120" step="1" value="28" />
+          </div>
+
+          <div class="control-block" data-modes="contour-variant-wave-contour contour-variant-wave-shape contour-variant-rubber-contour">
+            <div class="range-head">
+              <label class="control-label" for="wave-speed">波浪速度</label>
+              <span class="range-value" data-readout-for="wave-speed">45</span>
+            </div>
+            <input id="wave-speed" type="range" min="0" max="100" step="1" value="45" />
+          </div>
+
+          <div class="control-block" data-modes="contour">
+            <div class="range-head">
+              <label class="control-label" for="contour-stroke-thickness">轮廓粗细</label>
+              <span class="range-value" data-readout-for="contour-stroke-thickness">100%</span>
+            </div>
+            <input id="contour-stroke-thickness" type="range" min="40" max="260" step="1" value="100" />
+          </div>
+
+          <div class="control-block" data-modes="distortion">
+            <div class="range-head">
+              <label class="control-label" for="distortion-scale">形变强度</label>
+              <span class="range-value" data-readout-for="distortion-scale">20</span>
+            </div>
+            <input id="distortion-scale" type="range" min="0" max="120" step="1" value="20" />
+          </div>
+
+          <div class="control-block" data-modes="distortion">
+            <div class="range-head">
+              <label class="control-label" for="distortion-frequency">噪声尺度</label>
+              <span class="range-value" data-readout-for="distortion-frequency">8</span>
+            </div>
+            <input id="distortion-frequency" type="range" min="1" max="30" step="1" value="8" />
+          </div>
+
+          <div class="control-block" data-modes="distortion">
+            <div class="range-head">
+              <label class="control-label" for="distortion-octaves">噪声层级</label>
+              <span class="range-value" data-readout-for="distortion-octaves">2</span>
+            </div>
+            <input id="distortion-octaves" type="range" min="1" max="5" step="1" value="2" />
+          </div>
+
+          <div class="control-block" data-modes="distortion">
+            <div class="range-head">
+              <label class="control-label" for="distortion-speed">形变速度</label>
+              <span class="range-value" data-readout-for="distortion-speed">36</span>
+            </div>
+            <input id="distortion-speed" type="range" min="0" max="500" step="1" value="36" />
+          </div>
+
+          <div class="control-block" data-modes="path">
+            <div class="range-head">
+              <label class="control-label" for="path-jitter-normal">路径法线抖动</label>
+              <span class="range-value" data-readout-for="path-jitter-normal">13</span>
+            </div>
+            <input id="path-jitter-normal" type="range" min="0" max="80" step="1" value="13" />
+          </div>
+
+          <div class="control-block" data-modes="path">
+            <div class="range-head">
+              <label class="control-label" for="path-jitter-tangent">路径切线抖动</label>
+              <span class="range-value" data-readout-for="path-jitter-tangent">4</span>
+            </div>
+            <input id="path-jitter-tangent" type="range" min="0" max="50" step="1" value="4" />
+          </div>
+
+          <div class="control-block" data-modes="path">
+            <div class="range-head">
+              <label class="control-label" for="width-jitter">线宽抖动</label>
+              <span class="range-value" data-readout-for="width-jitter">8</span>
+            </div>
+            <input id="width-jitter" type="range" min="0" max="60" step="1" value="8" />
+          </div>
+        </section>
+
+        <section class="control-group">
+          <div class="group-head">
+            <div class="group-title">导出</div>
+            <span class="group-help" data-tooltip="导出当前动画。MP4 更适合常规交付，GIF 会逐帧编码，所以等待时间通常更长。">?</span>
+          </div>
+
+          <div class="control-block">
+            <div class="range-head">
+              <label class="control-label" for="export-duration-seconds">导出时长</label>
+              <span class="range-value" data-readout-for="export-duration-seconds">3s</span>
+            </div>
+            <input id="export-duration-seconds" type="range" min="1" max="8" step="1" value="3" />
+          </div>
+
+          <div class="control-block">
+            <div class="range-head">
+              <label class="control-label" for="export-frame-rate">导出帧率</label>
+              <span class="range-value" data-readout-for="export-frame-rate">18fps</span>
+            </div>
+            <input id="export-frame-rate" type="range" min="8" max="30" step="1" value="18" />
+          </div>
+
+          <div class="control-block">
+            <div class="range-head">
+              <label class="control-label" for="export-resolution-scale">导出清晰度</label>
+              <span class="range-value" data-readout-for="export-resolution-scale">200%</span>
+            </div>
+            <input id="export-resolution-scale" type="range" min="100" max="400" step="25" value="200" />
+          </div>
+
+          <div class="action-row action-row-export">
+            <button class="action-button" id="export-video" type="button">导出 MP4</button>
+            <button class="action-button" id="export-gif" type="button">导出 GIF</button>
+          </div>
+
+          <div class="control-note export-estimate" id="export-estimate">正在计算预计耗时...</div>
+          <div class="control-note export-status" id="export-status">当前支持 MP4 和 GIF 导出。</div>
+          <div class="action-row action-row-export action-row-recovery is-hidden" id="export-recovery-actions">
+            <button class="action-button" id="export-recovery-primary" type="button"></button>
+            <button class="action-button" id="export-recovery-secondary" type="button"></button>
+          </div>
+        </section>
+      </div>
+    </div>
+    <svg
+      id="distortion-overlay"
+      width="100%"
+      height="100%"
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
+      aria-hidden="true"
+      style="position: fixed; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 2; display: none;"
+    >
+      <defs>
+        <filter id="distortion-filter" x="-50%" y="-50%" width="200%" height="200%">
+          <feTurbulence
+            id="distortion-turbulence"
+            type="turbulence"
+            baseFrequency="0.08 0.08"
+            numOctaves="2"
+            seed="1"
+            result="noise"
+            stitchTiles="stitch"
+          />
+          <feDisplacementMap
+            id="distortion-displacement"
+            in="SourceGraphic"
+            in2="noise"
+            scale="2"
+            xChannelSelector="R"
+            yChannelSelector="G"
+          />
+        </filter>
+      </defs>
+      <image
+        id="distortion-image"
+        x="0"
+        y="0"
+        width="100"
+        height="100"
+        href="./figure.png"
+        preserveAspectRatio="none"
+        filter="url(#distortion-filter)"
+      />
+    </svg>
+    <img
+      id="paper-texture-overlay"
+      alt=""
+      aria-hidden="true"
+      style="position: fixed; inset: 0; width: 100%; height: 100%; object-fit: fill; pointer-events: none; z-index: 3; display: none;"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.3/lib/p5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/gif.js.optimized/dist/gif.js"></script>
+    <script src="./js/app-config.js"></script>
+    <script src="./js/app-utils.js"></script>
+    <script src="./js/app-ui-theme.js"></script>
+    <script src="./js/app-ui-layout.js"></script>
+    <script src="./js/app-ui.js"></script>
+    <script src="./sketch.js"></script>
+    <script src="./js/app-export.js"></script>
+  </body>
+</html>
