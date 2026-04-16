@@ -21,6 +21,7 @@ const CONTROL_TAB_ORDER = ["input", "paper", "stroke", "input", "stroke", "expor
 
 let activeControlTab = "input";
 
+// Builds the retro layout shell once.
 function ensureRetroLayout() {
   const panel = document.getElementById("ui-shell");
   const controlsHeader = panel?.querySelector(".controls-header");
@@ -64,6 +65,7 @@ function ensureRetroLayout() {
   panel.dataset.retroReady = "1";
 }
 
+// Builds the window chrome markup.
 function buildWindowChromeMarkup() {
   return `
     <div class="window-meta">
@@ -90,6 +92,7 @@ function buildWindowChromeMarkup() {
   `;
 }
 
+// Builds the canvas shell markup.
 function buildCanvasShellMarkup() {
   return `
     <div class="canvas-stage">
@@ -123,6 +126,7 @@ function buildCanvasShellMarkup() {
   `;
 }
 
+// Builds the control panel markup.
 function buildControlPanelMarkup() {
   return `
     <div class="panel-header">
@@ -140,6 +144,7 @@ function buildControlPanelMarkup() {
   `;
 }
 
+// Builds the status bar node.
 function buildStatusBarNode() {
   const statusBar = document.createElement("div");
   statusBar.className = "status-bar";
@@ -155,6 +160,7 @@ function buildStatusBarNode() {
   return statusBar;
 }
 
+// Attaches overlay nodes into the canvas stage.
 function attachOverlayNodes(stage) {
   if (!stage) {
     return;
@@ -184,6 +190,7 @@ function attachOverlayNodes(stage) {
   }
 }
 
+// Assigns tabs to control groups.
 function assignControlTabs(controlsBody) {
   const groups = controlsBody.querySelectorAll(".control-group");
   groups.forEach((group, index) => {
@@ -191,6 +198,7 @@ function assignControlTabs(controlsBody) {
   });
 }
 
+// Gets the current mode label.
 function getCurrentModeLabel() {
   if (settings.renderMode === "contour") {
     return CONTOUR_VARIANT_LABELS[settings.contourVariant] || RENDER_MODE_LABELS.contour;
@@ -199,6 +207,7 @@ function getCurrentModeLabel() {
   return RENDER_MODE_LABELS[settings.renderMode] || settings.renderMode;
 }
 
+// Syncs the status summary text.
 function syncStatusSummary() {
   const modeLabel = `${getCurrentModeLabel()}模式`;
   const dimensionsLabel = appStatusState.analysisFailed
@@ -220,6 +229,7 @@ function syncStatusSummary() {
   });
 }
 
+// Applies the active control tab.
 function applyActiveTab() {
   document.querySelectorAll("[data-tab]").forEach((button) => {
     const isActive = button.dataset.tab === activeControlTab;
@@ -232,6 +242,7 @@ function applyActiveTab() {
   });
 }
 
+// Sets the active control tab.
 function setActiveControlTab(tab) {
   activeControlTab = tab || "input";
   applyActiveTab();
@@ -241,6 +252,7 @@ function setActiveControlTab(tab) {
   }
 }
 
+// Syncs the canvas empty state.
 function syncCanvasEmptyState() {
   const emptyState = document.getElementById("canvas-empty-state");
   const processingState = document.getElementById("canvas-processing-state");
@@ -280,6 +292,7 @@ function syncCanvasEmptyState() {
   }
 }
 
+// Applies overall UI visibility.
 function applyUiVisibility() {
   const panel = document.getElementById("ui-shell");
   if (!panel) {

@@ -1,0 +1,286 @@
+body.is-retro-layout .control-label {
+        font-size: 11px;
+      }
+
+      body.is-retro-layout .panel-reset-button {
+        min-height: 34px;
+        max-height: 34px;
+        border-width: 3px;
+        border-radius: 0;
+        background: #fff;
+        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.14);
+      }
+
+      body.is-retro-layout .range-head {
+        align-items: flex-end;
+      }
+
+      body.is-retro-layout .range-value {
+        min-width: 52px;
+        padding: 2px 6px;
+        text-align: center;
+        color: #fff;
+        background: #000;
+      }
+
+      body.is-retro-layout .controls select,
+      body.is-retro-layout .controls input[type="color"] {
+        min-height: 40px;
+        border-width: 3px;
+      }
+
+      body.is-retro-layout
+        .controls
+        input[type="range"]::-webkit-slider-runnable-track,
+      body.is-retro-layout .controls input[type="range"]::-moz-range-track {
+        height: 18px;
+        border-width: 3px;
+        background: #efefef;
+      }
+
+      body.is-retro-layout .controls input[type="range"]::-webkit-slider-thumb,
+      body.is-retro-layout .controls input[type="range"]::-moz-range-thumb {
+        width: 22px;
+        height: 28px;
+        background: #fff;
+        border-width: 3px;
+      }
+
+      body.is-retro-layout .controls input[type="range"]::-webkit-slider-thumb {
+        margin-top: -8px;
+      }
+
+      body.is-retro-layout .upload-row {
+        grid-template-columns: 1fr;
+      }
+
+      body.is-retro-layout .file-summary,
+      body.is-retro-layout .image-name,
+      body.is-retro-layout .export-status,
+      body.is-retro-layout .control-note {
+        color: #66758f;
+      }
+
+      body.is-retro-layout .status-bar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        align-items: center;
+        padding: 6px 10px;
+        border-top-width: 4px;
+        background: #fff;
+      }
+
+      body.is-retro-layout .status-section-left {
+        justify-self: start;
+      }
+
+      body.is-retro-layout .status-section-center {
+        justify-self: center;
+      }
+
+      body.is-retro-layout .status-pen {
+        font-size: 14px;
+      }
+
+      body.is-retro-layout .status-dot {
+        display: none;
+      }
+
+      body.is-retro-layout .status-value {
+        font-size: 12px;
+      }
+
+      body.is-retro-layout .status-bar .panel-toggle {
+        justify-self: end;
+        min-width: 116px;
+        min-height: 30px;
+        padding: 0 12px;
+      }
+
+      body.is-retro-layout .group-help::after,
+      body.is-retro-layout .control-block[data-tooltip]::after {
+        border: 2px solid #000;
+        border-radius: 0;
+        background: #fffef7;
+        color: #111;
+        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.22);
+      }
+
+      body.is-retro-layout .tab-button:hover:not(.is-active),
+      body.is-retro-layout .window-toggle:hover:not(.is-active),
+      body.is-retro-layout .panel-toggle:hover:not(.is-active),
+      body.is-retro-layout .panel-close:hover:not(.is-active),
+      body.is-retro-layout .toolbar-button:hover:not(.is-active),
+      body.is-retro-layout .toolbar-label:hover:not(.is-active),
+      body.is-retro-layout .action-button:hover:not(.is-active) {
+        background: #111;
+        color: #fff;
+      }
+
+      body.is-retro-layout .tab-button.is-active,
+      body.is-retro-layout .panel-toggle.is-active,
+      body.is-retro-layout .panel-close.is-active,
+      body.is-retro-layout .window-toggle.is-active {
+        background: #2f62d8;
+        color: #fff;
+        box-shadow: inset 0 0 0 2px #fff;
+      }
+
+      body.is-retro-layout .controls select:focus-visible,
+      body.is-retro-layout .controls input[type="color"]:focus-visible,
+      body.is-retro-layout .tab-button:focus-visible,
+      body.is-retro-layout .window-toggle:focus-visible,
+      body.is-retro-layout .panel-toggle:focus-visible,
+      body.is-retro-layout .panel-close:focus-visible,
+      body.is-retro-layout .toolbar-button:focus-visible,
+      body.is-retro-layout .toolbar-label:focus-visible,
+      body.is-retro-layout .action-button:focus-visible,
+      body.is-retro-layout .group-help:focus-visible {
+        outline: 3px solid #f28b39;
+        outline-offset: 2px;
+      }
+
+      @media (max-width: 1180px) {
+        body.is-retro-layout .workspace-main {
+          grid-template-columns: minmax(0, 1fr) 360px;
+        }
+      }
+
+      @media (max-width: 960px) {
+        body.is-retro-layout .controls,
+        body.is-retro-layout .controls.is-collapsed {
+          width: 100%;
+          height: 100%;
+        }
+
+        body.is-retro-layout .workspace-main {
+          grid-template-columns: minmax(0, 1fr);
+        }
+
+        body.is-retro-layout .canvas-shell {
+          border-right: 0;
+        }
+
+        body.is-retro-layout .window-chrome {
+          display: grid;
+          grid-template-columns: 1fr;
+          justify-items: center;
+          gap: 6px;
+        }
+
+        body.is-retro-layout .window-meta,
+        body.is-retro-layout .window-title-band,
+        body.is-retro-layout .window-actions {
+          width: 100%;
+          justify-content: center;
+        }
+
+        body.is-retro-layout .window-panel-toggle {
+          display: inline-flex;
+        }
+
+        body.is-retro-layout .control-panel {
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: auto;
+          max-height: min(72vh, calc(100% - 0px));
+          border: 3px solid #000;
+          border-top: 0;
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+        }
+
+        body.is-retro-layout .toolbar {
+          min-height: auto;
+        }
+
+        body.is-retro-layout .toolbar-button,
+        body.is-retro-layout .toolbar-label {
+          min-height: 56px;
+          min-width: 0;
+        }
+
+        body.is-retro-layout .status-bar {
+          grid-template-columns: 1fr;
+          gap: 8px;
+        }
+
+        body.is-retro-layout .status-bar .panel-toggle {
+          display: none;
+        }
+
+        body.is-retro-layout .status-section-center,
+        body.is-retro-layout .status-section-left,
+        body.is-retro-layout .status-bar .panel-toggle {
+          justify-self: stretch;
+        }
+
+        body.is-retro-layout .controls.is-collapsed .control-panel {
+          transform: translateY(-12px);
+          opacity: 0;
+          pointer-events: none;
+        }
+
+        body.is-retro-layout .controls.is-collapsed .window-chrome {
+          padding: 4px 8px;
+          gap: 2px;
+          justify-items: stretch;
+        }
+
+        body.is-retro-layout .controls.is-collapsed .window-meta {
+          display: none;
+        }
+
+        body.is-retro-layout .controls.is-collapsed .window-actions {
+          justify-content: flex-start;
+        }
+
+        body.is-retro-layout .controls.is-collapsed .window-toggle {
+          min-height: 30px;
+          min-width: 54px;
+          padding: 0 10px;
+          font-size: 18px;
+          line-height: 1;
+        }
+      }
+
+      @media (max-width: 640px) {
+        body.is-retro-layout .window-title {
+          font-size: 14px;
+          white-space: normal;
+        }
+
+        body.is-retro-layout .title-ornament {
+          min-width: 16px;
+          height: 14px;
+          opacity: 0.72;
+        }
+
+        body.is-retro-layout .toolbar {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          align-items: stretch;
+        }
+
+        body.is-retro-layout .toolbar-group {
+          grid-column: 1 / span 2;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+        }
+
+        body.is-retro-layout .toolbar-button,
+        body.is-retro-layout .toolbar-label {
+          min-height: 44px;
+          width: 100%;
+          padding: 6px 8px;
+        }
+
+        body.is-retro-layout .toolbar-label {
+          grid-column: 3;
+          min-width: 0;
+        }
+
+        body.is-retro-layout .panel-header-top {
+          flex-direction: row;
+          align-items: center;
+        }
+      }

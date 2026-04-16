@@ -3,6 +3,7 @@ function getBackgroundPreset() {
   return BACKGROUND_PRESETS[settings.backgroundPreset] || BACKGROUND_PRESETS.warm;
 }
 
+// Gets the paper colors.
 function getPaperColors() {
   return {
     base: hexToRgb(settings.paperColor),
@@ -10,6 +11,7 @@ function getPaperColors() {
   };
 }
 
+// Gets the texture colors.
 function getTextureColors() {
   return {
     base: hexToRgb(settings.textureColor),
@@ -17,10 +19,12 @@ function getTextureColors() {
   };
 }
 
+// Converts an RGB color to CSS rgba.
 function rgbToCssAlpha(rgb, alpha) {
   return `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, ${alpha})`;
 }
 
+// Applies the background theme CSS variables.
 function applyBackgroundTheme() {
   const bodyStyle = document.body.style;
   const rootStyle = document.documentElement.style;
@@ -65,6 +69,7 @@ function applyBackgroundTheme() {
   rootStyle.setProperty("--ui-tooltip-text", "rgba(248, 249, 250, 0.98)");
 }
 
+// Applies a background preset to settings.
 function applyBackgroundPreset(presetKey) {
   const preset = BACKGROUND_PRESETS[presetKey];
   if (!preset) {

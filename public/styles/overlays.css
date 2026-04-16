@@ -1,0 +1,170 @@
+.is-hidden {
+        display: none !important;
+      }
+
+      body.is-retro-layout .canvas-processing-state {
+        position: absolute;
+        inset: auto 18px 18px;
+        z-index: 4;
+        display: grid;
+        gap: 8px;
+        padding: 12px 14px;
+        border: 3px solid #000;
+        background: rgba(255, 253, 245, 0.96);
+        box-shadow: 5px 5px 0 rgba(0, 0, 0, 0.18);
+      }
+
+      body.is-retro-layout .canvas-processing-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      body.is-retro-layout .canvas-processing-badge::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 999px;
+        background: #2f62d8;
+        box-shadow: 0 0 0 2px rgba(47, 98, 216, 0.2);
+        animation: canvas-processing-pulse 1s ease-in-out infinite;
+      }
+
+      body.is-retro-layout .canvas-processing-copy {
+        font-size: 12px;
+        line-height: 1.45;
+        color: #42516b;
+      }
+
+      body.is-retro-layout .canvas-processing-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      body.is-retro-layout .canvas-processing-button {
+        border: 2px solid #000;
+        background: #fffdf6;
+        padding: 7px 10px;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        color: #2f3952;
+        cursor: pointer;
+      }
+
+      body.is-retro-layout .canvas-processing-button.is-secondary {
+        background: #f6efe6;
+        color: #694a34;
+      }
+
+      body.is-retro-layout .canvas-processing-button:hover {
+        transform: translateY(-1px);
+      }
+
+      .file-button.is-disabled,
+      .toolbar-label.is-disabled {
+        opacity: 0.45;
+        pointer-events: none;
+        cursor: not-allowed;
+      }
+
+      .export-estimate {
+        padding: 10px 12px;
+        border: 1px solid rgba(164, 177, 190, 0.45);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.72);
+        color: #586577;
+      }
+
+      .export-estimate[data-level="warning"] {
+        border-color: rgba(196, 145, 77, 0.58);
+        background: rgba(255, 246, 231, 0.92);
+        color: #8a5a1f;
+      }
+
+      .action-row-recovery {
+        margin-top: 4px;
+      }
+
+      @keyframes canvas-processing-pulse {
+        0%,
+        100% {
+          transform: scale(0.9);
+          opacity: 0.7;
+        }
+
+        50% {
+          transform: scale(1.08);
+          opacity: 1;
+        }
+      }
+
+      @media (max-width: 960px) {
+        body.is-retro-layout .control-panel {
+          overflow-y: auto;
+          overscroll-behavior-y: contain;
+          -webkit-overflow-scrolling: touch;
+          touch-action: pan-y;
+        }
+
+        body.is-retro-layout .panel-header {
+          position: sticky;
+          top: 0;
+          z-index: 3;
+        }
+
+        body.is-retro-layout .controls-body {
+          overflow: visible;
+          scrollbar-gutter: auto;
+        }
+
+        body.is-retro-layout .toolbar {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 8px;
+        }
+
+        body.is-retro-layout .toolbar > .mobile-only-control {
+          width: 100%;
+          min-width: 0;
+        }
+
+        body.is-retro-layout .toolbar-button,
+        body.is-retro-layout .toolbar-label {
+          justify-content: center;
+        }
+
+        body.is-retro-layout .panel-header-top {
+          align-items: center;
+          flex-direction: row;
+          gap: 10px;
+        }
+
+        body.is-retro-layout .panel-reset-button {
+          width: 136px;
+          min-width: 136px;
+          max-width: 136px;
+        }
+
+        body.is-retro-layout .control-block,
+        body.is-retro-layout .control-note {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+
+        body.is-retro-layout .controls input[type="range"] {
+          display: block;
+          width: calc(100% - 24px);
+          margin: 0 12px;
+          touch-action: pan-y;
+        }
+
+        body.is-retro-layout .canvas-processing-state {
+          inset: auto 12px 12px;
+          padding: 10px 12px;
+        }
+      }

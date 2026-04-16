@@ -1,0 +1,254 @@
+:root {
+        --ui-shell-top: rgba(247, 245, 240, 0.96);
+        --ui-shell-bottom: rgba(238, 243, 247, 0.92);
+        --ui-shell-border: rgba(198, 203, 210, 0.88);
+        --ui-shell-shadow: 0 20px 46px rgba(79, 91, 104, 0.16);
+        --ui-card-bg: rgba(255, 255, 255, 0.66);
+        --ui-card-border: rgba(205, 211, 218, 0.82);
+        --ui-text: #4d5560;
+        --ui-muted: #7c8692;
+        --ui-accent: #6a8fb3;
+        --ui-accent-strong: #4f7398;
+        --ui-accent-soft: rgba(172, 195, 216, 0.34);
+        --ui-secondary: #d6c4b1;
+        --ui-secondary-soft: rgba(220, 209, 194, 0.3);
+        --ui-button-border: rgba(198, 203, 210, 0.8);
+        --ui-tooltip-bg: rgba(73, 82, 92, 0.94);
+        --ui-tooltip-text: rgba(248, 249, 250, 0.98);
+      }
+
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #f6f0e5;
+        font-family:
+          "Avenir Next Rounded", "Trebuchet MS", "PingFang SC",
+          "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        color: var(--ui-text);
+      }
+
+      body::before,
+      body::after {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+      }
+
+      body::before {
+        z-index: 0;
+        background:
+          radial-gradient(
+            circle at 18% 16%,
+            rgba(214, 225, 235, 0.34),
+            transparent 26%
+          ),
+          radial-gradient(
+            circle at 82% 18%,
+            rgba(234, 225, 214, 0.28),
+            transparent 22%
+          ),
+          radial-gradient(
+            circle at 74% 78%,
+            rgba(255, 255, 255, 0.14),
+            transparent 20%
+          );
+      }
+
+      body::after {
+        z-index: 0;
+        background:
+          linear-gradient(130deg, rgba(255, 255, 255, 0.08), transparent 28%),
+          linear-gradient(320deg, rgba(255, 255, 255, 0.12), transparent 32%);
+      }
+
+      canvas {
+        display: block;
+        position: relative;
+        z-index: 1;
+      }
+
+      .controls,
+      .controls * {
+        box-sizing: border-box;
+      }
+
+      .controls {
+        position: fixed;
+        top: 16px;
+        right: 16px;
+        z-index: 10;
+        display: flex;
+        flex-direction: column;
+        width: min(360px, calc(100vw - 20px));
+        max-height: calc(100vh - 32px);
+        border: 1.5px solid var(--ui-shell-border);
+        border-radius: 18px;
+        background: linear-gradient(
+          180deg,
+          var(--ui-shell-top),
+          var(--ui-shell-bottom)
+        );
+        backdrop-filter: blur(14px) saturate(1.02);
+        color: var(--ui-text);
+        font-size: 14px;
+        box-shadow: var(--ui-shell-shadow);
+        overflow: hidden;
+        transition:
+          transform 180ms ease,
+          opacity 180ms ease,
+          background-color 180ms ease,
+          box-shadow 180ms ease,
+          border-color 180ms ease;
+      }
+
+      .controls::before,
+      .controls::after {
+        content: "";
+        position: absolute;
+        pointer-events: none;
+      }
+
+      .controls::before {
+        top: -16px;
+        left: 18px;
+        right: 18px;
+        height: 48px;
+        border-radius: 999px;
+        background: linear-gradient(
+          90deg,
+          rgba(210, 219, 228, 0.3),
+          rgba(225, 216, 206, 0.22)
+        );
+        filter: blur(14px);
+        opacity: 0.8;
+      }
+
+      .controls::after {
+        top: 12px;
+        right: 16px;
+        width: 80px;
+        height: 80px;
+        border-radius: 999px;
+        background:
+          radial-gradient(
+            circle at 30% 34%,
+            rgba(255, 255, 255, 0.62),
+            transparent 20%
+          ),
+          radial-gradient(
+            circle at 66% 42%,
+            rgba(210, 219, 228, 0.34),
+            transparent 24%
+          ),
+          radial-gradient(
+            circle at 52% 70%,
+            rgba(223, 212, 201, 0.28),
+            transparent 26%
+          );
+        opacity: 0.72;
+      }
+
+      .controls.is-collapsed .controls-body {
+        display: none;
+      }
+
+      .controls.is-collapsed {
+        width: auto;
+        max-height: none;
+        transform: translateX(10px) scale(0.985);
+        opacity: 0.8;
+        background: linear-gradient(
+          180deg,
+          rgba(249, 247, 243, 0.76),
+          rgba(241, 244, 247, 0.72)
+        );
+        border-color: rgba(201, 206, 212, 0.62);
+        box-shadow: 0 14px 28px rgba(84, 94, 104, 0.12);
+      }
+
+      .controls.is-collapsed:hover {
+        opacity: 0.96;
+      }
+
+      .controls-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 16px 12px;
+        flex: 0 0 auto;
+        position: relative;
+        z-index: 1;
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.22),
+          rgba(255, 255, 255, 0)
+        );
+        border-bottom: 1px solid rgba(214, 218, 223, 0.38);
+      }
+
+      .controls-title-wrap {
+        display: grid;
+        gap: 4px;
+      }
+
+      .controls-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+      }
+
+      .controls-title {
+        font-size: 16px;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+      }
+
+      .controls-subtitle {
+        font-size: 11px;
+        color: var(--ui-muted);
+        letter-spacing: 0.08em;
+      }
+
+      .controls-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 26px;
+        padding: 0 10px;
+        border: 1px solid rgba(255, 255, 255, 0.72);
+        border-radius: 999px;
+        background: linear-gradient(
+          135deg,
+          rgba(245, 247, 248, 0.95),
+          rgba(234, 238, 242, 0.9)
+        );
+        color: var(--ui-accent-strong);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        box-shadow: 0 6px 14px rgba(84, 94, 104, 0.1);
+      }
+
+      .controls-toggle {
+        border: 1px solid var(--ui-button-border);
+        border-radius: 999px;
+        min-height: 34px;
+        padding: 0 14px;
+        color: var(--ui-text);
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        box-shadow: 0 8px 18px rgba(84, 94, 104, 0.08);
+        transition:
+          transform 120ms ease,
+          box-shadow 120ms ease,
+          background-color 120ms ease;
+      }

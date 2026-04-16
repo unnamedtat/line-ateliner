@@ -1,9 +1,11 @@
+// Finds a previously loaded classic script.
 function findExistingScript(src: string): HTMLScriptElement | undefined {
   return Array.from(document.querySelectorAll<HTMLScriptElement>("script[data-legacy-src]")).find(
     (script) => script.dataset.legacySrc === src
   );
 }
 
+// Loads one classic script.
 function loadClassicScript(src: string): Promise<void> {
   const existingScript = findExistingScript(src);
   if (existingScript?.dataset.loaded === "true") {
@@ -42,6 +44,7 @@ function loadClassicScript(src: string): Promise<void> {
   });
 }
 
+// Loads classic scripts sequentially.
 export async function loadClassicScripts(sources: readonly string[]): Promise<void> {
   for (const source of sources) {
     await loadClassicScript(source);

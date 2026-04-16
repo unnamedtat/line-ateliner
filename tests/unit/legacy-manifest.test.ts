@@ -8,8 +8,8 @@ describe("CLASSIC_SCRIPT_PATHS", () => {
   });
 
   it("keeps sketch loading before export helpers", () => {
-    expect(CLASSIC_SCRIPT_PATHS.indexOf("/legacy/sketch.js")).toBeLessThan(
-      CLASSIC_SCRIPT_PATHS.indexOf("/legacy/app-export.js")
+    expect(CLASSIC_SCRIPT_PATHS.indexOf("/legacy/sketch-draw.js")).toBeLessThan(
+      CLASSIC_SCRIPT_PATHS.indexOf("/legacy/app-export-actions.js")
     );
   });
 });

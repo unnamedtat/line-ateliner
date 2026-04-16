@@ -15,6 +15,7 @@ function hexToRgb(hex) {
   ];
 }
 
+// Interpolates two RGB colors.
 function lerpRgb(a, b, t) {
   return [
     round(lerp(a[0], b[0], t)),
@@ -23,10 +24,12 @@ function lerpRgb(a, b, t) {
   ];
 }
 
+// Converts an RGB color to CSS rgb.
 function rgbToCss(rgb) {
   return `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`;
 }
 
+// Computes the caption color.
 function computeCaptionColor(base, accent) {
   const mixed = lerpRgb(base, accent, 0.35);
   const luminance = mixed[0] * 0.299 + mixed[1] * 0.587 + mixed[2] * 0.114;

@@ -1,0 +1,249 @@
+.controls.is-collapsed .controls-header {
+        justify-content: flex-end;
+        padding: 8px 10px;
+      }
+
+      .controls.is-collapsed .controls-title {
+        display: none;
+      }
+
+      .controls.is-collapsed .controls-title-wrap {
+        display: none;
+      }
+
+      .controls.is-collapsed .controls-subtitle,
+      .controls.is-collapsed .controls-badge {
+        display: none;
+      }
+
+      .controls-toggle:hover,
+      .file-button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 12px 22px rgba(84, 94, 104, 0.12);
+      }
+
+      .controls-body {
+        display: grid;
+        gap: 12px;
+        min-height: 0;
+        padding: 0 16px 16px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        overscroll-behavior: contain;
+        scrollbar-gutter: stable;
+        position: relative;
+        z-index: 1;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-y;
+      }
+
+      .control-group {
+        display: grid;
+        gap: 10px;
+        padding: 12px;
+        border: 1px solid var(--ui-card-border);
+        border-radius: 14px;
+        background: var(--ui-card-bg);
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.72),
+          0 10px 22px rgba(84, 94, 104, 0.05);
+      }
+
+      .group-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+
+      .group-title {
+        font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: var(--ui-text);
+        text-transform: uppercase;
+      }
+
+      .group-help {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        border: 1px solid rgba(255, 255, 255, 0.82);
+        border-radius: 999px;
+        background: linear-gradient(
+          135deg,
+          rgba(246, 248, 250, 0.98),
+          rgba(236, 240, 244, 0.92)
+        );
+        color: var(--ui-accent-strong);
+        font-size: 11px;
+        font-weight: 800;
+        cursor: help;
+        user-select: none;
+        box-shadow: 0 6px 12px rgba(84, 94, 104, 0.08);
+      }
+
+      .group-help::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        top: calc(100% + 10px);
+        width: min(240px, calc(100vw - 32px));
+        padding: 9px 11px;
+        border-radius: 14px;
+        background: var(--ui-tooltip-bg);
+        color: var(--ui-tooltip-text);
+        font-size: 11px;
+        line-height: 1.45;
+        text-align: center;
+        box-shadow: 0 14px 24px rgba(54, 61, 68, 0.22);
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -6px);
+        transition:
+          opacity 140ms ease,
+          transform 140ms ease;
+        z-index: 3;
+      }
+
+      .group-help:hover::after {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .control-block {
+        display: grid;
+        gap: 7px;
+      }
+
+      .control-block[data-tooltip] {
+        position: relative;
+      }
+
+      .control-block[data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: 50%;
+        bottom: calc(100% + 10px);
+        width: min(260px, calc(100vw - 32px));
+        padding: 9px 11px;
+        border-radius: 12px;
+        background: var(--ui-tooltip-bg);
+        color: var(--ui-tooltip-text);
+        font-size: 11px;
+        line-height: 1.45;
+        text-align: center;
+        box-shadow: 0 14px 24px rgba(54, 61, 68, 0.22);
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, 6px);
+        transition:
+          opacity 140ms ease,
+          transform 140ms ease;
+        z-index: 2;
+      }
+
+      .control-block[data-tooltip]:hover::after {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .control-block.is-hidden,
+      .control-note.is-hidden,
+      .control-group.is-hidden {
+        display: none;
+      }
+
+      .control-label {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--ui-text);
+      }
+
+      .range-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .range-value {
+        min-width: 32px;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        color: var(--ui-accent-strong);
+        font-weight: 700;
+      }
+
+      .controls select,
+      .controls input[type="file"],
+      .controls input[type="color"] {
+        width: 100%;
+        border: 1px solid var(--ui-button-border);
+        border-radius: 10px;
+        padding: 9px 11px;
+        background: rgba(255, 255, 255, 0.8);
+        color: var(--ui-text);
+        font: inherit;
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.82);
+      }
+
+      .controls select:focus,
+      .controls input[type="color"]:focus {
+        outline: none;
+        border-color: rgba(99, 129, 160, 0.86);
+        box-shadow:
+          0 0 0 3px rgba(172, 195, 216, 0.22),
+          inset 0 1px 0 rgba(255, 255, 255, 0.88);
+      }
+
+      .controls input[type="range"] {
+        width: 100%;
+        appearance: none;
+        background: transparent;
+      }
+
+      .controls input[type="color"] {
+        min-height: 42px;
+        padding: 6px;
+        cursor: pointer;
+      }
+
+      .controls input[type="file"] {
+        display: none;
+      }
+
+      .swatch-row {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .upload-row {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 10px;
+        align-items: center;
+      }
+
+      .file-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 42px;
+        border: 1px solid var(--ui-button-border);
+        border-radius: 11px;
+        padding: 0 14px;
+        color: var(--ui-text);
+        font: inherit;
+        font-weight: 700;
+        cursor: pointer;
+        white-space: nowrap;
+        box-shadow: 0 8px 16px rgba(84, 94, 104, 0.06);
+        transition:
+          transform 120ms ease,
+          box-shadow 120ms ease,
+          background-color 120ms ease;
+      }

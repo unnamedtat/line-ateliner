@@ -1,0 +1,251 @@
+body.is-retro-layout .workspace-main {
+        grid-template-columns: minmax(0, 1fr) 380px;
+        background: #f4f4f4;
+      }
+
+      body.is-retro-layout .canvas-shell {
+        background: #f8f8f8;
+        border-right: 4px solid #000;
+      }
+
+      body.is-retro-layout .canvas-topbar {
+        display: none;
+      }
+
+      body.is-retro-layout .canvas-stage {
+        margin: 10px;
+        border-width: 3px;
+        background: #fff;
+      }
+
+      body.is-retro-layout .canvas-stage::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        border: 2px solid #8a8a8a;
+        pointer-events: none;
+      }
+
+      body.is-retro-layout .canvas-stage-grid {
+        display: none;
+      }
+
+      body.is-retro-layout .canvas-empty-state {
+        position: absolute;
+        inset: 0;
+        z-index: 2;
+        display: grid;
+        place-content: center;
+        justify-items: center;
+        gap: 14px;
+        padding: 32px;
+        text-align: center;
+        color: #161616;
+        pointer-events: none;
+      }
+
+      body.is-retro-layout .canvas-empty-state.is-hidden {
+        display: none;
+      }
+
+      body.is-retro-layout .canvas-empty-icon {
+        color: #111;
+      }
+
+      body.is-retro-layout .canvas-empty-copy {
+        font-size: 13px;
+        color: #5d6980;
+      }
+
+      body.is-retro-layout .canvas-empty-types {
+        font-size: 12px;
+        color: #74829b;
+        letter-spacing: 0.04em;
+      }
+
+      body.is-retro-layout .canvas-overlay-chip,
+      body.is-retro-layout .canvas-overlay-card,
+      body.is-retro-layout .toolbar-chip,
+      body.is-retro-layout .window-badge,
+      body.is-retro-layout .menu-bar {
+        display: none !important;
+      }
+
+      body.is-retro-layout .toolbar {
+        min-height: auto;
+        padding: 8px 10px;
+        gap: 8px;
+        align-items: center;
+        border-top: 4px solid #000;
+      }
+
+      body.is-retro-layout .toolbar-group {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      body.is-retro-layout .toolbar-button,
+      body.is-retro-layout .toolbar-label,
+      body.is-retro-layout .panel-toggle,
+      body.is-retro-layout .action-button {
+        min-width: 76px;
+        min-height: 50px;
+        padding: 8px 12px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        font-size: 11px;
+        font-weight: 900;
+        background: #fff;
+        box-shadow: none;
+      }
+
+      body.is-retro-layout .toolbar-label {
+        min-width: 104px;
+      }
+
+      body.is-retro-layout .toolbar-button.toolbar-icon-button::before {
+        content: "";
+        display: block;
+        width: 18px;
+        height: 18px;
+        margin-right: 8px;
+        background: currentColor;
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-position: center;
+        -webkit-mask-size: contain;
+      }
+
+      body.is-retro-layout #toolbar-export-video::before {
+        -webkit-mask-image: linear-gradient(#000 0 0);
+      }
+
+      body.is-retro-layout
+        .toolbar-button.toolbar-icon-button:last-child::before {
+        -webkit-mask-image: linear-gradient(#000 0 0);
+      }
+
+      body.is-retro-layout .toolbar-spacer {
+        flex: 1;
+      }
+
+      body.is-retro-layout .control-panel {
+        border-left-width: 0;
+        background: #f5f5f5;
+      }
+
+      body.is-retro-layout .panel-header {
+        padding: 0;
+        gap: 0;
+        border-bottom: 3px solid #000;
+        background: #fff;
+      }
+
+      body.is-retro-layout .panel-header-top {
+        min-height: 34px;
+        padding: 0 10px;
+        border-bottom: 1px solid #d7d7d7;
+        background: #fff;
+      }
+
+      body.is-retro-layout .panel-title {
+        font-size: 15px;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+
+      body.is-retro-layout .panel-close {
+        min-width: 24px;
+        min-height: 24px;
+        padding: 0;
+        box-shadow: none;
+        background: #fff;
+      }
+
+      body.is-retro-layout .tab-strip {
+        gap: 0;
+        border-top: 0;
+      }
+
+      body.is-retro-layout .panel-header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      body.is-retro-layout .tab-button {
+        min-height: 56px;
+        display: grid;
+        gap: 4px;
+        place-items: center;
+        border-top: 0;
+        border-right-width: 1px;
+        border-bottom: 0;
+        background: #fafafa;
+      }
+
+      body.is-retro-layout .tab-button:first-child {
+        border-left-width: 0;
+      }
+
+      body.is-retro-layout .tab-button:last-child {
+        border-right-width: 0;
+      }
+
+      body.is-retro-layout .tab-icon {
+        font-size: 18px;
+        line-height: 1;
+      }
+
+      body.is-retro-layout .controls-body {
+        padding: 10px;
+        gap: 12px;
+        background: #f3f3f3;
+      }
+
+      body.is-retro-layout .control-group {
+        padding: 0;
+        border-width: 3px;
+        background: #fff;
+      }
+
+      body.is-retro-layout .group-head {
+        margin: 0;
+        min-height: 34px;
+        padding: 0 12px;
+        align-items: center;
+        border-bottom-width: 3px;
+        background: #d9dbe0;
+      }
+
+      body.is-retro-layout .group-title {
+        font-size: 12px;
+        letter-spacing: 0;
+        text-transform: none;
+      }
+
+      body.is-retro-layout .group-help {
+        width: 18px;
+        height: 18px;
+        font-size: 10px;
+        border-width: 1px;
+      }
+
+      body.is-retro-layout .control-block,
+      body.is-retro-layout .control-note {
+        padding-left: 12px;
+        padding-right: 12px;
+      }
+
+      body.is-retro-layout .control-block:first-of-type,
+      body.is-retro-layout .control-note:first-of-type {
+        padding-top: 12px;
+      }
+
+      body.is-retro-layout .control-block:last-of-type,
+      body.is-retro-layout .control-note:last-of-type {
+        padding-bottom: 12px;
+      }
