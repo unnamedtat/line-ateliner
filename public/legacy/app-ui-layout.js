@@ -235,6 +235,10 @@ function applyActiveTab() {
 function setActiveControlTab(tab) {
   activeControlTab = tab || "input";
   applyActiveTab();
+
+  if (activeControlTab === "export" && typeof preloadGifLibrary === "function") {
+    preloadGifLibrary();
+  }
 }
 
 function syncCanvasEmptyState() {

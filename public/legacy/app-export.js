@@ -1,6 +1,8 @@
 // Export helpers for MP4, GIF, and PNG fallback output.
+const GIF_LIBRARY_SCRIPT = "/vendor/gif.js";
 const GIF_WORKER_SCRIPT = "/vendor/gif.worker.js";
 let gifWorkerBlobUrl = "";
+let gifLibraryLoadPromise = null;
 
 function setExportState(patch) {
   exportState = {
@@ -424,6 +426,63 @@ async function resolveGifWorkerScriptUrl() {
   return gifWorkerBlobUrl;
 }
 
+function findGifLibraryScript() {
+  return Array.from(document.querySelectorAll("script")).find((script) => script.src.endsWith(GIF_LIBRARY_SCRIPT));
+}
+
+async function ensureGifLibraryLoaded() {
+  if (typeof GIF === "function") {
+    return;
+  }
+
+  if (!gifLibraryLoadPromise) {
+    gifLibraryLoadPromise = new Promise((resolve, reject) => {
+      const existingScript = findGifLibraryScript();
+      const script = existingScript || document.createElement("script");
+
+      const cleanup = () => {
+        script.removeEventListener("load", handleLoad);
+        script.removeEventListener("error", handleError);
+      };
+
+      const handleLoad = () => {
+        cleanup();
+        if (typeof GIF === "function") {
+          resolve();
+          return;
+        }
+        reject(new Error("GIF 编码器加载后仍不可用"));
+      };
+
+      const handleError = () => {
+        cleanup();
+        reject(new Error("无法加载 GIF 编码器脚本"));
+      };
+
+      script.addEventListener("load", handleLoad, { once: true });
+      script.addEventListener("error", handleError, { once: true });
+
+      if (!existingScript) {
+        script.src = GIF_LIBRARY_SCRIPT;
+        script.async = true;
+        script.dataset.gifLibrary = "true";
+        document.body.appendChild(script);
+      }
+    }).catch((error) => {
+      gifLibraryLoadPromise = null;
+      throw error;
+    });
+  }
+
+  await gifLibraryLoadPromise;
+}
+
+function preloadGifLibrary() {
+  ensureGifLibraryLoaded().catch((error) => {
+    console.warn("GIF library preload failed", error);
+  });
+}
+
 function pickVideoMimeType() {
   if (typeof MediaRecorder === "undefined") {
     return "";
@@ -689,12 +748,14 @@ async function startGifExport() {
     return;
   }
 
-  if (typeof GIF !== "function") {
+  try {
+    await ensureGifLibraryLoaded();
+  } catch (error) {
     const recovery = getExportFailureRecovery("gif");
     setExportState({
       active: false,
       format: "",
-      status: buildRecoveryStatus("gif", "GIF 编码器没有加载成功", recovery),
+      status: buildRecoveryStatus("gif", error, recovery),
       recovery
     });
     if (typeof revealExportPanel === "function") {

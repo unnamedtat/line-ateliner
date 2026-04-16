@@ -1,6 +1,5 @@
 export const CLASSIC_SCRIPT_PATHS = [
   "/vendor/p5.min.js",
-  "/vendor/gif.js",
   "/legacy/app-config.js",
   "/legacy/app-utils.js",
   "/legacy/app-ui-theme.js",
