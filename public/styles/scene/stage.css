@@ -158,8 +158,8 @@
         cursor: pointer;
       }
 
-      .tab-button.is-active,
-      .tab-button:hover {
+      body:not(.is-retro-layout) .tab-button.is-active,
+      body:not(.is-retro-layout) .tab-button:hover {
         background: #000;
         color: #fff;
       }

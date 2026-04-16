@@ -157,6 +157,7 @@ function rebuildSceneSynchronously() {
     edgeSamples = [];
     hatchSamples = [];
     strokePaths = [];
+    currentOutputGeometryKey = "";
     return;
   }
   buildAnalysisState();
@@ -230,7 +231,7 @@ async function runSceneBuild(runState, message = "") {
 }
 
 // Runs the lighter mode output build pipeline.
-async function runModeOutputBuild(runState, message = "") {
+async function runModeOutputBuild(runState, message = "", options = {}) {
   activeSceneBuild = runState;
   if (typeof setAnalysisUiState === "function") {
     setAnalysisUiState(true, message || "正在重算当前算法输出，请稍候...");
@@ -252,6 +253,7 @@ async function runModeOutputBuild(runState, message = "") {
       edgeSamples = [];
       hatchSamples = [];
       strokePaths = [];
+      currentOutputGeometryKey = "";
       finalizeSceneBuild(runState, "success");
       syncControls();
       return true;
@@ -260,6 +262,13 @@ async function runModeOutputBuild(runState, message = "") {
     if (!analysisState) {
       await buildAnalysisStateAsync();
       await ensureAnalysisResponsive("正在创建分析缓存...", true);
+    }
+
+    if (options.reuseGeometry && (await rebuildCurrentModeVariantsAsync())) {
+      await ensureAnalysisResponsive("正在细化当前抖动变体...", true);
+      finalizeSceneBuild(runState, "success");
+      syncControls();
+      return true;
     }
 
     await buildCurrentModeOutputAsync();
@@ -284,7 +293,7 @@ async function runModeOutputBuild(runState, message = "") {
 // Starts a full scene rebuild.
 function rebuildScene(message = "") {
   if (activeSceneBuild?.running) {
-    queueNextSceneBuild(message);
+    queueNextBuild("scene", message);
     return;
   }
 
@@ -303,9 +312,9 @@ function rebuildScene(message = "") {
 }
 
 // Starts an output-only rebuild.
-function rebuildModeOutput(message = "") {
+function rebuildModeOutput(message = "", options = {}) {
   if (activeSceneBuild?.running) {
-    queueNextSceneBuild(message);
+    queueNextBuild("output", message, options);
     return;
   }
 
@@ -318,7 +327,7 @@ function rebuildModeOutput(message = "") {
     running: true
   };
 
-  runModeOutputBuild(runState, message).finally(() => {
+  runModeOutputBuild(runState, message, normalizeModeOutputOptions(options)).finally(() => {
     runState.running = false;
   });
 }

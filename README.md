@@ -48,7 +48,20 @@ src/
   boot/              TypeScript bootstrap for the legacy app
 public/
   figure.png         Default demo input image
-  legacy/            Existing browser scripts, kept stable during migration
+  legacy/
+    core/            Shared constants and small helpers
+    ui/              Layout, theme, state, and control bindings
+    scene/           Canvas lifecycle, upload flow, overlays, and drawing
+    analysis/        Analysis caches, sync/async maps, and mask builders
+    edge/            Edge-mode generation and rendering helpers
+    path/            Centerline tracing and path variant helpers
+    export/          Export state, assets, rendering, and save actions
+  styles/
+    base/            Root tokens, resets, and global theme variables
+    controls/        Shared control shell and field styling
+    layout/          Workspace structure, panels, and responsive rules
+    retro/           Retro-specific layout and controls skin
+    scene/           Canvas stage and overlay presentation
   vendor/            Browser vendor assets copied from node_modules on install
 scripts/
   sync-vendor.mjs    Copies runtime browser bundles into public/vendor

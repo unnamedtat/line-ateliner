@@ -127,6 +127,7 @@ function buildCurrentModeOutput() {
   edgeSamples = [];
   hatchSamples = [];
   strokePaths = [];
+  currentOutputGeometryKey = "";
 
   if (!sceneLayout || !analysisState) {
     return;
@@ -136,21 +137,30 @@ function buildCurrentModeOutput() {
 
   if (effectiveMode === "path") {
     buildStrokeField();
+    currentOutputGeometryKey = "path";
   } else if (effectiveMode === "region-grow") {
     buildRegionGrowField();
+    currentOutputGeometryKey = "region-grow";
   } else if (effectiveMode === "color-grow") {
     buildColorGrowField();
+    currentOutputGeometryKey = "color-grow";
   } else if (effectiveMode === "color-boundary") {
     buildColorBoundaryField();
+    currentOutputGeometryKey = "color-boundary";
   } else if (effectiveMode === "wave-contour") {
     buildWaveContourField();
+    currentOutputGeometryKey = "contour";
   } else if (effectiveMode === "wave-shape") {
     buildWaveShapeField();
+    currentOutputGeometryKey = "contour";
   } else if (effectiveMode === "rubber-contour") {
     buildRubberContourField();
+    currentOutputGeometryKey = "contour";
   } else if (effectiveMode === "contour") {
     buildContourField();
+    currentOutputGeometryKey = "contour";
   } else {
     buildEdgeField(effectiveMode === "edge-fill");
+    currentOutputGeometryKey = effectiveMode === "edge-fill" ? "edge-fill" : "edge";
   }
 }

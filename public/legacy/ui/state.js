@@ -12,7 +12,7 @@ const SELECT_BINDINGS = [
     id: "contour-variant",
     onChange: (value) => {
       settings.contourVariant = value;
-      scheduleOutputRebuild();
+      scheduleOutputRebuild({ reuseGeometry: true });
     }
   },
   {

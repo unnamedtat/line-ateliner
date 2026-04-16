@@ -1,29 +1,43 @@
 export const CLASSIC_SCRIPT_PATHS = [
   "/vendor/p5.min.js",
-  "/legacy/app-config.js",
-  "/legacy/app-utils.js",
-  "/legacy/app-ui-theme.js",
-  "/legacy/app-ui-layout.js",
-  "/legacy/app-ui-state.js",
-  "/legacy/app-ui-bindings.js",
-  "/legacy/app-ui-render.js",
-  "/legacy/sketch-canvas-core.js",
-  "/legacy/sketch-rebuild-flow.js",
-  "/legacy/sketch-upload-build.js",
-  "/legacy/sketch-overlays-layout.js",
-  "/legacy/sketch-analysis-cache.js",
-  "/legacy/sketch-analysis-async.js",
-  "/legacy/sketch-analysis-sync.js",
-  "/legacy/sketch-mask-builders.js",
-  "/legacy/sketch-edge-modes.js",
-  "/legacy/sketch-edge-async.js",
-  "/legacy/sketch-edge-render.js",
-  "/legacy/sketch-path-processing.js",
-  "/legacy/sketch-path-trace.js",
-  "/legacy/sketch-path-variants.js",
-  "/legacy/sketch-draw.js",
-  "/legacy/app-export-state.js",
-  "/legacy/app-export-assets.js",
-  "/legacy/app-export-render.js",
-  "/legacy/app-export-actions.js"
+
+  // Core shared state and helpers.
+  "/legacy/core/config.js",
+  "/legacy/core/utils.js",
+
+  // UI theming, layout, and bindings.
+  "/legacy/ui/theme.js",
+  "/legacy/ui/layout.js",
+  "/legacy/ui/state.js",
+  "/legacy/ui/bindings.js",
+  "/legacy/ui/render.js",
+
+  // Scene lifecycle and upload/layout helpers.
+  "/legacy/scene/canvas-core.js",
+  "/legacy/scene/rebuild-flow.js",
+  "/legacy/scene/upload-build.js",
+  "/legacy/scene/overlay-layout.js",
+
+  // Analysis primitives and mask builders.
+  "/legacy/analysis/cache.js",
+  "/legacy/analysis/async.js",
+  "/legacy/analysis/sync.js",
+  "/legacy/analysis/mask-builders.js",
+
+  // Edge and path generation.
+  "/legacy/edge/modes.js",
+  "/legacy/edge/async.js",
+  "/legacy/edge/render.js",
+  "/legacy/path/processing.js",
+  "/legacy/path/trace.js",
+  "/legacy/path/variants.js",
+
+  // Scene drawing depends on prior analysis helpers.
+  "/legacy/scene/draw.js",
+
+  // Export is loaded last so it can reuse the prepared scene state.
+  "/legacy/export/state.js",
+  "/legacy/export/assets.js",
+  "/legacy/export/render.js",
+  "/legacy/export/actions.js"
 ] as const;

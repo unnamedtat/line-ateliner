@@ -2,10 +2,14 @@
 // p5 lifecycle, scene rebuilding, paper rendering, and line extraction/drawing.
 let canvasHostObserver = null;
 let sceneBuildSerial = 0;
-let sceneBuildQueued = false;
-let queuedSceneBuildMessage = "";
+let queuedBuildKind = "";
+let queuedBuildMessage = "";
+let queuedModeOutputOptions = {
+  reuseGeometry: false
+};
 let activeSceneBuild = null;
 let analysisWorkState = null;
+let currentOutputGeometryKey = "";
 let renderFrameCache = {
   mode: "",
   width: 0,

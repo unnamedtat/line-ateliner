@@ -7,12 +7,20 @@ function scheduleRebuild() {
   }, 60);
 }
 
+// Normalizes output rebuild options.
+function normalizeModeOutputOptions(options = {}) {
+  return {
+    reuseGeometry: Boolean(options.reuseGeometry)
+  };
+}
+
 // Schedules a lighter output-only rebuild.
-function scheduleOutputRebuild() {
+function scheduleOutputRebuild(options = {}) {
   clearTimeout(rebuildTimer);
+  const nextOptions = normalizeModeOutputOptions(options);
   rebuildTimer = setTimeout(() => {
-    rebuildModeOutput("参数已更新，正在重算当前笔触...");
-  }, 60);
+    rebuildModeOutput("参数已更新，正在重算当前笔触...", nextOptions);
+  }, nextOptions.reuseGeometry ? 90 : 60);
 }
 
 // Clears the cached render frame layers.
@@ -31,6 +39,76 @@ function clearRenderFrameCache() {
     height: 0,
     frames: new Map()
   };
+}
+
+// Gets the reusable geometry bucket for the current mode.
+function getOutputGeometryKeyForMode(mode = getEffectiveRenderMode()) {
+  if (mode === "edge" || mode === "edge-fill") {
+    return mode;
+  }
+
+  if (
+    mode === "path" ||
+    mode === "region-grow" ||
+    mode === "color-grow" ||
+    mode === "color-boundary"
+  ) {
+    return mode;
+  }
+
+  if (
+    mode === "contour" ||
+    mode === "wave-contour" ||
+    mode === "wave-shape" ||
+    mode === "rubber-contour"
+  ) {
+    return "contour";
+  }
+
+  return "";
+}
+
+// Gets variant build options for path-based modes.
+function getPathVariantOptionsForMode(mode = getEffectiveRenderMode()) {
+  if (mode === "wave-contour") {
+    return { variantMode: "wave-contour" };
+  }
+
+  if (mode === "wave-shape") {
+    return { variantMode: "wave-shape" };
+  }
+
+  if (mode === "rubber-contour") {
+    return { variantMode: "rubber-contour" };
+  }
+
+  return {};
+}
+
+// Regenerates only the current mode's jitter variants when geometry is unchanged.
+async function rebuildCurrentModeVariantsAsync() {
+  const effectiveMode = getEffectiveRenderMode();
+  const geometryKey = getOutputGeometryKeyForMode(effectiveMode);
+  if (!geometryKey || currentOutputGeometryKey !== geometryKey) {
+    return false;
+  }
+
+  if (geometryKey === "edge" || geometryKey === "edge-fill") {
+    if (!edgeSamples.length && !hatchSamples.length) {
+      return false;
+    }
+
+    await prepareEdgeVariantsAsync(edgeSamples, false);
+    await prepareEdgeVariantsAsync(hatchSamples, true);
+    return true;
+  }
+
+  if (!strokePaths.length) {
+    return false;
+  }
+
+  await preparePathVariantsAsync(strokePaths, getPathVariantOptionsForMode(effectiveMode));
+  return true;
 }
 
 // Builds the cache key for rendered frames.
@@ -68,18 +146,38 @@ function invalidateSceneOutput() {
   edgeSamples = [];
   hatchSamples = [];
   strokePaths = [];
+  currentOutputGeometryKey = "";
   clearRenderFrameCache();
 }
 
-// Queues the next scene rebuild request.
-function queueNextSceneBuild(message = "") {
-  sceneBuildQueued = true;
-  queuedSceneBuildMessage = message || queuedSceneBuildMessage || "参数已更新，当前分析结束后会自动重算。";
+// Queues the next rebuild request.
+function queueNextBuild(kind = "scene", message = "", options = {}) {
+  const nextOptions = normalizeModeOutputOptions(options);
+  const fallbackMessage =
+    kind === "output"
+      ? "参数已更新，当前输出结束后会自动重算。"
+      : "参数已更新，当前分析结束后会自动重算。";
+
+  if (kind === "scene") {
+    queuedBuildKind = "scene";
+    queuedModeOutputOptions = normalizeModeOutputOptions();
+  } else if (queuedBuildKind !== "scene") {
+    if (queuedBuildKind === "output") {
+      queuedModeOutputOptions = {
+        reuseGeometry: queuedModeOutputOptions.reuseGeometry && nextOptions.reuseGeometry
+      };
+    } else {
+      queuedBuildKind = "output";
+      queuedModeOutputOptions = nextOptions;
+    }
+  }
+
+  queuedBuildMessage = message || queuedBuildMessage || fallbackMessage;
   if (appStatusState.analysisActive && typeof patchAnalysisUiState === "function") {
     // Analysis itself is still running on the main thread, so UI changes queue up
     // a fresh rebuild instead of starting another overlapping pass immediately.
     patchAnalysisUiState({
-      analysisMessage: queuedSceneBuildMessage
+      analysisMessage: queuedBuildMessage
     });
   }
 }
@@ -104,8 +202,9 @@ function cancelAnalysisWait() {
     return;
   }
 
-  sceneBuildQueued = false;
-  queuedSceneBuildMessage = "";
+  queuedBuildKind = "";
+  queuedBuildMessage = "";
+  queuedModeOutputOptions = normalizeModeOutputOptions();
   activeSceneBuild.cancelled = true;
   activeSceneBuild.failureMessage = "已停止这次分析。你可以调整图片或算法后重新尝试。";
 }
@@ -172,14 +271,22 @@ async function ensureAnalysisResponsive(message = "", force = false) {
 
 // Flushes any queued rebuild after analysis completes.
 function flushQueuedSceneBuild() {
-  if (!sceneBuildQueued) {
+  if (!queuedBuildKind) {
     return;
   }
 
-  const nextMessage = queuedSceneBuildMessage;
-  sceneBuildQueued = false;
-  queuedSceneBuildMessage = "";
+  const nextKind = queuedBuildKind;
+  const nextMessage = queuedBuildMessage;
+  const nextOptions = normalizeModeOutputOptions(queuedModeOutputOptions);
+  queuedBuildKind = "";
+  queuedBuildMessage = "";
+  queuedModeOutputOptions = normalizeModeOutputOptions();
   window.requestAnimationFrame(() => {
+    if (nextKind === "output") {
+      rebuildModeOutput(nextMessage || "参数已更新，正在重算当前笔触...", nextOptions);
+      return;
+    }
+
     rebuildScene(nextMessage || "参数已更新，正在重建预览...");
   });
 }

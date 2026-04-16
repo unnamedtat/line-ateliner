@@ -305,6 +305,7 @@ async function buildCurrentModeOutputAsync() {
   edgeSamples = [];
   hatchSamples = [];
   strokePaths = [];
+  currentOutputGeometryKey = "";
 
   if (!sceneLayout || !analysisState) {
     return;
@@ -314,21 +315,28 @@ async function buildCurrentModeOutputAsync() {
 
   if (effectiveMode === "path") {
     await buildStrokeFieldAsync();
+    currentOutputGeometryKey = "path";
   } else if (effectiveMode === "color-boundary") {
     await buildColorBoundaryFieldAsync();
+    currentOutputGeometryKey = "color-boundary";
   } else if (effectiveMode === "wave-contour") {
     strokePaths = await buildContourPathsAsync();
     await preparePathVariantsAsync(strokePaths, { variantMode: "wave-contour" });
+    currentOutputGeometryKey = "contour";
   } else if (effectiveMode === "wave-shape") {
     strokePaths = await buildContourPathsAsync();
     await preparePathVariantsAsync(strokePaths, { variantMode: "wave-shape" });
+    currentOutputGeometryKey = "contour";
   } else if (effectiveMode === "rubber-contour") {
     strokePaths = await buildContourPathsAsync();
     await preparePathVariantsAsync(strokePaths, { variantMode: "rubber-contour" });
+    currentOutputGeometryKey = "contour";
   } else if (effectiveMode === "contour") {
     strokePaths = await buildContourPathsAsync();
     await preparePathVariantsAsync(strokePaths);
+    currentOutputGeometryKey = "contour";
   } else {
     await buildEdgeFieldAsync(effectiveMode === "edge-fill");
+    currentOutputGeometryKey = effectiveMode === "edge-fill" ? "edge-fill" : "edge";
   }
 }

@@ -98,8 +98,18 @@ function bindRange(id, settingKey) {
     return;
   }
 
-  const handleInput = (event) => {
+  let lastAppliedValue = Number(element.value);
+  let lastAppliedSource = "change";
+
+  const handleInput = (event, source) => {
     const value = Number(event.target.value);
+    if (source === "change" && lastAppliedSource === "input" && value === lastAppliedValue) {
+      lastAppliedSource = source;
+      return;
+    }
+
+    lastAppliedValue = value;
+    lastAppliedSource = source;
     settings[settingKey] = value;
     updateRangeReadout(id);
 
@@ -151,11 +161,29 @@ function bindRange(id, settingKey) {
       return;
     }
 
+    if (
+      id === "wave-amplitude" ||
+      id === "wave-frequency" ||
+      id === "wave-speed" ||
+      id === "edge-jitter-normal" ||
+      id === "edge-jitter-tangent" ||
+      id === "path-jitter-normal" ||
+      id === "path-jitter-tangent" ||
+      id === "width-jitter"
+    ) {
+      scheduleOutputRebuild({ reuseGeometry: true });
+      return;
+    }
+
     scheduleOutputRebuild();
   };
 
-  element.addEventListener("input", handleInput);
-  element.addEventListener("change", handleInput);
+  element.addEventListener("input", (event) => {
+    handleInput(event, "input");
+  });
+  element.addEventListener("change", (event) => {
+    handleInput(event, "change");
+  });
 }
 
 // Binds a range control with a callback.
