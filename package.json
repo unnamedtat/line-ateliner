@@ -2,6 +2,7 @@
   "name": "line-atelier",
   "version": "0.1.0",
   "private": true,
+  "license": "GPL-3.0-only",
   "description": "A browser-based line art and paper texture playground built with p5.js.",
   "type": "module",
   "engines": {

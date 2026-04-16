@@ -269,6 +269,21 @@ function revealExportPanel() {
   applyUiVisibility();
 }
 
+function resetAllSettings() {
+  if (exportState.active || appStatusState.analysisActive) {
+    return;
+  }
+
+  const preservedUiHidden = settings.uiHidden;
+  settings = {
+    ...DEFAULT_SETTINGS,
+    uiHidden: preservedUiHidden
+  };
+
+  syncControls();
+  rebuildScene("所有参数已恢复默认值，正在重建预览...");
+}
+
 function bindControls() {
   ensureRetroLayout();
   const panel = document.getElementById("ui-shell");
@@ -307,6 +322,11 @@ function bindControls() {
       setActiveControlTab(tabButton.dataset.tab);
     });
   });
+
+  const resetButton = document.getElementById("reset-settings");
+  if (resetButton) {
+    resetButton.addEventListener("click", resetAllSettings);
+  }
 
   [
     ["export-video", startVideoExport],
@@ -528,6 +548,7 @@ function refreshUiState() {
   applyAlgorithmVisibility();
   applyReferenceOverlayVisibility();
   applyImportExportLocks();
+  applyResetButtonState();
   applyControlTooltips();
   applyActiveTab();
   syncStatusSummary();
@@ -557,6 +578,17 @@ function applyImportExportLocks() {
 
   document.body.classList.toggle("is-analysis-locked", importExportLocked);
   document.body.dataset.exportReady = exportReady ? "true" : "false";
+}
+
+function applyResetButtonState() {
+  const resetButton = document.getElementById("reset-settings");
+  if (!resetButton) {
+    return;
+  }
+
+  const resetLocked = Boolean(exportState.active || appStatusState.analysisActive);
+  resetButton.disabled = resetLocked;
+  resetButton.setAttribute("aria-disabled", resetLocked ? "true" : "false");
 }
 
 function setControlValue(id, value) {

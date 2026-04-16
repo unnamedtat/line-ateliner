@@ -128,6 +128,7 @@ function buildControlPanelMarkup() {
     <div class="panel-header">
       <div class="panel-header-top">
         <div class="panel-title">控制面板</div>
+        <button class="action-button panel-reset-button" id="reset-settings" type="button">重置全部参数</button>
       </div>
       <div class="tab-strip">
         <button class="tab-button is-active" data-tab="input" type="button"><span class="tab-icon">📥</span><span>输入</span></button>

@@ -539,6 +539,13 @@
           box-shadow 120ms ease;
       }
 
+      .panel-reset-button {
+        width: auto;
+        min-width: 148px;
+        padding: 0 18px;
+        flex-shrink: 0;
+      }
+
       .action-button:hover:not(:disabled) {
         transform: translateY(-1px);
         background: linear-gradient(
@@ -1685,6 +1692,13 @@
         border-top: 0;
       }
 
+      body.is-retro-layout .panel-header-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
       body.is-retro-layout .tab-button {
         min-height: 56px;
         display: grid;
@@ -1761,6 +1775,14 @@
 
       body.is-retro-layout .control-label {
         font-size: 11px;
+      }
+
+      body.is-retro-layout .panel-reset-button {
+        min-height: 38px;
+        border-width: 3px;
+        border-radius: 0;
+        background: #fff;
+        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.14);
       }
 
       body.is-retro-layout .range-head {
@@ -2474,6 +2496,29 @@
         body.is-retro-layout .toolbar-button,
         body.is-retro-layout .toolbar-label {
           justify-content: center;
+        }
+
+        body.is-retro-layout .panel-header-top {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        body.is-retro-layout .panel-reset-button {
+          width: 100%;
+          min-width: 0;
+        }
+
+        body.is-retro-layout .control-block,
+        body.is-retro-layout .control-note {
+          padding-left: 18px;
+          padding-right: 18px;
+        }
+
+        body.is-retro-layout .controls input[type="range"] {
+          display: block;
+          width: calc(100% - 24px);
+          margin: 0 12px;
+          touch-action: pan-y;
         }
 
         body.is-retro-layout .canvas-processing-state {
