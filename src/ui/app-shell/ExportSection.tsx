@@ -39,9 +39,14 @@ export function ExportSection({
   onRecoveryAction
 }: ExportSectionProps) {
   const recoveryVisible = Boolean(recoveryPrimary || recoverySecondary);
+  const rangeDefaults = {
+    "export-duration-seconds": 3,
+    "export-frame-rate": 18,
+    "export-resolution-scale": 200
+  } as const;
 
   const bindRange = (id: string) => ({
-    value: Number(getControlValue(snapshot, id, 0)),
+    value: Number(getControlValue(snapshot, id, rangeDefaults[id as keyof typeof rangeDefaults] ?? 0)),
     onInput: (event: FormEvent<HTMLInputElement>) =>
       actions.updateRange(id, Number(event.currentTarget.value), "input"),
     onChange: (event: ChangeEvent<HTMLInputElement>) =>

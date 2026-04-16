@@ -114,8 +114,16 @@ const defaultSnapshot: LegacyUiSnapshot = {
   exportEstimateLevel: "normal",
   recoveryPrimary: null,
   recoverySecondary: null,
-  controlValues: {},
-  rangeReadouts: {},
+  controlValues: {
+    "export-duration-seconds": 3,
+    "export-frame-rate": 18,
+    "export-resolution-scale": 200
+  },
+  rangeReadouts: {
+    "export-duration-seconds": "3s",
+    "export-frame-rate": "18fps",
+    "export-resolution-scale": "200%"
+  },
   visibleModes: ["edge-fill"],
   referenceOverlayEnabled: true
 };
