@@ -193,6 +193,11 @@ let settings = { ...DEFAULT_SETTINGS };
 let edgeSamples = [];
 let hatchSamples = [];
 let strokePaths = [];
+let edgeFieldCache = {
+  key: "",
+  candidateEdges: [],
+  candidateHatches: []
+};
 let rebuildTimer = null;
 let distortionOverlay = null;
 let distortionImageNode = null;

@@ -1,7 +1,19 @@
 // Edge mode builders and current mode routing.
-// Builds the edge field output.
-function buildEdgeField(useFillMerge) {
+// Gets cached raw edge candidates, rebuilding them only when extraction inputs change.
+function getEdgeFieldCandidates() {
   const analysisImage = getAnalysisImage();
+  const cacheKey = getEdgeFieldCacheKey();
+  if (!analysisImage) {
+    return {
+      candidateEdges: [],
+      candidateHatches: []
+    };
+  }
+
+  if (edgeFieldCache.key === cacheKey) {
+    return edgeFieldCache;
+  }
+
   const w = analysisImage.width;
   const h = analysisImage.height;
   const brightnessMap = getFilteredBrightnessMap();
@@ -90,7 +102,7 @@ function buildEdgeField(useFillMerge) {
         pairMerged: false
       });
 
-      if (!useFillMerge && darkness > 24 && support >= 3 && noise(x * 0.05 + 60, y * 0.05 + 60) > 0.7) {
+      if (darkness > 24 && support >= 3 && noise(x * 0.05 + 60, y * 0.05 + 60) > 0.7) {
         candidateHatches.push({
           nxPos: x / w,
           nyPos: y / h,
@@ -112,6 +124,22 @@ function buildEdgeField(useFillMerge) {
 
   candidateEdges.sort((a, b) => b.strength + b.darkness * 0.4 - (a.strength + a.darkness * 0.4));
   candidateHatches.sort((a, b) => b.darkness - a.darkness);
+
+  edgeFieldCache = {
+    key: cacheKey,
+    candidateEdges,
+    candidateHatches
+  };
+
+  return edgeFieldCache;
+}
+
+// Builds the edge field output.
+function buildEdgeField(useFillMerge) {
+  const analysisImage = getAnalysisImage();
+  const w = analysisImage.width;
+  const h = analysisImage.height;
+  const { candidateEdges, candidateHatches } = getEdgeFieldCandidates();
 
   edgeSamples = useFillMerge
     ? pairNearbyEdges(candidateEdges, w, h, getTenthsSetting("edgeFillThreshold")).slice(0, MAX_EDGE_SAMPLES)

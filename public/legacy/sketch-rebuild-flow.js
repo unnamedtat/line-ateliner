@@ -15,6 +15,17 @@ function scheduleOutputRebuild() {
   }, 60);
 }
 
+// Schedules a lighter variants-only refresh for jitter-style controls.
+function scheduleVariantRefresh() {
+  clearTimeout(rebuildTimer);
+  rebuildTimer = setTimeout(() => {
+    if (refreshCurrentModeVariants()) {
+      return;
+    }
+    rebuildModeOutput("参数已更新，正在重算当前笔触...");
+  }, 60);
+}
+
 // Clears the cached render frame layers.
 function clearRenderFrameCache() {
   if (renderFrameCache?.frames instanceof Map) {
@@ -31,6 +42,31 @@ function clearRenderFrameCache() {
     height: 0,
     frames: new Map()
   };
+}
+
+// Clears the cached raw edge candidates used before pair/variant expansion.
+function clearEdgeFieldCache() {
+  edgeFieldCache = {
+    key: "",
+    candidateEdges: [],
+    candidateHatches: []
+  };
+}
+
+// Builds the cache key for raw edge candidates.
+function getEdgeFieldCacheKey() {
+  const analysisImage = getAnalysisImage();
+  if (!analysisImage) {
+    return "";
+  }
+
+  return [
+    analysisImage.width,
+    analysisImage.height,
+    settings.lineBrightnessThreshold,
+    settings.edgeThreshold,
+    settings.edgeSmoothness
+  ].join("|");
 }
 
 // Builds the cache key for rendered frames.
@@ -61,6 +97,54 @@ function getBoilSequenceIndex(boilFrame) {
   return ((boilFrame % sequenceLength) + sequenceLength) % sequenceLength;
 }
 
+// Builds the variant options for the current path-based mode.
+function getCurrentPathVariantOptions() {
+  const effectiveMode = getEffectiveRenderMode();
+  if (effectiveMode === "wave-contour") {
+    return { variantMode: "wave-contour" };
+  }
+  if (effectiveMode === "wave-shape") {
+    return { variantMode: "wave-shape" };
+  }
+  if (effectiveMode === "rubber-contour") {
+    return { variantMode: "rubber-contour" };
+  }
+  return {};
+}
+
+// Refreshes only the current mode's boil/jitter variants and frame cache.
+function refreshCurrentModeVariants() {
+  if (appStatusState.analysisActive || activeSceneBuild?.running || !sceneLayout || !analysisState) {
+    return false;
+  }
+
+  if (typeof isDistortionMode === "function" && isDistortionMode()) {
+    if (typeof syncDistortionOverlay === "function") {
+      syncDistortionOverlay();
+    }
+    return true;
+  }
+
+  const effectiveMode = getEffectiveRenderMode();
+  clearRenderFrameCache();
+
+  if (effectiveMode === "edge" || effectiveMode === "edge-fill") {
+    if (!edgeSamples.length && !hatchSamples.length) {
+      return false;
+    }
+    prepareEdgeVariants(edgeSamples, false);
+    prepareEdgeVariants(hatchSamples, true);
+    return true;
+  }
+
+  if (!strokePaths.length) {
+    return false;
+  }
+
+  preparePathVariants(strokePaths, getCurrentPathVariantOptions());
+  return true;
+}
+
 // Clears the current scene output state.
 function invalidateSceneOutput() {
   sceneLayout = null;
@@ -68,6 +152,7 @@ function invalidateSceneOutput() {
   edgeSamples = [];
   hatchSamples = [];
   strokePaths = [];
+  clearEdgeFieldCache();
   clearRenderFrameCache();
 }
 

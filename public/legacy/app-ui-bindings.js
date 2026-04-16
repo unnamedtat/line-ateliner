@@ -131,6 +131,20 @@ function bindRange(id, settingKey) {
     }
 
     if (
+      id === "edge-jitter-normal" ||
+      id === "edge-jitter-tangent" ||
+      id === "wave-amplitude" ||
+      id === "wave-frequency" ||
+      id === "wave-speed" ||
+      id === "path-jitter-normal" ||
+      id === "path-jitter-tangent" ||
+      id === "width-jitter"
+    ) {
+      scheduleVariantRefresh();
+      return;
+    }
+
+    if (
       id === "distortion-scale" ||
       id === "distortion-frequency" ||
       id === "distortion-octaves" ||

@@ -5,6 +5,10 @@ function buildAnalysisState() {
     analysisState.image.remove();
   }
 
+  if (typeof clearEdgeFieldCache === "function") {
+    clearEdgeFieldCache();
+  }
+
   if (!sourceImage || !sourceImage.width || !sourceImage.height) {
     analysisState = null;
     return;
@@ -48,6 +52,10 @@ function buildAnalysisState() {
 async function buildAnalysisStateAsync() {
   if (analysisState?.image && typeof analysisState.image.remove === "function") {
     analysisState.image.remove();
+  }
+
+  if (typeof clearEdgeFieldCache === "function") {
+    clearEdgeFieldCache();
   }
 
   if (!sourceImage || !sourceImage.width || !sourceImage.height) {
