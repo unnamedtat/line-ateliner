@@ -176,7 +176,10 @@ function rebuildViewportSynchronously() {
 // Runs the full asynchronous scene build pipeline.
 async function runSceneBuild(runState, message = "") {
   activeSceneBuild = runState;
-  invalidateSceneOutput();
+  if (typeof capturePreviewSceneSnapshot === "function") {
+    capturePreviewSceneSnapshot();
+  }
+  invalidateSceneOutput({ preserveSnapshot: true });
   if (typeof setAnalysisUiState === "function") {
     setAnalysisUiState(true, message || "正在重建预览，请稍候...");
   }
@@ -232,6 +235,9 @@ async function runSceneBuild(runState, message = "") {
 // Runs the lighter mode output build pipeline.
 async function runModeOutputBuild(runState, message = "") {
   activeSceneBuild = runState;
+  if (typeof capturePreviewSceneSnapshot === "function") {
+    capturePreviewSceneSnapshot();
+  }
   if (typeof setAnalysisUiState === "function") {
     setAnalysisUiState(true, message || "正在重算当前算法输出，请稍候...");
   }

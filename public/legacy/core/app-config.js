@@ -198,6 +198,7 @@ let edgeFieldCache = {
   candidateEdges: [],
   candidateHatches: []
 };
+let previewSceneSnapshot = null;
 let rebuildTimer = null;
 let distortionOverlay = null;
 let distortionImageNode = null;

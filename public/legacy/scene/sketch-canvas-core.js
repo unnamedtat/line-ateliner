@@ -117,12 +117,22 @@ function draw() {
     syncCanvasEmptyState();
   }
 
+  const retainedScene = getRetainedSceneSnapshot();
   if (!sceneLayout || !hasDrawableOutput()) {
+    if (retainedScene) {
+      drawRetainedScene(retainedScene, animationFrame);
+      return;
+    }
     hideDistortionOverlay();
     drawLoadingHint();
     return;
   }
 
+  drawActiveSceneFrame(animationFrame);
+}
+
+// Draws the currently active scene state.
+function drawActiveSceneFrame(animationFrame) {
   if (isDistortionMode()) {
     drawDistortionFigure(animationFrame);
   } else {
@@ -146,10 +156,79 @@ function draw() {
   }
 }
 
+// Gets the retained scene snapshot used while a new build is still running.
+function getRetainedSceneSnapshot() {
+  if ((appStatusState.analysisActive || appStatusState.analysisFailed) && previewSceneSnapshot) {
+    return previewSceneSnapshot;
+  }
+  return null;
+}
+
+// Draws the retained scene snapshot while new output is being computed.
+function drawRetainedScene(snapshot, animationFrame) {
+  const previousState = {
+    paperBaseLayer,
+    sceneLayout,
+    analysisState,
+    edgeSamples,
+    hatchSamples,
+    strokePaths,
+    renderFrameCache,
+    sourceImage,
+    sourceImageHref,
+    renderMode: settings.renderMode,
+    contourVariant: settings.contourVariant,
+    inkColor: settings.inkColor,
+    inkOpacity: settings.inkOpacity,
+    lineWidthScale: settings.lineWidthScale,
+    contourStrokeThickness: settings.contourStrokeThickness
+  };
+
+  paperBaseLayer = snapshot.paperBaseLayer || previousState.paperBaseLayer;
+  sceneLayout = snapshot.sceneLayout;
+  analysisState = snapshot.analysisState;
+  edgeSamples = snapshot.edgeSamples;
+  hatchSamples = snapshot.hatchSamples;
+  strokePaths = snapshot.strokePaths;
+  renderFrameCache = snapshot.renderFrameCache;
+  sourceImage = snapshot.sourceImage || previousState.sourceImage;
+  sourceImageHref = snapshot.sourceImageHref || previousState.sourceImageHref;
+  settings.renderMode = snapshot.settings?.renderMode || previousState.renderMode;
+  settings.contourVariant = snapshot.settings?.contourVariant || previousState.contourVariant;
+  settings.inkColor = snapshot.settings?.inkColor || previousState.inkColor;
+  settings.inkOpacity = snapshot.settings?.inkOpacity ?? previousState.inkOpacity;
+  settings.lineWidthScale = snapshot.settings?.lineWidthScale ?? previousState.lineWidthScale;
+  settings.contourStrokeThickness =
+    snapshot.settings?.contourStrokeThickness ?? previousState.contourStrokeThickness;
+
+  try {
+    if (paperBaseLayer) {
+      image(paperBaseLayer, 0, 0);
+    }
+    drawActiveSceneFrame(animationFrame);
+  } finally {
+    paperBaseLayer = previousState.paperBaseLayer;
+    sceneLayout = previousState.sceneLayout;
+    analysisState = previousState.analysisState;
+    edgeSamples = previousState.edgeSamples;
+    hatchSamples = previousState.hatchSamples;
+    strokePaths = previousState.strokePaths;
+    renderFrameCache = previousState.renderFrameCache;
+    sourceImage = previousState.sourceImage;
+    sourceImageHref = previousState.sourceImageHref;
+    settings.renderMode = previousState.renderMode;
+    settings.contourVariant = previousState.contourVariant;
+    settings.inkColor = previousState.inkColor;
+    settings.inkOpacity = previousState.inkOpacity;
+    settings.lineWidthScale = previousState.lineWidthScale;
+    settings.contourStrokeThickness = previousState.contourStrokeThickness;
+  }
+}
+
 // Checks whether the app has drawable output ready.
 function hasDrawableOutput() {
   if (appStatusState.analysisActive || appStatusState.analysisFailed) {
-    return false;
+    return Boolean(getRetainedSceneSnapshot());
   }
   if (isDistortionMode()) {
     return Boolean(sourceImage && sceneLayout);

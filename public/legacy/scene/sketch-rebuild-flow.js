@@ -26,22 +26,33 @@ function scheduleVariantRefresh() {
   }, 60);
 }
 
-// Clears the cached render frame layers.
-function clearRenderFrameCache() {
-  if (renderFrameCache?.frames instanceof Map) {
-    renderFrameCache.frames.forEach((layer) => {
-      if (layer && typeof layer.remove === "function") {
-        layer.remove();
-      }
-    });
-  }
-
-  renderFrameCache = {
+// Creates an empty render frame cache object.
+function createRenderFrameCacheState() {
+  return {
     mode: "",
     width: 0,
     height: 0,
     frames: new Map()
   };
+}
+
+// Disposes a render frame cache object.
+function disposeRenderFrameCache(cacheState) {
+  if (!(cacheState?.frames instanceof Map)) {
+    return;
+  }
+
+  cacheState.frames.forEach((layer) => {
+    if (layer && typeof layer.remove === "function") {
+      layer.remove();
+    }
+  });
+}
+
+// Clears the cached render frame layers.
+function clearRenderFrameCache() {
+  disposeRenderFrameCache(renderFrameCache);
+  renderFrameCache = createRenderFrameCacheState();
 }
 
 // Clears the cached raw edge candidates used before pair/variant expansion.
@@ -112,6 +123,50 @@ function getCurrentPathVariantOptions() {
   return {};
 }
 
+// Captures the current drawable scene so it can stay visible while a rebuild runs.
+function capturePreviewSceneSnapshot() {
+  const hasDistortionOutput = typeof isDistortionMode === "function" && isDistortionMode() && sourceImage && sceneLayout;
+  const hasLineOutput = edgeSamples.length > 0 || hatchSamples.length > 0 || strokePaths.length > 0;
+  if (!sceneLayout || (!hasDistortionOutput && !hasLineOutput)) {
+    return false;
+  }
+
+  clearPreviewSceneSnapshot();
+  previewSceneSnapshot = {
+    sceneLayout,
+    analysisState,
+    edgeSamples,
+    hatchSamples,
+    strokePaths,
+    renderFrameCache,
+    paperBaseLayer,
+    sourceImage,
+    sourceImageHref,
+    settings: {
+      renderMode: settings.renderMode,
+      contourVariant: settings.contourVariant,
+      inkColor: settings.inkColor,
+      inkOpacity: settings.inkOpacity,
+      lineWidthScale: settings.lineWidthScale,
+      contourStrokeThickness: settings.contourStrokeThickness
+    }
+  };
+  renderFrameCache = createRenderFrameCacheState();
+  return true;
+}
+
+// Clears the retained preview snapshot once a fresh render is ready.
+function clearPreviewSceneSnapshot() {
+  if (!previewSceneSnapshot) {
+    return;
+  }
+
+  if (previewSceneSnapshot.renderFrameCache && previewSceneSnapshot.renderFrameCache !== renderFrameCache) {
+    disposeRenderFrameCache(previewSceneSnapshot.renderFrameCache);
+  }
+  previewSceneSnapshot = null;
+}
+
 // Refreshes only the current mode's boil/jitter variants and frame cache.
 function refreshCurrentModeVariants() {
   if (appStatusState.analysisActive || activeSceneBuild?.running || !sceneLayout || !analysisState) {
@@ -146,14 +201,20 @@ function refreshCurrentModeVariants() {
 }
 
 // Clears the current scene output state.
-function invalidateSceneOutput() {
+function invalidateSceneOutput(options = {}) {
+  const preserveSnapshot = Boolean(options.preserveSnapshot);
   sceneLayout = null;
   analysisState = null;
   edgeSamples = [];
   hatchSamples = [];
   strokePaths = [];
   clearEdgeFieldCache();
+  if (preserveSnapshot) {
+    renderFrameCache = createRenderFrameCacheState();
+    return;
+  }
   clearRenderFrameCache();
+  clearPreviewSceneSnapshot();
 }
 
 // Queues the next scene rebuild request.
@@ -276,6 +337,7 @@ function finalizeSceneBuild(runState, status = "idle") {
   }
 
   if (status === "success") {
+    clearPreviewSceneSnapshot();
     if (typeof setAnalysisUiState === "function") {
       setAnalysisUiState(false);
     }
