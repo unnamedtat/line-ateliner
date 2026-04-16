@@ -4,14 +4,14 @@ const SELECT_BINDINGS = [
     id: "render-mode",
     onChange: (value) => {
       settings.renderMode = value;
-      scheduleRebuild();
+      scheduleOutputRebuild();
     }
   },
   {
     id: "contour-variant",
     onChange: (value) => {
       settings.contourVariant = value;
-      scheduleRebuild();
+      scheduleOutputRebuild();
     }
   },
   {
@@ -433,7 +433,7 @@ function bindRange(id, settingKey) {
       return;
     }
 
-    scheduleRebuild();
+    scheduleOutputRebuild();
   };
 
   element.addEventListener("input", handleInput);

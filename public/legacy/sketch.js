@@ -239,6 +239,13 @@ function scheduleRebuild() {
   }, 60);
 }
 
+function scheduleOutputRebuild() {
+  clearTimeout(rebuildTimer);
+  rebuildTimer = setTimeout(() => {
+    rebuildModeOutput("参数已更新，正在重算当前笔触...");
+  }, 60);
+}
+
 function clearRenderFrameCache() {
   if (renderFrameCache?.frames instanceof Map) {
     renderFrameCache.frames.forEach((layer) => {
@@ -669,6 +676,57 @@ async function runSceneBuild(runState, message = "") {
   }
 }
 
+async function runModeOutputBuild(runState, message = "") {
+  activeSceneBuild = runState;
+  if (typeof setAnalysisUiState === "function") {
+    setAnalysisUiState(true, message || "正在重算当前算法输出，请稍候...");
+  }
+  syncControls();
+  beginAnalysisWork(runState);
+  await yieldToUi();
+
+  try {
+    clearTimeout(rebuildTimer);
+    if (!sceneLayout) {
+      buildSceneLayout();
+    }
+    syncDistortionOverlay();
+    clearRenderFrameCache();
+    await ensureAnalysisResponsive("正在准备当前算法输出...", true);
+
+    if (isDistortionMode()) {
+      edgeSamples = [];
+      hatchSamples = [];
+      strokePaths = [];
+      finalizeSceneBuild(runState, "success");
+      syncControls();
+      return true;
+    }
+
+    if (!analysisState) {
+      await buildAnalysisStateAsync();
+      await ensureAnalysisResponsive("正在创建分析缓存...", true);
+    }
+
+    await buildCurrentModeOutputAsync();
+    await ensureAnalysisResponsive("正在整理最终笔触...", true);
+
+    finalizeSceneBuild(runState, "success");
+    syncControls();
+    return true;
+  } catch (error) {
+    if (!isAnalysisAbortError(error)) {
+      console.error(error);
+      runState.failureMessage = error?.message || "重算失败，请重试。";
+    }
+    invalidateSceneOutput();
+    finalizeSceneBuild(runState, "failure");
+    return false;
+  } finally {
+    endAnalysisWork();
+  }
+}
+
 function rebuildScene(message = "") {
   if (activeSceneBuild?.running) {
     queueNextSceneBuild(message);
@@ -685,6 +743,26 @@ function rebuildScene(message = "") {
   };
 
   runSceneBuild(runState, message).finally(() => {
+    runState.running = false;
+  });
+}
+
+function rebuildModeOutput(message = "") {
+  if (activeSceneBuild?.running) {
+    queueNextSceneBuild(message);
+    return;
+  }
+
+  const runState = {
+    id: ++sceneBuildSerial,
+    startedAt: performance.now(),
+    promptShown: false,
+    cancelled: false,
+    failureMessage: "",
+    running: true
+  };
+
+  runModeOutputBuild(runState, message).finally(() => {
     runState.running = false;
   });
 }
