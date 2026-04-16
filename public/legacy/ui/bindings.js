@@ -13,189 +13,169 @@ function bindControls() {
 
   panel.dataset.bound = "1";
 
-  SELECT_BINDINGS.forEach(({ id, onChange }) => bindSelect(id, onChange));
-  RANGE_BINDINGS.forEach(([id, settingKey]) => bindRange(id, settingKey));
-  COLOR_BINDINGS.forEach(([id, settingKey]) => bindColor(id, settingKey));
+  syncControls();
+}
 
-  bindRangeWithCallback("paper-texture-opacity", "paperTextureOpacity", (value) => {
+// Applies a select control change.
+function applySelectControlChange(id, value) {
+  const binding = SELECT_BINDINGS.find((item) => item.id === id);
+  if (!binding) {
+    return;
+  }
+
+  binding.onChange(value);
+  syncControls();
+}
+
+const rangeControlState = new Map();
+
+// Applies a range control change.
+function applyRangeControlChange(id, value, source = "change") {
+  const binding = RANGE_BINDINGS.find(([rangeId]) => rangeId === id);
+  if (!binding && id !== "paper-texture-opacity") {
+    return;
+  }
+
+  const state = rangeControlState.get(id) || {
+    lastAppliedValue: NaN,
+    lastAppliedSource: "change"
+  };
+
+  if (source === "change" && state.lastAppliedSource === "input" && value === state.lastAppliedValue) {
+    state.lastAppliedSource = source;
+    rangeControlState.set(id, state);
+    return;
+  }
+
+  state.lastAppliedValue = value;
+  state.lastAppliedSource = source;
+  rangeControlState.set(id, state);
+
+  if (id === "paper-texture-opacity") {
     settings.paperTextureOpacity = value;
     syncTextureOverlay();
-  });
+    syncControls();
+    return;
+  }
 
-  bindFileInput("image-upload", loadUserImage);
-  bindFileInput("texture-upload", loadUserTexture);
+  const [, settingKey] = binding;
+  settings[settingKey] = value;
+
+  if (id === "scene-scale" || id === "scene-offset-x" || id === "scene-offset-y") {
+    refreshSceneLayoutPreview();
+    syncControls();
+    return;
+  }
+
+  if (
+    id === "paper-gradient-angle" ||
+    id === "paper-texture-strength" ||
+    id === "paper-texture-scale"
+  ) {
+    rebuildPaperPreview();
+    syncControls();
+    return;
+  }
+
+  if (
+    id === "export-duration-seconds" ||
+    id === "export-frame-rate" ||
+    id === "export-resolution-scale"
+  ) {
+    refreshExportSettingsPreview();
+    syncControls();
+    return;
+  }
+
+  if (id === "reference-overlay-opacity" || id === "boil-hold-frames") {
+    syncControls();
+    return;
+  }
+
+  if (
+    id === "distortion-scale" ||
+    id === "distortion-frequency" ||
+    id === "distortion-octaves" ||
+    id === "distortion-speed"
+  ) {
+    refreshDistortionPreview();
+    syncControls();
+    return;
+  }
+
+  if (
+    id === "ink-opacity" ||
+    id === "line-width-scale" ||
+    id === "contour-stroke-thickness"
+  ) {
+    if (typeof clearRenderFrameCache === "function") {
+      clearRenderFrameCache();
+    }
+    syncControls();
+    return;
+  }
+
+  if (
+    id === "wave-amplitude" ||
+    id === "wave-frequency" ||
+    id === "wave-speed" ||
+    id === "edge-jitter-normal" ||
+    id === "edge-jitter-tangent" ||
+    id === "path-jitter-normal" ||
+    id === "path-jitter-tangent" ||
+    id === "width-jitter"
+  ) {
+    scheduleOutputRebuild({ reuseGeometry: true });
+    syncControls();
+    return;
+  }
+
+  scheduleOutputRebuild();
+  syncControls();
+}
+
+// Applies a color control change.
+function applyColorControlChange(id, value) {
+  const binding = COLOR_BINDINGS.find(([colorId]) => colorId === id);
+  if (!binding) {
+    return;
+  }
+
+  const [, settingKey] = binding;
+  settings[settingKey] = value;
+
+  if (
+    id === "paper-color" ||
+    id === "paper-accent-color" ||
+    id === "texture-color" ||
+    id === "texture-accent-color"
+  ) {
+    applyBackgroundTheme();
+    rebuildPaperPreview();
+    syncControls();
+    return;
+  }
+
+  if (id === "ink-color" && typeof clearRenderFrameCache === "function") {
+    clearRenderFrameCache();
+  }
 
   syncControls();
 }
 
-// Binds a select control.
-function bindSelect(id, onChange) {
-  const element = document.getElementById(id);
-  if (!element) {
+// Applies a file control change.
+function applyFileControlChange(id, file) {
+  if (!file) {
     return;
   }
 
-  element.addEventListener("change", (event) => {
-    onChange(event.target.value);
-    syncControls();
-  });
-}
-
-// Binds a range control.
-function bindRange(id, settingKey) {
-  const element = document.getElementById(id);
-  if (!element) {
+  if (id === "image-upload") {
+    loadUserImage(file);
     return;
   }
 
-  let lastAppliedValue = Number(element.value);
-  let lastAppliedSource = "change";
-
-  const handleInput = (event, source) => {
-    const value = Number(event.target.value);
-    if (source === "change" && lastAppliedSource === "input" && value === lastAppliedValue) {
-      lastAppliedSource = source;
-      return;
-    }
-
-    lastAppliedValue = value;
-    lastAppliedSource = source;
-    settings[settingKey] = value;
-    updateRangeReadout(id);
-
-    if (id === "scene-scale" || id === "scene-offset-x" || id === "scene-offset-y") {
-      refreshSceneLayoutPreview();
-      return;
-    }
-
-    if (
-      id === "paper-gradient-angle" ||
-      id === "paper-texture-strength" ||
-      id === "paper-texture-scale"
-    ) {
-      rebuildPaperPreview();
-      return;
-    }
-
-    if (
-      id === "export-duration-seconds" ||
-      id === "export-frame-rate" ||
-      id === "export-resolution-scale"
-    ) {
-      refreshExportSettingsPreview();
-      return;
-    }
-
-    if (id === "reference-overlay-opacity" || id === "boil-hold-frames") {
-      return;
-    }
-
-    if (
-      id === "distortion-scale" ||
-      id === "distortion-frequency" ||
-      id === "distortion-octaves" ||
-      id === "distortion-speed"
-    ) {
-      refreshDistortionPreview();
-      return;
-    }
-
-    if (
-      id === "ink-opacity" ||
-      id === "line-width-scale" ||
-      id === "contour-stroke-thickness"
-    ) {
-      if (typeof clearRenderFrameCache === "function") {
-        clearRenderFrameCache();
-      }
-      return;
-    }
-
-    if (
-      id === "wave-amplitude" ||
-      id === "wave-frequency" ||
-      id === "wave-speed" ||
-      id === "edge-jitter-normal" ||
-      id === "edge-jitter-tangent" ||
-      id === "path-jitter-normal" ||
-      id === "path-jitter-tangent" ||
-      id === "width-jitter"
-    ) {
-      scheduleOutputRebuild({ reuseGeometry: true });
-      return;
-    }
-
-    scheduleOutputRebuild();
-  };
-
-  element.addEventListener("input", (event) => {
-    handleInput(event, "input");
-  });
-  element.addEventListener("change", (event) => {
-    handleInput(event, "change");
-  });
-}
-
-// Binds a range control with a callback.
-function bindRangeWithCallback(id, settingKey, callback) {
-  const element = document.getElementById(id);
-  if (!element) {
-    return;
+  if (id === "texture-upload") {
+    loadUserTexture(file);
   }
-
-  const handleInput = (event) => {
-    const value = Number(event.target.value);
-    settings[settingKey] = value;
-    updateRangeReadout(id, 1, "%");
-    callback(value);
-  };
-
-  element.addEventListener("input", handleInput);
-  element.addEventListener("change", handleInput);
-}
-
-// Binds a color control.
-function bindColor(id, settingKey) {
-  const element = document.getElementById(id);
-  if (!element) {
-    return;
-  }
-
-  const handleInput = (event) => {
-    settings[settingKey] = event.target.value;
-
-    if (
-      id === "paper-color" ||
-      id === "paper-accent-color" ||
-      id === "texture-color" ||
-      id === "texture-accent-color"
-    ) {
-      applyBackgroundTheme();
-      rebuildPaperPreview();
-      return;
-    }
-
-    if (id === "ink-color" && typeof clearRenderFrameCache === "function") {
-      clearRenderFrameCache();
-    }
-  };
-
-  element.addEventListener("input", handleInput);
-  element.addEventListener("change", handleInput);
-}
-
-// Binds a file input.
-function bindFileInput(id, onFile) {
-  const input = document.getElementById(id);
-  if (!input) {
-    return;
-  }
-
-  input.addEventListener("change", (event) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      onFile(file);
-    }
-  });
 }
 

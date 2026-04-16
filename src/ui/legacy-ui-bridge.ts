@@ -1,10 +1,19 @@
 import { useEffect, useState } from "react";
 
 export type ControlTab = "input" | "paper" | "stroke" | "export";
+export type RangeInputSource = "input" | "change";
 
 export interface LegacyRecoveryAction {
   action: string;
   label: string;
+}
+
+export interface LegacyControlValues {
+  [key: string]: string | number;
+}
+
+export interface LegacyRangeReadouts {
+  [key: string]: string;
 }
 
 export interface LegacyUiSnapshot {
@@ -30,6 +39,10 @@ export interface LegacyUiSnapshot {
   exportEstimateLevel: string;
   recoveryPrimary: LegacyRecoveryAction | null;
   recoverySecondary: LegacyRecoveryAction | null;
+  controlValues: LegacyControlValues;
+  rangeReadouts: LegacyRangeReadouts;
+  visibleModes: string[];
+  referenceOverlayEnabled: boolean;
 }
 
 export interface LegacyUiActions {
@@ -41,6 +54,10 @@ export interface LegacyUiActions {
   continueAnalysisWait(): void;
   cancelAnalysisWait(): void;
   runExportRecoveryAction(action: string): void;
+  updateSelect(id: string, value: string): void;
+  updateRange(id: string, value: number, source: RangeInputSource): void;
+  updateColor(id: string, value: string): void;
+  updateFile(id: string, file: File): void;
 }
 
 interface LegacyUiBridge {
@@ -67,7 +84,11 @@ const fallbackActions: LegacyUiActions = {
   startGifExport: noop,
   continueAnalysisWait: noop,
   cancelAnalysisWait: noop,
-  runExportRecoveryAction: noop
+  runExportRecoveryAction: noop,
+  updateSelect: noop,
+  updateRange: noop,
+  updateColor: noop,
+  updateFile: noop
 };
 
 const defaultSnapshot: LegacyUiSnapshot = {
@@ -92,7 +113,11 @@ const defaultSnapshot: LegacyUiSnapshot = {
   exportEstimate: "正在计算预计耗时...",
   exportEstimateLevel: "normal",
   recoveryPrimary: null,
-  recoverySecondary: null
+  recoverySecondary: null,
+  controlValues: {},
+  rangeReadouts: {},
+  visibleModes: ["edge-fill"],
+  referenceOverlayEnabled: true
 };
 
 function readSnapshot(): LegacyUiSnapshot {
@@ -133,4 +158,39 @@ export function useLegacyUiBridge() {
     snapshot,
     actions: readActions()
   };
+}
+
+export function getControlValue(snapshot: LegacyUiSnapshot, id: string, fallback: string | number) {
+  return snapshot.controlValues[id] ?? fallback;
+}
+
+export function getRangeReadout(snapshot: LegacyUiSnapshot, id: string, fallback: string) {
+  return snapshot.rangeReadouts[id] ?? fallback;
+}
+
+export function isModeVisible(snapshot: LegacyUiSnapshot, modes?: string) {
+  if (!modes) {
+    return true;
+  }
+
+  const modeList = modes.split(/\s+/).filter(Boolean);
+  if (!modeList.length) {
+    return true;
+  }
+
+  return modeList.some((mode) => snapshot.visibleModes.includes(mode));
+}
+
+export function getVisibilityClassName(
+  snapshot: LegacyUiSnapshot,
+  baseClassName: string,
+  options: {
+    modes?: string;
+    requiresOverlay?: boolean;
+  } = {}
+) {
+  const visibleByMode = isModeVisible(snapshot, options.modes);
+  const visibleByOverlay = !options.requiresOverlay || snapshot.referenceOverlayEnabled;
+
+  return `${baseClassName}${visibleByMode && visibleByOverlay ? "" : " is-hidden"}`;
 }

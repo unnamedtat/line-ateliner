@@ -209,27 +209,18 @@ function drawCaption() {
   textSize(min(width, height) * 0.015);
 
   const effectiveMode = getEffectiveRenderMode();
-  const modeLabel =
-    effectiveMode === "path"
-      ? "centerline paths"
-      : effectiveMode === "region-grow"
-        ? "region grow"
-        : effectiveMode === "color-grow"
-          ? "color grow"
-          : effectiveMode === "color-boundary"
-            ? "color boundary"
-            : effectiveMode === "distortion"
-              ? "svg distortion"
-              : effectiveMode === "wave-contour"
-                ? "wave contour"
-                : effectiveMode === "wave-shape"
-                  ? "wave shape"
-                  : effectiveMode === "rubber-contour"
-                    ? "rubber contour"
-                    : effectiveMode === "contour"
-                      ? "contour trace"
-                      : effectiveMode === "edge-fill"
-                        ? "edge fill"
-                        : "edge sampling";
+  const modeLabelByMode = {
+    path: "centerline paths",
+    "region-grow": "region grow",
+    "color-grow": "color grow",
+    "color-boundary": "color boundary",
+    distortion: "svg distortion",
+    "wave-contour": "wave contour",
+    "wave-shape": "wave shape",
+    "rubber-contour": "rubber contour",
+    contour: "contour trace",
+    "edge-fill": "edge fill"
+  };
+  const modeLabel = modeLabelByMode[effectiveMode] || "edge sampling";
 
 }

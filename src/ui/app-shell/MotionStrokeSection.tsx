@@ -1,6 +1,39 @@
 import { ControlGroupHeading } from "./ControlGroupHeading";
+import type { LegacyUiActions, LegacyUiSnapshot } from "../legacy-ui-bridge";
+import {
+  getControlValue,
+  getRangeReadout,
+  getVisibilityClassName
+} from "../legacy-ui-bridge";
 
-export function MotionStrokeSection() {
+interface MotionStrokeSectionProps {
+  snapshot: LegacyUiSnapshot;
+  actions: LegacyUiActions;
+}
+
+function renderRangeInput(
+  actions: LegacyUiActions,
+  id: string,
+  value: string | number,
+  min: number,
+  max: number,
+  step: number
+) {
+  return (
+    <input
+      id={id}
+      type="range"
+      min={min}
+      max={max}
+      step={step}
+      value={Number(value)}
+      onInput={(event) => actions.updateRange(id, Number(event.currentTarget.value), "input")}
+      onChange={(event) => actions.updateRange(id, Number(event.currentTarget.value), "change")}
+    />
+  );
+}
+
+export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionProps) {
   return (
     <section className="control-group">
       <ControlGroupHeading
@@ -8,20 +41,27 @@ export function MotionStrokeSection() {
         tooltip="控制沸腾感、边缘抖动和路径笔触粗细变化。它们主要影响绘制表现，不改原图分析。"
       />
 
-      <div className="control-block" data-modes="edge edge-fill contour region-grow color-grow color-boundary path">
+      <div
+        className={getVisibilityClassName(snapshot, "control-block", {
+          modes: "edge edge-fill contour region-grow color-grow color-boundary path"
+        })}
+        data-modes="edge edge-fill contour region-grow color-grow color-boundary path"
+      >
         <div className="range-head">
           <label className="control-label" htmlFor="boil-hold-frames">
             抖动速度
           </label>
           <span className="range-value" data-readout-for="boil-hold-frames">
-            5
+            {getRangeReadout(snapshot, "boil-hold-frames", "5")}
           </span>
         </div>
-        <input id="boil-hold-frames" type="range" min="2" max="12" step="1" defaultValue="5" />
+        {renderRangeInput(actions, "boil-hold-frames", getControlValue(snapshot, "boil-hold-frames", 5), 2, 12, 1)}
       </div>
 
       <div
-        className="control-block"
+        className={getVisibilityClassName(snapshot, "control-block", {
+          modes: "edge edge-fill contour region-grow color-grow color-boundary"
+        })}
         data-modes="edge edge-fill contour region-grow color-grow color-boundary"
       >
         <div className="range-head">
@@ -29,14 +69,23 @@ export function MotionStrokeSection() {
             轮廓法线抖动
           </label>
           <span className="range-value" data-readout-for="edge-jitter-normal">
-            20
+            {getRangeReadout(snapshot, "edge-jitter-normal", "20")}
           </span>
         </div>
-        <input id="edge-jitter-normal" type="range" min="0" max="200" step="1" defaultValue="20" />
+        {renderRangeInput(
+          actions,
+          "edge-jitter-normal",
+          getControlValue(snapshot, "edge-jitter-normal", 20),
+          0,
+          200,
+          1
+        )}
       </div>
 
       <div
-        className="control-block"
+        className={getVisibilityClassName(snapshot, "control-block", {
+          modes: "edge edge-fill contour region-grow color-grow color-boundary"
+        })}
         data-modes="edge edge-fill contour region-grow color-grow color-boundary"
       >
         <div className="range-head">
@@ -44,14 +93,23 @@ export function MotionStrokeSection() {
             轮廓切线抖动
           </label>
           <span className="range-value" data-readout-for="edge-jitter-tangent">
-            6
+            {getRangeReadout(snapshot, "edge-jitter-tangent", "6")}
           </span>
         </div>
-        <input id="edge-jitter-tangent" type="range" min="0" max="200" step="1" defaultValue="6" />
+        {renderRangeInput(
+          actions,
+          "edge-jitter-tangent",
+          getControlValue(snapshot, "edge-jitter-tangent", 6),
+          0,
+          200,
+          1
+        )}
       </div>
 
       <div
-        className="control-block"
+        className={getVisibilityClassName(snapshot, "control-block", {
+          modes: "contour-variant-wave-contour contour-variant-wave-shape contour-variant-rubber-contour"
+        })}
         data-modes="contour-variant-wave-contour contour-variant-wave-shape contour-variant-rubber-contour"
       >
         <div className="range-head">
@@ -59,14 +117,16 @@ export function MotionStrokeSection() {
             波浪振幅
           </label>
           <span className="range-value" data-readout-for="wave-amplitude">
-            14
+            {getRangeReadout(snapshot, "wave-amplitude", "14")}
           </span>
         </div>
-        <input id="wave-amplitude" type="range" min="0" max="60" step="1" defaultValue="14" />
+        {renderRangeInput(actions, "wave-amplitude", getControlValue(snapshot, "wave-amplitude", 14), 0, 60, 1)}
       </div>
 
       <div
-        className="control-block"
+        className={getVisibilityClassName(snapshot, "control-block", {
+          modes: "contour-variant-wave-contour contour-variant-wave-shape contour-variant-rubber-contour"
+        })}
         data-modes="contour-variant-wave-contour contour-variant-wave-shape contour-variant-rubber-contour"
       >
         <div className="range-head">
@@ -74,14 +134,16 @@ export function MotionStrokeSection() {
             波浪频率
           </label>
           <span className="range-value" data-readout-for="wave-frequency">
-            28
+            {getRangeReadout(snapshot, "wave-frequency", "28")}
           </span>
         </div>
-        <input id="wave-frequency" type="range" min="1" max="120" step="1" defaultValue="28" />
+        {renderRangeInput(actions, "wave-frequency", getControlValue(snapshot, "wave-frequency", 28), 1, 120, 1)}
       </div>
 
       <div
-        className="control-block"
+        className={getVisibilityClassName(snapshot, "control-block", {
+          modes: "contour-variant-wave-contour contour-variant-wave-shape contour-variant-rubber-contour"
+        })}
         data-modes="contour-variant-wave-contour contour-variant-wave-shape contour-variant-rubber-contour"
       >
         <div className="range-head">
@@ -89,106 +151,144 @@ export function MotionStrokeSection() {
             波浪速度
           </label>
           <span className="range-value" data-readout-for="wave-speed">
-            45
+            {getRangeReadout(snapshot, "wave-speed", "45")}
           </span>
         </div>
-        <input id="wave-speed" type="range" min="0" max="100" step="1" defaultValue="45" />
+        {renderRangeInput(actions, "wave-speed", getControlValue(snapshot, "wave-speed", 45), 0, 100, 1)}
       </div>
 
-      <div className="control-block" data-modes="contour">
+      <div
+        className={getVisibilityClassName(snapshot, "control-block", { modes: "contour" })}
+        data-modes="contour"
+      >
         <div className="range-head">
           <label className="control-label" htmlFor="contour-stroke-thickness">
             轮廓粗细
           </label>
           <span className="range-value" data-readout-for="contour-stroke-thickness">
-            100%
+            {getRangeReadout(snapshot, "contour-stroke-thickness", "100%")}
           </span>
         </div>
-        <input id="contour-stroke-thickness" type="range" min="40" max="260" step="1" defaultValue="100" />
+        {renderRangeInput(
+          actions,
+          "contour-stroke-thickness",
+          getControlValue(snapshot, "contour-stroke-thickness", 100),
+          40,
+          260,
+          1
+        )}
       </div>
 
-      <div className="control-block" data-modes="distortion">
+      <div
+        className={getVisibilityClassName(snapshot, "control-block", { modes: "distortion" })}
+        data-modes="distortion"
+      >
         <div className="range-head">
           <label className="control-label" htmlFor="distortion-scale">
             形变强度
           </label>
           <span className="range-value" data-readout-for="distortion-scale">
-            20
+            {getRangeReadout(snapshot, "distortion-scale", "20")}
           </span>
         </div>
-        <input id="distortion-scale" type="range" min="0" max="120" step="1" defaultValue="20" />
+        {renderRangeInput(actions, "distortion-scale", getControlValue(snapshot, "distortion-scale", 20), 0, 120, 1)}
       </div>
 
-      <div className="control-block" data-modes="distortion">
+      <div
+        className={getVisibilityClassName(snapshot, "control-block", { modes: "distortion" })}
+        data-modes="distortion"
+      >
         <div className="range-head">
           <label className="control-label" htmlFor="distortion-frequency">
             噪声尺度
           </label>
           <span className="range-value" data-readout-for="distortion-frequency">
-            8
+            {getRangeReadout(snapshot, "distortion-frequency", "8")}
           </span>
         </div>
-        <input id="distortion-frequency" type="range" min="1" max="30" step="1" defaultValue="8" />
+        {renderRangeInput(
+          actions,
+          "distortion-frequency",
+          getControlValue(snapshot, "distortion-frequency", 8),
+          1,
+          30,
+          1
+        )}
       </div>
 
-      <div className="control-block" data-modes="distortion">
+      <div
+        className={getVisibilityClassName(snapshot, "control-block", { modes: "distortion" })}
+        data-modes="distortion"
+      >
         <div className="range-head">
           <label className="control-label" htmlFor="distortion-octaves">
             噪声层级
           </label>
           <span className="range-value" data-readout-for="distortion-octaves">
-            2
+            {getRangeReadout(snapshot, "distortion-octaves", "2")}
           </span>
         </div>
-        <input id="distortion-octaves" type="range" min="1" max="5" step="1" defaultValue="2" />
+        {renderRangeInput(actions, "distortion-octaves", getControlValue(snapshot, "distortion-octaves", 2), 1, 5, 1)}
       </div>
 
-      <div className="control-block" data-modes="distortion">
+      <div
+        className={getVisibilityClassName(snapshot, "control-block", { modes: "distortion" })}
+        data-modes="distortion"
+      >
         <div className="range-head">
           <label className="control-label" htmlFor="distortion-speed">
             形变速度
           </label>
           <span className="range-value" data-readout-for="distortion-speed">
-            36
+            {getRangeReadout(snapshot, "distortion-speed", "36")}
           </span>
         </div>
-        <input id="distortion-speed" type="range" min="0" max="500" step="1" defaultValue="36" />
+        {renderRangeInput(actions, "distortion-speed", getControlValue(snapshot, "distortion-speed", 36), 0, 500, 1)}
       </div>
 
-      <div className="control-block" data-modes="path">
+      <div
+        className={getVisibilityClassName(snapshot, "control-block", { modes: "path" })}
+        data-modes="path"
+      >
         <div className="range-head">
           <label className="control-label" htmlFor="path-jitter-normal">
             路径法线抖动
           </label>
           <span className="range-value" data-readout-for="path-jitter-normal">
-            13
+            {getRangeReadout(snapshot, "path-jitter-normal", "13")}
           </span>
         </div>
-        <input id="path-jitter-normal" type="range" min="0" max="80" step="1" defaultValue="13" />
+        {renderRangeInput(actions, "path-jitter-normal", getControlValue(snapshot, "path-jitter-normal", 13), 0, 80, 1)}
       </div>
 
-      <div className="control-block" data-modes="path">
+      <div
+        className={getVisibilityClassName(snapshot, "control-block", { modes: "path" })}
+        data-modes="path"
+      >
         <div className="range-head">
           <label className="control-label" htmlFor="path-jitter-tangent">
             路径切线抖动
           </label>
           <span className="range-value" data-readout-for="path-jitter-tangent">
-            4
+            {getRangeReadout(snapshot, "path-jitter-tangent", "4")}
           </span>
         </div>
-        <input id="path-jitter-tangent" type="range" min="0" max="50" step="1" defaultValue="4" />
+        {renderRangeInput(actions, "path-jitter-tangent", getControlValue(snapshot, "path-jitter-tangent", 4), 0, 50, 1)}
       </div>
 
-      <div className="control-block" data-modes="path">
+      <div
+        className={getVisibilityClassName(snapshot, "control-block", { modes: "path" })}
+        data-modes="path"
+      >
         <div className="range-head">
           <label className="control-label" htmlFor="width-jitter">
             线宽抖动
           </label>
           <span className="range-value" data-readout-for="width-jitter">
-            8
+            {getRangeReadout(snapshot, "width-jitter", "8%")}
           </span>
         </div>
-        <input id="width-jitter" type="range" min="0" max="60" step="1" defaultValue="8" />
+        {renderRangeInput(actions, "width-jitter", getControlValue(snapshot, "width-jitter", 8), 0, 60, 1)}
       </div>
     </section>
   );

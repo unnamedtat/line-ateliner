@@ -116,7 +116,6 @@ function draw() {
     const colors = getPaperColors();
     background(colors.base[0], colors.base[1], colors.base[2]);
   }
-  bindControls();
 
   if (!sceneLayout || !hasDrawableOutput()) {
     hideDistortionOverlay();

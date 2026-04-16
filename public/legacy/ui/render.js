@@ -1,22 +1,12 @@
 // UI synchronization and visibility helpers.
 // Syncs control values back to the UI.
 function syncControls() {
-  CONTROL_VALUE_BINDINGS.forEach(([id, getValue]) => {
-    setControlValue(id, getValue());
-  });
-
-  RANGE_READOUT_BINDINGS.forEach(([id, divisor = 1, suffix = ""]) => {
-    updateRangeReadout(id, divisor, suffix);
-  });
-
   refreshUiState();
 }
 
 // Refreshes the overall UI state.
 function refreshUiState() {
   applyBackgroundTheme();
-  applyAlgorithmVisibility();
-  applyReferenceOverlayVisibility();
   applyImportExportLocks();
   applyControlTooltips();
   if (typeof syncDistortionOverlay === "function") {

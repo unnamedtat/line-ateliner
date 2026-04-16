@@ -46,31 +46,37 @@ export function AppShell() {
             />
             <div className="controls-body">
               <div className={getTabPanelClassName(snapshot.activeControlTab, "input")} data-tab-panel="input">
-                <InputAnalysisSection
-                  imageName={snapshot.imageName}
-                  importExportLocked={snapshot.importExportLocked}
-                />
-              </div>
-              <div className={getTabPanelClassName(snapshot.activeControlTab, "paper")} data-tab-panel="paper">
-                <PaperBackgroundSection
-                  importExportLocked={snapshot.importExportLocked}
-                  textureUploadSummary={snapshot.textureUploadSummary}
-                />
-              </div>
-              <div className={getTabPanelClassName(snapshot.activeControlTab, "stroke")} data-tab-panel="stroke">
-                <LineworkSection />
-              </div>
-              <div className={getTabPanelClassName(snapshot.activeControlTab, "input")} data-tab-panel="input">
-                <ExtractionPairingSection />
-              </div>
-              <div className={getTabPanelClassName(snapshot.activeControlTab, "stroke")} data-tab-panel="stroke">
-                <MotionStrokeSection />
-              </div>
-              <div className={getTabPanelClassName(snapshot.activeControlTab, "export")} data-tab-panel="export">
-                <ExportSection
-                  exportLocked={snapshot.exportLocked}
-                  exportVideoLabel={snapshot.exportVideoLabel}
-                  exportGifLabel={snapshot.exportGifLabel}
+              <InputAnalysisSection
+                snapshot={snapshot}
+                actions={actions}
+                imageName={snapshot.imageName}
+                importExportLocked={snapshot.importExportLocked}
+              />
+            </div>
+            <div className={getTabPanelClassName(snapshot.activeControlTab, "paper")} data-tab-panel="paper">
+              <PaperBackgroundSection
+                snapshot={snapshot}
+                actions={actions}
+                importExportLocked={snapshot.importExportLocked}
+                textureUploadSummary={snapshot.textureUploadSummary}
+              />
+            </div>
+            <div className={getTabPanelClassName(snapshot.activeControlTab, "stroke")} data-tab-panel="stroke">
+              <LineworkSection snapshot={snapshot} actions={actions} />
+            </div>
+            <div className={getTabPanelClassName(snapshot.activeControlTab, "input")} data-tab-panel="input">
+              <ExtractionPairingSection snapshot={snapshot} actions={actions} />
+            </div>
+            <div className={getTabPanelClassName(snapshot.activeControlTab, "stroke")} data-tab-panel="stroke">
+              <MotionStrokeSection snapshot={snapshot} actions={actions} />
+            </div>
+            <div className={getTabPanelClassName(snapshot.activeControlTab, "export")} data-tab-panel="export">
+              <ExportSection
+                snapshot={snapshot}
+                actions={actions}
+                exportLocked={snapshot.exportLocked}
+                exportVideoLabel={snapshot.exportVideoLabel}
+                exportGifLabel={snapshot.exportGifLabel}
                   exportStatus={snapshot.exportStatus}
                   exportEstimate={snapshot.exportEstimate}
                   exportEstimateLevel={snapshot.exportEstimateLevel}

@@ -108,11 +108,50 @@ function getProcessingCopy() {
   return appStatusState.analysisMessage || "正在读取图片并重建预览，请稍候。";
 }
 
+// Gets the current visible modes.
+function getVisibleModesSnapshot() {
+  const modes = new Set([settings.renderMode]);
+  if (settings.renderMode === "contour") {
+    modes.add(`contour-variant-${settings.contourVariant}`);
+  }
+
+  return Array.from(modes);
+}
+
+// Builds the current control value snapshot.
+function buildControlValueSnapshot() {
+  const values = {};
+
+  if (Array.isArray(CONTROL_VALUE_BINDINGS)) {
+    CONTROL_VALUE_BINDINGS.forEach(([id, getValue]) => {
+      values[id] = getValue();
+    });
+  }
+
+  return values;
+}
+
+// Builds the current range readout snapshot.
+function buildRangeReadoutSnapshot(controlValues) {
+  const readouts = {};
+
+  if (Array.isArray(RANGE_READOUT_BINDINGS)) {
+    RANGE_READOUT_BINDINGS.forEach(([id, divisor = 1, suffix = ""]) => {
+      const numericValue = Number(controlValues[id] ?? 0);
+      readouts[id] =
+        divisor === 1 ? `${numericValue}${suffix}` : `${numericValue / divisor}${suffix}`;
+    });
+  }
+
+  return readouts;
+}
+
 // Builds the current UI snapshot for React.
 function buildLegacyUiSnapshot() {
   const estimateSummary = getExportEstimateSnapshot();
   const canExportOutput = hasDrawableOutputSafe();
   const exportLocked = exportState.active || appStatusState.analysisActive || !canExportOutput;
+  const controlValues = buildControlValueSnapshot();
   const recovery = exportState.recovery || {};
   const videoLabel = exportState.active && exportState.format === "video" ? "导出中..." : "导出 MP4";
   const gifLabel = exportState.active && exportState.format === "gif" ? "导出中..." : "导出 GIF";
@@ -141,7 +180,11 @@ function buildLegacyUiSnapshot() {
     exportEstimate: estimateSummary.text,
     exportEstimateLevel: estimateSummary.level || "normal",
     recoveryPrimary: recovery.primary || null,
-    recoverySecondary: recovery.secondary || null
+    recoverySecondary: recovery.secondary || null,
+    controlValues,
+    rangeReadouts: buildRangeReadoutSnapshot(controlValues),
+    visibleModes: getVisibleModesSnapshot(),
+    referenceOverlayEnabled: Boolean(settings.referenceOverlay)
   };
 }
 
@@ -189,6 +232,26 @@ function ensureLegacyUiBridge() {
       runExportRecoveryAction: (action) => {
         if (typeof runExportRecoveryAction === "function") {
           runExportRecoveryAction(action);
+        }
+      },
+      updateSelect: (id, value) => {
+        if (typeof applySelectControlChange === "function") {
+          applySelectControlChange(id, value);
+        }
+      },
+      updateRange: (id, value, source) => {
+        if (typeof applyRangeControlChange === "function") {
+          applyRangeControlChange(id, value, source);
+        }
+      },
+      updateColor: (id, value) => {
+        if (typeof applyColorControlChange === "function") {
+          applyColorControlChange(id, value);
+        }
+      },
+      updateFile: (id, file) => {
+        if (typeof applyFileControlChange === "function") {
+          applyFileControlChange(id, file);
         }
       }
     }

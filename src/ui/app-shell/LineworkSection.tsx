@@ -1,9 +1,22 @@
 import { ControlGroupHeading } from "./ControlGroupHeading";
+import type { LegacyUiActions, LegacyUiSnapshot } from "../legacy-ui-bridge";
+import {
+  getControlValue,
+  getRangeReadout,
+  getVisibilityClassName
+} from "../legacy-ui-bridge";
 
-export function LineworkSection() {
+interface LineworkSectionProps {
+  snapshot: LegacyUiSnapshot;
+  actions: LegacyUiActions;
+}
+
+export function LineworkSection({ snapshot, actions }: LineworkSectionProps) {
   return (
     <section
-      className="control-group"
+      className={getVisibilityClassName(snapshot, "control-group", {
+        modes: "edge edge-fill contour region-grow color-grow color-boundary path"
+      })}
       data-modes="edge edge-fill contour region-grow color-grow color-boundary path"
     >
       <ControlGroupHeading
@@ -15,7 +28,13 @@ export function LineworkSection() {
         <label className="control-label" htmlFor="ink-color">
           线稿颜色
         </label>
-        <input id="ink-color" type="color" defaultValue="#2c2b28" />
+        <input
+          id="ink-color"
+          type="color"
+          value={String(getControlValue(snapshot, "ink-color", "#2c2b28"))}
+          onInput={(event) => actions.updateColor("ink-color", event.currentTarget.value)}
+          onChange={(event) => actions.updateColor("ink-color", event.currentTarget.value)}
+        />
       </div>
 
       <div className="control-block">
@@ -24,10 +43,19 @@ export function LineworkSection() {
             线稿透明度
           </label>
           <span className="range-value" data-readout-for="ink-opacity">
-            100%
+            {getRangeReadout(snapshot, "ink-opacity", "100%")}
           </span>
         </div>
-        <input id="ink-opacity" type="range" min="0" max="100" step="1" defaultValue="100" />
+        <input
+          id="ink-opacity"
+          type="range"
+          min="0"
+          max="100"
+          step="1"
+          value={Number(getControlValue(snapshot, "ink-opacity", 100))}
+          onInput={(event) => actions.updateRange("ink-opacity", Number(event.currentTarget.value), "input")}
+          onChange={(event) => actions.updateRange("ink-opacity", Number(event.currentTarget.value), "change")}
+        />
       </div>
 
       <div className="control-block">
@@ -36,10 +64,23 @@ export function LineworkSection() {
             线条宽度
           </label>
           <span className="range-value" data-readout-for="line-width-scale">
-            100
+            {getRangeReadout(snapshot, "line-width-scale", "100%")}
           </span>
         </div>
-        <input id="line-width-scale" type="range" min="40" max="260" step="1" defaultValue="100" />
+        <input
+          id="line-width-scale"
+          type="range"
+          min="40"
+          max="260"
+          step="1"
+          value={Number(getControlValue(snapshot, "line-width-scale", 100))}
+          onInput={(event) =>
+            actions.updateRange("line-width-scale", Number(event.currentTarget.value), "input")
+          }
+          onChange={(event) =>
+            actions.updateRange("line-width-scale", Number(event.currentTarget.value), "change")
+          }
+        />
       </div>
 
       <div className="control-note">会同时作用在 edge、path、contour 以及扩张类线稿模式。</div>

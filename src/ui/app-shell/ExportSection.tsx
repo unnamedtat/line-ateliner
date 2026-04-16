@@ -1,7 +1,15 @@
+import type { ChangeEvent, FormEvent } from "react";
 import { ControlGroupHeading } from "./ControlGroupHeading";
-import type { LegacyRecoveryAction } from "../legacy-ui-bridge";
+import type {
+  LegacyRecoveryAction,
+  LegacyUiActions,
+  LegacyUiSnapshot
+} from "../legacy-ui-bridge";
+import { getControlValue, getRangeReadout } from "../legacy-ui-bridge";
 
 interface ExportSectionProps {
+  snapshot: LegacyUiSnapshot;
+  actions: LegacyUiActions;
   exportLocked: boolean;
   exportVideoLabel: string;
   exportGifLabel: string;
@@ -16,6 +24,8 @@ interface ExportSectionProps {
 }
 
 export function ExportSection({
+  snapshot,
+  actions,
   exportLocked,
   exportVideoLabel,
   exportGifLabel,
@@ -30,6 +40,14 @@ export function ExportSection({
 }: ExportSectionProps) {
   const recoveryVisible = Boolean(recoveryPrimary || recoverySecondary);
 
+  const bindRange = (id: string) => ({
+    value: Number(getControlValue(snapshot, id, 0)),
+    onInput: (event: FormEvent<HTMLInputElement>) =>
+      actions.updateRange(id, Number(event.currentTarget.value), "input"),
+    onChange: (event: ChangeEvent<HTMLInputElement>) =>
+      actions.updateRange(id, Number(event.currentTarget.value), "change")
+  });
+
   return (
     <section className="control-group">
       <ControlGroupHeading
@@ -43,10 +61,10 @@ export function ExportSection({
             导出时长
           </label>
           <span className="range-value" data-readout-for="export-duration-seconds">
-            3s
+            {getRangeReadout(snapshot, "export-duration-seconds", "3s")}
           </span>
         </div>
-        <input id="export-duration-seconds" type="range" min="1" max="8" step="1" defaultValue="3" />
+        <input id="export-duration-seconds" type="range" min="1" max="8" step="1" {...bindRange("export-duration-seconds")} />
       </div>
 
       <div className="control-block">
@@ -55,10 +73,10 @@ export function ExportSection({
             导出帧率
           </label>
           <span className="range-value" data-readout-for="export-frame-rate">
-            18fps
+            {getRangeReadout(snapshot, "export-frame-rate", "18fps")}
           </span>
         </div>
-        <input id="export-frame-rate" type="range" min="8" max="30" step="1" defaultValue="18" />
+        <input id="export-frame-rate" type="range" min="8" max="30" step="1" {...bindRange("export-frame-rate")} />
       </div>
 
       <div className="control-block">
@@ -67,7 +85,7 @@ export function ExportSection({
             导出清晰度
           </label>
           <span className="range-value" data-readout-for="export-resolution-scale">
-            200%
+            {getRangeReadout(snapshot, "export-resolution-scale", "200%")}
           </span>
         </div>
         <input
@@ -76,7 +94,7 @@ export function ExportSection({
           min="100"
           max="400"
           step="25"
-          defaultValue="200"
+          {...bindRange("export-resolution-scale")}
         />
       </div>
 
