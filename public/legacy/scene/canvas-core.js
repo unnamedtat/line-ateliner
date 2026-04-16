@@ -117,9 +117,6 @@ function draw() {
     background(colors.base[0], colors.base[1], colors.base[2]);
   }
   bindControls();
-  if (typeof syncCanvasEmptyState === "function") {
-    syncCanvasEmptyState();
-  }
 
   if (!sceneLayout || !hasDrawableOutput()) {
     hideDistortionOverlay();

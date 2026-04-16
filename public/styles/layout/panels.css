@@ -2,6 +2,10 @@
         display: none !important;
       }
 
+      [data-tab-panel].is-tab-hidden {
+        display: none !important;
+      }
+
       .status-bar {
         justify-content: space-between;
         padding: 8px 12px;

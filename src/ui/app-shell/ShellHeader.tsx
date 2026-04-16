@@ -1,14 +1,30 @@
-export function ShellHeader() {
+interface ShellHeaderProps {
+  uiHidden: boolean;
+  onTogglePanel(): void;
+}
+
+export function ShellHeader({ uiHidden, onTogglePanel }: ShellHeaderProps) {
   return (
-    <div className="controls-header">
-      <div className="controls-title-wrap">
-        <div className="controls-title">Line Atelier</div>
-        <div className="controls-subtitle">日系线稿工具箱</div>
+    <div className="controls-header window-chrome">
+      <div className="window-meta">
+        <div className="window-dots" aria-hidden="true"></div>
+        <div className="window-title-band">
+          <span className="title-ornament" aria-hidden="true"></span>
+          <div className="window-title-wrap">
+            <div className="window-title">✦Line Atelier✦</div>
+          </div>
+          <span className="title-ornament" aria-hidden="true"></span>
+        </div>
       </div>
-      <div className="controls-header-actions">
-        <div className="controls-badge">toolbox</div>
-        <button className="controls-toggle" id="ui-toggle" type="button">
-          收起面板
+      <div className="window-actions">
+        <button
+          className={`window-toggle window-corner-button${uiHidden ? "" : " is-active"}`}
+          id="ui-toggle"
+          type="button"
+          aria-expanded={uiHidden ? "false" : "true"}
+          onClick={onTogglePanel}
+        >
+          {uiHidden ? "◂" : "x"}
         </button>
       </div>
     </div>

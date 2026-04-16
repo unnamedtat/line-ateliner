@@ -1,6 +1,16 @@
 import { ControlGroupHeading } from "./ControlGroupHeading";
 
-export function PaperBackgroundSection() {
+interface PaperBackgroundSectionProps {
+  importExportLocked: boolean;
+  textureUploadSummary: string;
+}
+
+export function PaperBackgroundSection({
+  importExportLocked,
+  textureUploadSummary
+}: PaperBackgroundSectionProps) {
+  const fileButtonClassName = `file-button${importExportLocked ? " is-disabled" : ""}`;
+
   return (
     <section className="control-group">
       <ControlGroupHeading
@@ -78,14 +88,23 @@ export function PaperBackgroundSection() {
           纹理图片
         </label>
         <div className="upload-row">
-          <label className="file-button" htmlFor="texture-upload">
+          <label
+            className={fileButtonClassName}
+            htmlFor="texture-upload"
+            aria-disabled={importExportLocked ? "true" : "false"}
+          >
             上传纹理
           </label>
           <div className="file-summary" id="texture-upload-summary">
-            未选择纹理
+            {textureUploadSummary}
           </div>
         </div>
-        <input id="texture-upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
+        <input
+          id="texture-upload"
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          disabled={importExportLocked}
+        />
       </div>
 
       <div className="control-block">

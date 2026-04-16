@@ -9,11 +9,11 @@ export function OverlayLayers() {
         preserveAspectRatio="none"
         aria-hidden="true"
         style={{
-          position: "fixed",
+          position: "absolute",
           inset: 0,
           width: "100%",
           height: "100%",
-          overflow: "visible",
+          overflow: "hidden",
           pointerEvents: "none",
           zIndex: 2,
           display: "none"
@@ -56,7 +56,7 @@ export function OverlayLayers() {
         alt=""
         aria-hidden="true"
         style={{
-          position: "fixed",
+          position: "absolute",
           inset: 0,
           width: "100%",
           height: "100%",

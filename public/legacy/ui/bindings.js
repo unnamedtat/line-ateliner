@@ -8,7 +8,6 @@ function bindControls() {
   }
 
   if (panel.dataset.bound === "1") {
-    refreshUiState();
     return;
   }
 
@@ -25,55 +24,6 @@ function bindControls() {
 
   bindFileInput("image-upload", loadUserImage);
   bindFileInput("texture-upload", loadUserTexture);
-
-  document.querySelectorAll("[data-panel-toggle]").forEach((toggle) => {
-    toggle.addEventListener("click", () => {
-      settings.uiHidden = !settings.uiHidden;
-      applyUiVisibility();
-    });
-  });
-
-  document.querySelectorAll("[data-tab]").forEach((tabButton) => {
-    tabButton.addEventListener("click", () => {
-      setActiveControlTab(tabButton.dataset.tab);
-    });
-  });
-
-  const resetButton = document.getElementById("reset-settings");
-  if (resetButton) {
-    resetButton.addEventListener("click", resetAllSettings);
-  }
-
-  [
-    ["export-video", startVideoExport],
-    ["export-gif", startGifExport],
-    ["toolbar-export-video", startVideoExport],
-    ["toolbar-export-gif", startGifExport]
-  ].forEach(([id, action]) => {
-    bindActionButton(id, action);
-  });
-
-  ["export-recovery-primary", "export-recovery-secondary"].forEach((id) => {
-    const element = document.getElementById(id);
-    if (!element) {
-      return;
-    }
-
-    element.addEventListener("click", () => {
-      const action = element.dataset.exportAction || "";
-      if (!action || exportState.active || typeof runExportRecoveryAction !== "function") {
-        return;
-      }
-      runExportRecoveryAction(action);
-    });
-  });
-
-  [
-    ["analysis-continue-wait", continueAnalysisWait],
-    ["analysis-stop-wait", cancelAnalysisWait]
-  ].forEach(([id, action]) => {
-    bindActionButton(id, action);
-  });
 
   syncControls();
 }
@@ -249,16 +199,3 @@ function bindFileInput(id, onFile) {
   });
 }
 
-// Binds an action button.
-function bindActionButton(id, onClick) {
-  const element = document.getElementById(id);
-  if (!element) {
-    return;
-  }
-
-  element.addEventListener("click", () => {
-    if (!exportState.active) {
-      onClick();
-    }
-  });
-}

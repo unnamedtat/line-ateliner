@@ -1,6 +1,13 @@
 import { ControlGroupHeading } from "./ControlGroupHeading";
 
-export function InputAnalysisSection() {
+interface InputAnalysisSectionProps {
+  imageName: string;
+  importExportLocked: boolean;
+}
+
+export function InputAnalysisSection({ imageName, importExportLocked }: InputAnalysisSectionProps) {
+  const fileButtonClassName = `file-button${importExportLocked ? " is-disabled" : ""}`;
+
   return (
     <section className="control-group">
       <ControlGroupHeading
@@ -73,13 +80,22 @@ export function InputAnalysisSection() {
           图片
         </label>
         <div className="upload-row">
-          <label className="file-button" htmlFor="image-upload">
+          <label
+            className={fileButtonClassName}
+            htmlFor="image-upload"
+            aria-disabled={importExportLocked ? "true" : "false"}
+          >
             选择文件
           </label>
         </div>
-        <input id="image-upload" type="file" accept="image/png,image/jpeg,image/webp,image/gif" />
+        <input
+          id="image-upload"
+          type="file"
+          accept="image/png,image/jpeg,image/webp,image/gif"
+          disabled={importExportLocked}
+        />
         <div className="image-name" id="image-name">
-          当前图片: figure.png
+          {imageName}
         </div>
       </div>
 

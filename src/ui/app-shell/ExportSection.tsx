@@ -1,6 +1,35 @@
 import { ControlGroupHeading } from "./ControlGroupHeading";
+import type { LegacyRecoveryAction } from "../legacy-ui-bridge";
 
-export function ExportSection() {
+interface ExportSectionProps {
+  exportLocked: boolean;
+  exportVideoLabel: string;
+  exportGifLabel: string;
+  exportStatus: string;
+  exportEstimate: string;
+  exportEstimateLevel: string;
+  recoveryPrimary: LegacyRecoveryAction | null;
+  recoverySecondary: LegacyRecoveryAction | null;
+  onExportVideo(): void;
+  onExportGif(): void;
+  onRecoveryAction(action: string): void;
+}
+
+export function ExportSection({
+  exportLocked,
+  exportVideoLabel,
+  exportGifLabel,
+  exportStatus,
+  exportEstimate,
+  exportEstimateLevel,
+  recoveryPrimary,
+  recoverySecondary,
+  onExportVideo,
+  onExportGif,
+  onRecoveryAction
+}: ExportSectionProps) {
+  const recoveryVisible = Boolean(recoveryPrimary || recoverySecondary);
+
   return (
     <section className="control-group">
       <ControlGroupHeading
@@ -52,23 +81,56 @@ export function ExportSection() {
       </div>
 
       <div className="action-row action-row-export">
-        <button className="action-button" id="export-video" type="button">
-          导出 MP4
+        <button
+          className="action-button"
+          id="export-video"
+          type="button"
+          disabled={exportLocked}
+          onClick={onExportVideo}
+        >
+          {exportVideoLabel}
         </button>
-        <button className="action-button" id="export-gif" type="button">
-          导出 GIF
+        <button
+          className="action-button"
+          id="export-gif"
+          type="button"
+          disabled={exportLocked}
+          onClick={onExportGif}
+        >
+          {exportGifLabel}
         </button>
       </div>
 
-      <div className="control-note export-estimate" id="export-estimate">
-        正在计算预计耗时...
+      <div className="control-note export-estimate" id="export-estimate" data-level={exportEstimateLevel}>
+        {exportEstimate}
       </div>
       <div className="control-note export-status" id="export-status">
-        当前支持 MP4 和 GIF 导出。
+        {exportStatus}
       </div>
-      <div className="action-row action-row-export action-row-recovery is-hidden" id="export-recovery-actions">
-        <button className="action-button" id="export-recovery-primary" type="button"></button>
-        <button className="action-button" id="export-recovery-secondary" type="button"></button>
+      <div
+        className={`action-row action-row-export action-row-recovery${recoveryVisible ? "" : " is-hidden"}`}
+        id="export-recovery-actions"
+      >
+        <button
+          className={`action-button${recoveryPrimary ? "" : " is-hidden"}`}
+          id="export-recovery-primary"
+          type="button"
+          disabled={exportLocked || !recoveryPrimary}
+          data-export-action={recoveryPrimary?.action || ""}
+          onClick={() => recoveryPrimary && onRecoveryAction(recoveryPrimary.action)}
+        >
+          {recoveryPrimary?.label || ""}
+        </button>
+        <button
+          className={`action-button${recoverySecondary ? "" : " is-hidden"}`}
+          id="export-recovery-secondary"
+          type="button"
+          disabled={exportLocked || !recoverySecondary}
+          data-export-action={recoverySecondary?.action || ""}
+          onClick={() => recoverySecondary && onRecoveryAction(recoverySecondary.action)}
+        >
+          {recoverySecondary?.label || ""}
+        </button>
       </div>
     </section>
   );
