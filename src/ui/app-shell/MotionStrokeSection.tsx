@@ -34,6 +34,9 @@ function renderRangeInput(
 }
 
 export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionProps) {
+  const controlValue = (id: string) => getControlValue(snapshot, id);
+  const rangeReadout = (id: string) => getRangeReadout(snapshot, id);
+
   return (
     <section className="control-group">
       <ControlGroupHeading
@@ -52,10 +55,10 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
             抖动速度
           </label>
           <span className="range-value" data-readout-for="boil-hold-frames">
-            {getRangeReadout(snapshot, "boil-hold-frames", "5")}
+            {rangeReadout("boil-hold-frames")}
           </span>
         </div>
-        {renderRangeInput(actions, "boil-hold-frames", getControlValue(snapshot, "boil-hold-frames", 5), 2, 12, 1)}
+        {renderRangeInput(actions, "boil-hold-frames", controlValue("boil-hold-frames"), 2, 12, 1)}
       </div>
 
       <div
@@ -69,17 +72,10 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
             轮廓法线抖动
           </label>
           <span className="range-value" data-readout-for="edge-jitter-normal">
-            {getRangeReadout(snapshot, "edge-jitter-normal", "20")}
+            {rangeReadout("edge-jitter-normal")}
           </span>
         </div>
-        {renderRangeInput(
-          actions,
-          "edge-jitter-normal",
-          getControlValue(snapshot, "edge-jitter-normal", 20),
-          0,
-          200,
-          1
-        )}
+        {renderRangeInput(actions, "edge-jitter-normal", controlValue("edge-jitter-normal"), 0, 200, 1)}
       </div>
 
       <div
@@ -93,17 +89,10 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
             轮廓切线抖动
           </label>
           <span className="range-value" data-readout-for="edge-jitter-tangent">
-            {getRangeReadout(snapshot, "edge-jitter-tangent", "6")}
+            {rangeReadout("edge-jitter-tangent")}
           </span>
         </div>
-        {renderRangeInput(
-          actions,
-          "edge-jitter-tangent",
-          getControlValue(snapshot, "edge-jitter-tangent", 6),
-          0,
-          200,
-          1
-        )}
+        {renderRangeInput(actions, "edge-jitter-tangent", controlValue("edge-jitter-tangent"), 0, 200, 1)}
       </div>
 
       <div
@@ -117,10 +106,10 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
             波浪振幅
           </label>
           <span className="range-value" data-readout-for="wave-amplitude">
-            {getRangeReadout(snapshot, "wave-amplitude", "14")}
+            {rangeReadout("wave-amplitude")}
           </span>
         </div>
-        {renderRangeInput(actions, "wave-amplitude", getControlValue(snapshot, "wave-amplitude", 14), 0, 60, 1)}
+        {renderRangeInput(actions, "wave-amplitude", controlValue("wave-amplitude"), 0, 60, 1)}
       </div>
 
       <div
@@ -134,10 +123,10 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
             波浪频率
           </label>
           <span className="range-value" data-readout-for="wave-frequency">
-            {getRangeReadout(snapshot, "wave-frequency", "28")}
+            {rangeReadout("wave-frequency")}
           </span>
         </div>
-        {renderRangeInput(actions, "wave-frequency", getControlValue(snapshot, "wave-frequency", 28), 1, 120, 1)}
+        {renderRangeInput(actions, "wave-frequency", controlValue("wave-frequency"), 1, 120, 1)}
       </div>
 
       <div
@@ -151,10 +140,10 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
             波浪速度
           </label>
           <span className="range-value" data-readout-for="wave-speed">
-            {getRangeReadout(snapshot, "wave-speed", "45")}
+            {rangeReadout("wave-speed")}
           </span>
         </div>
-        {renderRangeInput(actions, "wave-speed", getControlValue(snapshot, "wave-speed", 45), 0, 100, 1)}
+        {renderRangeInput(actions, "wave-speed", controlValue("wave-speed"), 0, 100, 1)}
       </div>
 
       <div
@@ -166,17 +155,10 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
             轮廓粗细
           </label>
           <span className="range-value" data-readout-for="contour-stroke-thickness">
-            {getRangeReadout(snapshot, "contour-stroke-thickness", "100%")}
+            {rangeReadout("contour-stroke-thickness")}
           </span>
         </div>
-        {renderRangeInput(
-          actions,
-          "contour-stroke-thickness",
-          getControlValue(snapshot, "contour-stroke-thickness", 100),
-          40,
-          260,
-          1
-        )}
+        {renderRangeInput(actions, "contour-stroke-thickness", controlValue("contour-stroke-thickness"), 40, 260, 1)}
       </div>
 
       <div
@@ -188,10 +170,10 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
             形变强度
           </label>
           <span className="range-value" data-readout-for="distortion-scale">
-            {getRangeReadout(snapshot, "distortion-scale", "20")}
+            {rangeReadout("distortion-scale")}
           </span>
         </div>
-        {renderRangeInput(actions, "distortion-scale", getControlValue(snapshot, "distortion-scale", 20), 0, 120, 1)}
+        {renderRangeInput(actions, "distortion-scale", controlValue("distortion-scale"), 0, 120, 1)}
       </div>
 
       <div
@@ -203,17 +185,10 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
             噪声尺度
           </label>
           <span className="range-value" data-readout-for="distortion-frequency">
-            {getRangeReadout(snapshot, "distortion-frequency", "8")}
+            {rangeReadout("distortion-frequency")}
           </span>
         </div>
-        {renderRangeInput(
-          actions,
-          "distortion-frequency",
-          getControlValue(snapshot, "distortion-frequency", 8),
-          1,
-          30,
-          1
-        )}
+        {renderRangeInput(actions, "distortion-frequency", controlValue("distortion-frequency"), 1, 30, 1)}
       </div>
 
       <div
@@ -225,10 +200,10 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
             噪声层级
           </label>
           <span className="range-value" data-readout-for="distortion-octaves">
-            {getRangeReadout(snapshot, "distortion-octaves", "2")}
+            {rangeReadout("distortion-octaves")}
           </span>
         </div>
-        {renderRangeInput(actions, "distortion-octaves", getControlValue(snapshot, "distortion-octaves", 2), 1, 5, 1)}
+        {renderRangeInput(actions, "distortion-octaves", controlValue("distortion-octaves"), 1, 5, 1)}
       </div>
 
       <div
@@ -240,10 +215,10 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
             形变速度
           </label>
           <span className="range-value" data-readout-for="distortion-speed">
-            {getRangeReadout(snapshot, "distortion-speed", "36")}
+            {rangeReadout("distortion-speed")}
           </span>
         </div>
-        {renderRangeInput(actions, "distortion-speed", getControlValue(snapshot, "distortion-speed", 36), 0, 500, 1)}
+        {renderRangeInput(actions, "distortion-speed", controlValue("distortion-speed"), 0, 500, 1)}
       </div>
 
       <div
@@ -255,10 +230,10 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
             路径法线抖动
           </label>
           <span className="range-value" data-readout-for="path-jitter-normal">
-            {getRangeReadout(snapshot, "path-jitter-normal", "13")}
+            {rangeReadout("path-jitter-normal")}
           </span>
         </div>
-        {renderRangeInput(actions, "path-jitter-normal", getControlValue(snapshot, "path-jitter-normal", 13), 0, 80, 1)}
+        {renderRangeInput(actions, "path-jitter-normal", controlValue("path-jitter-normal"), 0, 80, 1)}
       </div>
 
       <div
@@ -270,10 +245,10 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
             路径切线抖动
           </label>
           <span className="range-value" data-readout-for="path-jitter-tangent">
-            {getRangeReadout(snapshot, "path-jitter-tangent", "4")}
+            {rangeReadout("path-jitter-tangent")}
           </span>
         </div>
-        {renderRangeInput(actions, "path-jitter-tangent", getControlValue(snapshot, "path-jitter-tangent", 4), 0, 50, 1)}
+        {renderRangeInput(actions, "path-jitter-tangent", controlValue("path-jitter-tangent"), 0, 50, 1)}
       </div>
 
       <div
@@ -285,10 +260,10 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
             线宽抖动
           </label>
           <span className="range-value" data-readout-for="width-jitter">
-            {getRangeReadout(snapshot, "width-jitter", "8%")}
+            {rangeReadout("width-jitter")}
           </span>
         </div>
-        {renderRangeInput(actions, "width-jitter", getControlValue(snapshot, "width-jitter", 8), 0, 60, 1)}
+        {renderRangeInput(actions, "width-jitter", controlValue("width-jitter"), 0, 60, 1)}
       </div>
     </section>
   );

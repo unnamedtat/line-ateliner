@@ -39,14 +39,8 @@ export function ExportSection({
   onRecoveryAction
 }: ExportSectionProps) {
   const recoveryVisible = Boolean(recoveryPrimary || recoverySecondary);
-  const rangeDefaults = {
-    "export-duration-seconds": 3,
-    "export-frame-rate": 18,
-    "export-resolution-scale": 200
-  } as const;
-
   const bindRange = (id: string) => ({
-    value: Number(getControlValue(snapshot, id, rangeDefaults[id as keyof typeof rangeDefaults] ?? 0)),
+    value: Number(getControlValue(snapshot, id)),
     onInput: (event: FormEvent<HTMLInputElement>) =>
       actions.updateRange(id, Number(event.currentTarget.value), "input"),
     onChange: (event: ChangeEvent<HTMLInputElement>) =>
@@ -66,7 +60,7 @@ export function ExportSection({
             导出时长
           </label>
           <span className="range-value" data-readout-for="export-duration-seconds">
-            {getRangeReadout(snapshot, "export-duration-seconds", "3s")}
+            {getRangeReadout(snapshot, "export-duration-seconds")}
           </span>
         </div>
         <input id="export-duration-seconds" type="range" min="1" max="8" step="1" {...bindRange("export-duration-seconds")} />
@@ -78,7 +72,7 @@ export function ExportSection({
             导出帧率
           </label>
           <span className="range-value" data-readout-for="export-frame-rate">
-            {getRangeReadout(snapshot, "export-frame-rate", "18fps")}
+            {getRangeReadout(snapshot, "export-frame-rate")}
           </span>
         </div>
         <input id="export-frame-rate" type="range" min="8" max="30" step="1" {...bindRange("export-frame-rate")} />
@@ -90,7 +84,7 @@ export function ExportSection({
             导出清晰度
           </label>
           <span className="range-value" data-readout-for="export-resolution-scale">
-            {getRangeReadout(snapshot, "export-resolution-scale", "200%")}
+            {getRangeReadout(snapshot, "export-resolution-scale")}
           </span>
         </div>
         <input

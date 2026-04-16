@@ -12,6 +12,9 @@ interface LineworkSectionProps {
 }
 
 export function LineworkSection({ snapshot, actions }: LineworkSectionProps) {
+  const controlValue = (id: string) => getControlValue(snapshot, id);
+  const rangeReadout = (id: string) => getRangeReadout(snapshot, id);
+
   return (
     <section
       className={getVisibilityClassName(snapshot, "control-group", {
@@ -31,7 +34,7 @@ export function LineworkSection({ snapshot, actions }: LineworkSectionProps) {
         <input
           id="ink-color"
           type="color"
-          value={String(getControlValue(snapshot, "ink-color", "#2c2b28"))}
+          value={String(controlValue("ink-color"))}
           onInput={(event) => actions.updateColor("ink-color", event.currentTarget.value)}
           onChange={(event) => actions.updateColor("ink-color", event.currentTarget.value)}
         />
@@ -43,7 +46,7 @@ export function LineworkSection({ snapshot, actions }: LineworkSectionProps) {
             线稿透明度
           </label>
           <span className="range-value" data-readout-for="ink-opacity">
-            {getRangeReadout(snapshot, "ink-opacity", "100%")}
+            {rangeReadout("ink-opacity")}
           </span>
         </div>
         <input
@@ -52,7 +55,7 @@ export function LineworkSection({ snapshot, actions }: LineworkSectionProps) {
           min="0"
           max="100"
           step="1"
-          value={Number(getControlValue(snapshot, "ink-opacity", 100))}
+          value={Number(controlValue("ink-opacity"))}
           onInput={(event) => actions.updateRange("ink-opacity", Number(event.currentTarget.value), "input")}
           onChange={(event) => actions.updateRange("ink-opacity", Number(event.currentTarget.value), "change")}
         />
@@ -64,7 +67,7 @@ export function LineworkSection({ snapshot, actions }: LineworkSectionProps) {
             线条宽度
           </label>
           <span className="range-value" data-readout-for="line-width-scale">
-            {getRangeReadout(snapshot, "line-width-scale", "100%")}
+            {rangeReadout("line-width-scale")}
           </span>
         </div>
         <input
@@ -73,7 +76,7 @@ export function LineworkSection({ snapshot, actions }: LineworkSectionProps) {
           min="40"
           max="260"
           step="1"
-          value={Number(getControlValue(snapshot, "line-width-scale", 100))}
+          value={Number(controlValue("line-width-scale"))}
           onInput={(event) =>
             actions.updateRange("line-width-scale", Number(event.currentTarget.value), "input")
           }

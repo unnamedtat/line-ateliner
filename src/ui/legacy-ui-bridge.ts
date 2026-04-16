@@ -1,4 +1,10 @@
 import { useEffect, useState } from "react";
+import {
+  getLegacyControlDefault,
+  getLegacyRangeReadoutDefault,
+  LEGACY_CONTROL_DEFAULTS,
+  LEGACY_RANGE_READOUT_DEFAULTS
+} from "./legacy-ui-defaults";
 
 export type ControlTab = "input" | "paper" | "stroke" | "export";
 export type RangeInputSource = "input" | "change";
@@ -114,16 +120,8 @@ const defaultSnapshot: LegacyUiSnapshot = {
   exportEstimateLevel: "normal",
   recoveryPrimary: null,
   recoverySecondary: null,
-  controlValues: {
-    "export-duration-seconds": 3,
-    "export-frame-rate": 18,
-    "export-resolution-scale": 200
-  },
-  rangeReadouts: {
-    "export-duration-seconds": "3s",
-    "export-frame-rate": "18fps",
-    "export-resolution-scale": "200%"
-  },
+  controlValues: { ...LEGACY_CONTROL_DEFAULTS },
+  rangeReadouts: { ...LEGACY_RANGE_READOUT_DEFAULTS },
   visibleModes: ["edge-fill"],
   referenceOverlayEnabled: true
 };
@@ -168,12 +166,12 @@ export function useLegacyUiBridge() {
   };
 }
 
-export function getControlValue(snapshot: LegacyUiSnapshot, id: string, fallback: string | number) {
-  return snapshot.controlValues[id] ?? fallback;
+export function getControlValue(snapshot: LegacyUiSnapshot, id: string, fallback: string | number = "") {
+  return snapshot.controlValues[id] ?? getLegacyControlDefault(id, fallback);
 }
 
-export function getRangeReadout(snapshot: LegacyUiSnapshot, id: string, fallback: string) {
-  return snapshot.rangeReadouts[id] ?? fallback;
+export function getRangeReadout(snapshot: LegacyUiSnapshot, id: string, fallback = "") {
+  return snapshot.rangeReadouts[id] ?? getLegacyRangeReadoutDefault(id, fallback);
 }
 
 export function isModeVisible(snapshot: LegacyUiSnapshot, modes?: string) {

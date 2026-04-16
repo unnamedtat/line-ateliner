@@ -16,6 +16,8 @@ export function PaperBackgroundSection({
   textureUploadSummary
 }: PaperBackgroundSectionProps) {
   const fileButtonClassName = `file-button${importExportLocked ? " is-disabled" : ""}`;
+  const controlValue = (id: string) => getControlValue(snapshot, id);
+  const rangeReadout = (id: string) => getRangeReadout(snapshot, id);
 
   return (
     <section className="control-group">
@@ -30,7 +32,7 @@ export function PaperBackgroundSection({
         </label>
         <select
           id="background-preset"
-          value={String(getControlValue(snapshot, "background-preset", "warm"))}
+          value={String(controlValue("background-preset"))}
           onChange={(event) => actions.updateSelect("background-preset", event.currentTarget.value)}
         >
           <option value="warm">暖纸</option>
@@ -47,7 +49,7 @@ export function PaperBackgroundSection({
         </label>
         <select
           id="paper-fill-mode"
-          value={String(getControlValue(snapshot, "paper-fill-mode", "solid"))}
+          value={String(controlValue("paper-fill-mode"))}
           onChange={(event) => actions.updateSelect("paper-fill-mode", event.currentTarget.value)}
         >
           <option value="solid">纯色</option>
@@ -61,7 +63,7 @@ export function PaperBackgroundSection({
             渐变角度
           </label>
           <span className="range-value" data-readout-for="paper-gradient-angle">
-            {getRangeReadout(snapshot, "paper-gradient-angle", "18")}
+            {rangeReadout("paper-gradient-angle")}
           </span>
         </div>
         <input
@@ -70,7 +72,7 @@ export function PaperBackgroundSection({
           min="0"
           max="360"
           step="1"
-          value={Number(getControlValue(snapshot, "paper-gradient-angle", 18))}
+          value={Number(controlValue("paper-gradient-angle"))}
           onInput={(event) =>
             actions.updateRange("paper-gradient-angle", Number(event.currentTarget.value), "input")
           }
@@ -86,14 +88,14 @@ export function PaperBackgroundSection({
           <input
             id="paper-color"
             type="color"
-            value={String(getControlValue(snapshot, "paper-color", "#f6f0e5"))}
+            value={String(controlValue("paper-color"))}
             onInput={(event) => actions.updateColor("paper-color", event.currentTarget.value)}
             onChange={(event) => actions.updateColor("paper-color", event.currentTarget.value)}
           />
           <input
             id="paper-accent-color"
             type="color"
-            value={String(getControlValue(snapshot, "paper-accent-color", "#efe3cd"))}
+            value={String(controlValue("paper-accent-color"))}
             onInput={(event) => actions.updateColor("paper-accent-color", event.currentTarget.value)}
             onChange={(event) => actions.updateColor("paper-accent-color", event.currentTarget.value)}
           />
@@ -106,7 +108,7 @@ export function PaperBackgroundSection({
         </label>
         <select
           id="paper-texture"
-          value={String(getControlValue(snapshot, "paper-texture", "speckle"))}
+          value={String(controlValue("paper-texture"))}
           onChange={(event) => actions.updateSelect("paper-texture", event.currentTarget.value)}
         >
           <option value="none">无纹理</option>
@@ -124,14 +126,14 @@ export function PaperBackgroundSection({
           <input
             id="texture-color"
             type="color"
-            value={String(getControlValue(snapshot, "texture-color", "#d8c8b0"))}
+            value={String(controlValue("texture-color"))}
             onInput={(event) => actions.updateColor("texture-color", event.currentTarget.value)}
             onChange={(event) => actions.updateColor("texture-color", event.currentTarget.value)}
           />
           <input
             id="texture-accent-color"
             type="color"
-            value={String(getControlValue(snapshot, "texture-accent-color", "#fff7ea"))}
+            value={String(controlValue("texture-accent-color"))}
             onInput={(event) => actions.updateColor("texture-accent-color", event.currentTarget.value)}
             onChange={(event) => actions.updateColor("texture-accent-color", event.currentTarget.value)}
           />
@@ -175,7 +177,7 @@ export function PaperBackgroundSection({
             纹理强度
           </label>
           <span className="range-value" data-readout-for="paper-texture-strength">
-            {getRangeReadout(snapshot, "paper-texture-strength", "44")}
+            {rangeReadout("paper-texture-strength")}
           </span>
         </div>
         <input
@@ -184,7 +186,7 @@ export function PaperBackgroundSection({
           min="0"
           max="100"
           step="1"
-          value={Number(getControlValue(snapshot, "paper-texture-strength", 44))}
+          value={Number(controlValue("paper-texture-strength"))}
           onInput={(event) =>
             actions.updateRange("paper-texture-strength", Number(event.currentTarget.value), "input")
           }
@@ -200,7 +202,7 @@ export function PaperBackgroundSection({
             纹理透明度
           </label>
           <span className="range-value" data-readout-for="paper-texture-opacity">
-            {getRangeReadout(snapshot, "paper-texture-opacity", "78%")}
+            {rangeReadout("paper-texture-opacity")}
           </span>
         </div>
         <input
@@ -209,7 +211,7 @@ export function PaperBackgroundSection({
           min="0"
           max="100"
           step="1"
-          value={Number(getControlValue(snapshot, "paper-texture-opacity", 78))}
+          value={Number(controlValue("paper-texture-opacity"))}
           onInput={(event) =>
             actions.updateRange("paper-texture-opacity", Number(event.currentTarget.value), "input")
           }
@@ -225,7 +227,7 @@ export function PaperBackgroundSection({
             纹理尺度
           </label>
           <span className="range-value" data-readout-for="paper-texture-scale">
-            {getRangeReadout(snapshot, "paper-texture-scale", "42")}
+            {rangeReadout("paper-texture-scale")}
           </span>
         </div>
         <input
@@ -234,7 +236,7 @@ export function PaperBackgroundSection({
           min="10"
           max="100"
           step="1"
-          value={Number(getControlValue(snapshot, "paper-texture-scale", 42))}
+          value={Number(controlValue("paper-texture-scale"))}
           onInput={(event) =>
             actions.updateRange("paper-texture-scale", Number(event.currentTarget.value), "input")
           }

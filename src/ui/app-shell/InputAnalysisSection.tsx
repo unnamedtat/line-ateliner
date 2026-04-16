@@ -20,6 +20,8 @@ export function InputAnalysisSection({
   importExportLocked
 }: InputAnalysisSectionProps) {
   const fileButtonClassName = `file-button${importExportLocked ? " is-disabled" : ""}`;
+  const controlValue = (id: string) => getControlValue(snapshot, id);
+  const rangeReadout = (id: string) => getRangeReadout(snapshot, id);
 
   return (
     <section className="control-group">
@@ -34,7 +36,7 @@ export function InputAnalysisSection({
         </label>
         <select
           id="render-mode"
-          value={String(getControlValue(snapshot, "render-mode", "edge-fill"))}
+          value={String(controlValue("render-mode"))}
           onChange={(event) => actions.updateSelect("render-mode", event.currentTarget.value)}
         >
           <option value="edge-fill">边缘线填充</option>
@@ -55,7 +57,7 @@ export function InputAnalysisSection({
         </label>
         <select
           id="contour-variant"
-          value={String(getControlValue(snapshot, "contour-variant", "contour"))}
+          value={String(controlValue("contour-variant"))}
           onChange={(event) => actions.updateSelect("contour-variant", event.currentTarget.value)}
         >
           <option value="contour">标准轮廓</option>
@@ -174,7 +176,7 @@ export function InputAnalysisSection({
         </label>
         <select
           id="reference-overlay"
-          value={String(getControlValue(snapshot, "reference-overlay", "on"))}
+          value={String(controlValue("reference-overlay"))}
           onChange={(event) => actions.updateSelect("reference-overlay", event.currentTarget.value)}
         >
           <option value="off">关闭</option>
@@ -195,7 +197,7 @@ export function InputAnalysisSection({
             叠加透明度
           </label>
           <span className="range-value" data-readout-for="reference-overlay-opacity">
-            {getRangeReadout(snapshot, "reference-overlay-opacity", "35%")}
+            {rangeReadout("reference-overlay-opacity")}
           </span>
         </div>
         <input
@@ -204,7 +206,7 @@ export function InputAnalysisSection({
           min="0"
           max="100"
           step="1"
-          value={Number(getControlValue(snapshot, "reference-overlay-opacity", 35))}
+          value={Number(controlValue("reference-overlay-opacity"))}
           onInput={(event) =>
             actions.updateRange("reference-overlay-opacity", Number(event.currentTarget.value), "input")
           }
@@ -225,7 +227,7 @@ export function InputAnalysisSection({
         </label>
         <select
           id="analysis-quality"
-          value={String(getControlValue(snapshot, "analysis-quality", "medium"))}
+          value={String(controlValue("analysis-quality"))}
           onChange={(event) => actions.updateSelect("analysis-quality", event.currentTarget.value)}
         >
           <option value="low">低</option>
@@ -240,7 +242,7 @@ export function InputAnalysisSection({
             主体缩放
           </label>
           <span className="range-value" data-readout-for="scene-scale">
-            {getRangeReadout(snapshot, "scene-scale", "100%")}
+            {rangeReadout("scene-scale")}
           </span>
         </div>
         <input
@@ -249,7 +251,7 @@ export function InputAnalysisSection({
           min="20"
           max="240"
           step="1"
-          value={Number(getControlValue(snapshot, "scene-scale", 100))}
+          value={Number(controlValue("scene-scale"))}
           onInput={(event) => actions.updateRange("scene-scale", Number(event.currentTarget.value), "input")}
           onChange={(event) => actions.updateRange("scene-scale", Number(event.currentTarget.value), "change")}
         />
@@ -261,7 +263,7 @@ export function InputAnalysisSection({
             水平偏移
           </label>
           <span className="range-value" data-readout-for="scene-offset-x">
-            {getRangeReadout(snapshot, "scene-offset-x", "0%")}
+            {rangeReadout("scene-offset-x")}
           </span>
         </div>
         <input
@@ -270,7 +272,7 @@ export function InputAnalysisSection({
           min="-80"
           max="80"
           step="1"
-          value={Number(getControlValue(snapshot, "scene-offset-x", 0))}
+          value={Number(controlValue("scene-offset-x"))}
           onInput={(event) => actions.updateRange("scene-offset-x", Number(event.currentTarget.value), "input")}
           onChange={(event) => actions.updateRange("scene-offset-x", Number(event.currentTarget.value), "change")}
         />
@@ -282,7 +284,7 @@ export function InputAnalysisSection({
             垂直偏移
           </label>
           <span className="range-value" data-readout-for="scene-offset-y">
-            {getRangeReadout(snapshot, "scene-offset-y", "0%")}
+            {rangeReadout("scene-offset-y")}
           </span>
         </div>
         <input
@@ -291,7 +293,7 @@ export function InputAnalysisSection({
           min="-80"
           max="80"
           step="1"
-          value={Number(getControlValue(snapshot, "scene-offset-y", 0))}
+          value={Number(controlValue("scene-offset-y"))}
           onInput={(event) => actions.updateRange("scene-offset-y", Number(event.currentTarget.value), "input")}
           onChange={(event) => actions.updateRange("scene-offset-y", Number(event.currentTarget.value), "change")}
         />
