@@ -1,5 +1,9 @@
+import { createElement } from "react";
+import { flushSync } from "react-dom";
+import { createRoot } from "react-dom/client";
 import { CLASSIC_SCRIPT_PATHS } from "./boot/legacy-manifest";
 import { loadClassicScripts } from "./boot/load-classic-scripts";
+import { AppShell } from "./ui/AppShell";
 
 declare global {
   interface Window {
@@ -29,7 +33,31 @@ async function bootstrapLegacyApp() {
   return window.__lineAtelierBootPromise;
 }
 
-void bootstrapLegacyApp();
+function renderAppShell() {
+  const mountNode = document.getElementById("app");
+  if (!mountNode) {
+    throw new Error("Missing #app mount node");
+  }
+
+  const root = createRoot(mountNode);
+  // Ensures legacy scripts can query all UI nodes immediately after render.
+  flushSync(() => {
+    root.render(createElement(AppShell));
+  });
+}
+
+async function startApp() {
+  try {
+    renderAppShell();
+    await bootstrapLegacyApp();
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    showBootFailure(message);
+    throw error;
+  }
+}
+
+void startApp();
 
 if (import.meta.hot) {
   import.meta.hot.accept();

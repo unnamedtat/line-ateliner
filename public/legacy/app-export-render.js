@@ -30,7 +30,6 @@ async function renderExportFrame(config, targetCanvas, targetCtx, frameIndex, fr
     redraw();
   }
 
-  await nextAnimationFrame();
   await drawCompositeExportFrame(targetCanvas, targetCtx);
   return frameValue;
 }
