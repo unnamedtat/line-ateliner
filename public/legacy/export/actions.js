@@ -36,7 +36,7 @@ async function startVideoExport() {
   exportCanvas.width = config.width;
   exportCanvas.height = config.height;
   const exportCtx = configureExportContext(exportCanvas.getContext("2d"));
-  const basename = `handdrawn-export-${buildExportStamp()}`;
+  const basename = `ateliner-export-${buildExportStamp()}`;
 
   setExportState({
     active: true,
