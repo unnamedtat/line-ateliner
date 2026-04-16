@@ -1,8 +1,7 @@
-.vercel
 dist
+coverage
 node_modules
-public/vendor
 playwright-report
 test-results
-coverage
-.DS_Store
+public/legacy
+public/vendor

@@ -1,5 +1,5 @@
 // Export helpers for MP4, GIF, and PNG fallback output.
-const GIF_WORKER_SCRIPT = "https://cdn.jsdelivr.net/npm/gif.js.optimized/dist/gif.worker.js";
+const GIF_WORKER_SCRIPT = "/vendor/gif.worker.js";
 let gifWorkerBlobUrl = "";
 
 function setExportState(patch) {

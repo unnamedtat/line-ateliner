@@ -1,6 +1,6 @@
 // Shared constants, presets, tooltip copy, and mutable app state.
 const INK = [44, 43, 40];
-const SOURCE_IMAGE_PATH = "./figure.png";
+const SOURCE_IMAGE_PATH = "/figure.png";
 const MAX_UPLOADED_SOURCE_DIMENSION = 2048;
 const MAX_UPLOADED_TEXTURE_DIMENSION = 2048;
 const BOIL_VARIANTS = 4;
