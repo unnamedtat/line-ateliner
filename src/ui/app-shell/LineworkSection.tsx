@@ -5,6 +5,7 @@ import {
   getRangeReadout,
   getVisibilityClassName
 } from "../legacy-ui-bridge";
+import { useAppLocale } from "../i18n";
 
 interface LineworkSectionProps {
   snapshot: LegacyUiSnapshot;
@@ -12,6 +13,7 @@ interface LineworkSectionProps {
 }
 
 export function LineworkSection({ snapshot, actions }: LineworkSectionProps) {
+  const { copy } = useAppLocale();
   const controlValue = (id: string) => getControlValue(snapshot, id);
   const rangeReadout = (id: string) => getRangeReadout(snapshot, id);
 
@@ -23,13 +25,13 @@ export function LineworkSection({ snapshot, actions }: LineworkSectionProps) {
       data-modes="edge edge-fill contour region-grow color-grow color-boundary path"
     >
       <ControlGroupHeading
-        title="轮廓与线稿"
-        tooltip="调节生成线条的整体颜色和透明度，适合做更轻盈或更浓重的描边气质。"
+        title={copy.linework.title}
+        tooltip={copy.linework.tooltip}
       />
 
       <div className="control-block">
         <label className="control-label" htmlFor="ink-color">
-          线稿颜色
+          {copy.linework.inkColor}
         </label>
         <input
           id="ink-color"
@@ -43,7 +45,7 @@ export function LineworkSection({ snapshot, actions }: LineworkSectionProps) {
       <div className="control-block">
         <div className="range-head">
           <label className="control-label" htmlFor="ink-opacity">
-            线稿透明度
+            {copy.linework.inkOpacity}
           </label>
           <span className="range-value" data-readout-for="ink-opacity">
             {rangeReadout("ink-opacity")}
@@ -64,7 +66,7 @@ export function LineworkSection({ snapshot, actions }: LineworkSectionProps) {
       <div className="control-block">
         <div className="range-head">
           <label className="control-label" htmlFor="line-width-scale">
-            线条宽度
+            {copy.linework.lineWidth}
           </label>
           <span className="range-value" data-readout-for="line-width-scale">
             {rangeReadout("line-width-scale")}
@@ -86,7 +88,7 @@ export function LineworkSection({ snapshot, actions }: LineworkSectionProps) {
         />
       </div>
 
-      <div className="control-note">会同时作用在 edge、path、contour 以及扩张类线稿模式。</div>
+      <div className="control-note">{copy.linework.note}</div>
     </section>
   );
 }

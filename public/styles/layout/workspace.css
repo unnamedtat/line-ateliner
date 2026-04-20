@@ -78,6 +78,7 @@ body.is-retro-layout::before {
         display: flex;
         align-items: center;
         gap: 8px;
+        flex-wrap: wrap;
       }
 
       .window-meta {
@@ -173,6 +174,28 @@ body.is-retro-layout::before {
       .action-button {
         min-height: 36px;
         padding: 0 12px;
+      }
+
+      .panel-utility-row {
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 6px;
+        padding: 6px 10px 0;
+        background: #fff;
+      }
+
+      .panel-utility-button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: auto;
+        min-height: 28px;
+        padding: 0 10px;
+        color: var(--ui-text);
+        text-decoration: none;
+        font-size: 10px;
+        line-height: 1;
       }
 
       .window-toggle:hover,

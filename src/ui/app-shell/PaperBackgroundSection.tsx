@@ -1,6 +1,7 @@
 import { ControlGroupHeading } from "./ControlGroupHeading";
 import type { LegacyUiActions, LegacyUiSnapshot } from "../legacy-ui-bridge";
 import { getControlValue, getRangeReadout } from "../legacy-ui-bridge";
+import { useAppLocale } from "../i18n";
 
 interface PaperBackgroundSectionProps {
   snapshot: LegacyUiSnapshot;
@@ -15,6 +16,7 @@ export function PaperBackgroundSection({
   importExportLocked,
   textureUploadSummary
 }: PaperBackgroundSectionProps) {
+  const { copy } = useAppLocale();
   const fileButtonClassName = `file-button${importExportLocked ? " is-disabled" : ""}`;
   const controlValue = (id: string) => getControlValue(snapshot, id);
   const rangeReadout = (id: string) => getRangeReadout(snapshot, id);
@@ -22,45 +24,45 @@ export function PaperBackgroundSection({
   return (
     <section className="control-group">
       <ControlGroupHeading
-        title="纸张与背景"
-        tooltip="控制纸张底色、渐变和纹理层。它们只影响画面表现，不会改变原图提取结果。"
+        title={copy.paper.title}
+        tooltip={copy.paper.tooltip}
       />
 
       <div className="control-block">
         <label className="control-label" htmlFor="background-preset">
-          背景预设
+          {copy.paper.preset}
         </label>
         <select
           id="background-preset"
           value={String(controlValue("background-preset"))}
           onChange={(event) => actions.updateSelect("background-preset", event.currentTarget.value)}
         >
-          <option value="warm">暖纸</option>
-          <option value="white">白纸</option>
-          <option value="sketchbook">速写本</option>
-          <option value="blue">浅蓝纸</option>
-          <option value="grey">灰底纸</option>
+          <option value="warm">{copy.paper.presets.warm}</option>
+          <option value="white">{copy.paper.presets.white}</option>
+          <option value="sketchbook">{copy.paper.presets.sketchbook}</option>
+          <option value="blue">{copy.paper.presets.blue}</option>
+          <option value="grey">{copy.paper.presets.grey}</option>
         </select>
       </div>
 
       <div className="control-block">
         <label className="control-label" htmlFor="paper-fill-mode">
-          纸张底色
+          {copy.paper.fillMode}
         </label>
         <select
           id="paper-fill-mode"
           value={String(controlValue("paper-fill-mode"))}
           onChange={(event) => actions.updateSelect("paper-fill-mode", event.currentTarget.value)}
         >
-          <option value="solid">纯色</option>
-          <option value="gradient">渐变</option>
+          <option value="solid">{copy.paper.fillModes.solid}</option>
+          <option value="gradient">{copy.paper.fillModes.gradient}</option>
         </select>
       </div>
 
       <div className="control-block">
         <div className="range-head">
           <label className="control-label" htmlFor="paper-gradient-angle">
-            渐变角度
+            {copy.paper.gradientAngle}
           </label>
           <span className="range-value" data-readout-for="paper-gradient-angle">
             {rangeReadout("paper-gradient-angle")}
@@ -83,7 +85,7 @@ export function PaperBackgroundSection({
       </div>
 
       <div className="control-block">
-        <div className="control-label">纸张颜色</div>
+        <div className="control-label">{copy.paper.paperColors}</div>
         <div className="swatch-row">
           <input
             id="paper-color"
@@ -104,24 +106,24 @@ export function PaperBackgroundSection({
 
       <div className="control-block">
         <label className="control-label" htmlFor="paper-texture">
-          纸张纹理
+          {copy.paper.texture}
         </label>
         <select
           id="paper-texture"
           value={String(controlValue("paper-texture"))}
           onChange={(event) => actions.updateSelect("paper-texture", event.currentTarget.value)}
         >
-          <option value="none">无纹理</option>
-          <option value="grain">细颗粒</option>
-          <option value="speckle">散点噪声</option>
-          <option value="cloud">云雾噪声</option>
-          <option value="crosshatch">交织纤维</option>
-          <option value="upload">上传纹理</option>
+          <option value="none">{copy.paper.textures.none}</option>
+          <option value="grain">{copy.paper.textures.grain}</option>
+          <option value="speckle">{copy.paper.textures.speckle}</option>
+          <option value="cloud">{copy.paper.textures.cloud}</option>
+          <option value="crosshatch">{copy.paper.textures.crosshatch}</option>
+          <option value="upload">{copy.paper.textures.upload}</option>
         </select>
       </div>
 
       <div className="control-block">
-        <div className="control-label">纹理颜色</div>
+        <div className="control-label">{copy.paper.textureColors}</div>
         <div className="swatch-row">
           <input
             id="texture-color"
@@ -142,7 +144,7 @@ export function PaperBackgroundSection({
 
       <div className="control-block">
         <label className="control-label" htmlFor="texture-upload">
-          纹理图片
+          {copy.paper.textureImage}
         </label>
         <div className="upload-row">
           <label
@@ -150,7 +152,7 @@ export function PaperBackgroundSection({
             htmlFor="texture-upload"
             aria-disabled={importExportLocked ? "true" : "false"}
           >
-            上传纹理
+            {copy.paper.uploadTexture}
           </label>
           <div className="file-summary" id="texture-upload-summary">
             {textureUploadSummary}
@@ -174,7 +176,7 @@ export function PaperBackgroundSection({
       <div className="control-block">
         <div className="range-head">
           <label className="control-label" htmlFor="paper-texture-strength">
-            纹理强度
+            {copy.paper.textureStrength}
           </label>
           <span className="range-value" data-readout-for="paper-texture-strength">
             {rangeReadout("paper-texture-strength")}
@@ -199,7 +201,7 @@ export function PaperBackgroundSection({
       <div className="control-block">
         <div className="range-head">
           <label className="control-label" htmlFor="paper-texture-opacity">
-            纹理透明度
+            {copy.paper.textureOpacity}
           </label>
           <span className="range-value" data-readout-for="paper-texture-opacity">
             {rangeReadout("paper-texture-opacity")}
@@ -224,7 +226,7 @@ export function PaperBackgroundSection({
       <div className="control-block">
         <div className="range-head">
           <label className="control-label" htmlFor="paper-texture-scale">
-            纹理尺度
+            {copy.paper.textureScale}
           </label>
           <span className="range-value" data-readout-for="paper-texture-scale">
             {rangeReadout("paper-texture-scale")}

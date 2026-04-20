@@ -5,6 +5,7 @@ import {
   getRangeReadout,
   getVisibilityClassName
 } from "../legacy-ui-bridge";
+import { useAppLocale } from "../i18n";
 
 interface InputAnalysisSectionProps {
   snapshot: LegacyUiSnapshot;
@@ -19,6 +20,7 @@ export function InputAnalysisSection({
   imageName,
   importExportLocked
 }: InputAnalysisSectionProps) {
+  const { copy } = useAppLocale();
   const fileButtonClassName = `file-button${importExportLocked ? " is-disabled" : ""}`;
   const controlValue = (id: string) => getControlValue(snapshot, id);
   const rangeReadout = (id: string) => getRangeReadout(snapshot, id);
@@ -26,25 +28,25 @@ export function InputAnalysisSection({
   return (
     <section className="control-group">
       <ControlGroupHeading
-        title="输入与分析"
-        tooltip="选择算法、上传原图、查看叠加参考，并决定原图分析时使用的采样精度。"
+        title={copy.input.title}
+        tooltip={copy.input.tooltip}
       />
 
       <div className="control-block">
         <label className="control-label" htmlFor="render-mode">
-          算法
+          {copy.input.renderMode}
         </label>
         <select
           id="render-mode"
           value={String(controlValue("render-mode"))}
           onChange={(event) => actions.updateSelect("render-mode", event.currentTarget.value)}
         >
-          <option value="edge-fill">边缘线填充</option>
-          <option value="distortion">SVG 形变</option>
-          <option value="edge">边缘采样</option>
-          <option value="path">中心线路径</option>
-          <option value="color-boundary">色块边界</option>
-          <option value="contour">轮廓描摹</option>
+          <option value="edge-fill">{copy.input.renderModes["edge-fill"]}</option>
+          <option value="distortion">{copy.input.renderModes.distortion}</option>
+          <option value="edge">{copy.input.renderModes.edge}</option>
+          <option value="path">{copy.input.renderModes.path}</option>
+          <option value="color-boundary">{copy.input.renderModes["color-boundary"]}</option>
+          <option value="contour">{copy.input.renderModes.contour}</option>
         </select>
       </div>
 
@@ -53,58 +55,58 @@ export function InputAnalysisSection({
         data-modes="contour"
       >
         <label className="control-label" htmlFor="contour-variant">
-          轮廓风格
+          {copy.input.contourVariant}
         </label>
         <select
           id="contour-variant"
           value={String(controlValue("contour-variant"))}
           onChange={(event) => actions.updateSelect("contour-variant", event.currentTarget.value)}
         >
-          <option value="contour">标准轮廓</option>
-          <option value="wave-contour">波浪轮廓</option>
-          <option value="wave-shape">波浪形变</option>
-          <option value="rubber-contour">橡皮轮廓</option>
+          <option value="contour">{copy.input.contourVariants.contour}</option>
+          <option value="wave-contour">{copy.input.contourVariants["wave-contour"]}</option>
+          <option value="wave-shape">{copy.input.contourVariants["wave-shape"]}</option>
+          <option value="rubber-contour">{copy.input.contourVariants["rubber-contour"]}</option>
         </select>
       </div>
 
       <div className={getVisibilityClassName(snapshot, "control-note", { modes: "edge" })} data-modes="edge">
-        沿局部边缘撒短线，抖动感最明显。
+        {copy.input.notes.edge}
       </div>
       <div
         className={getVisibilityClassName(snapshot, "control-note", { modes: "edge-fill" })}
         data-modes="edge-fill"
       >
-        先找两侧边缘，再补成一条线。
+        {copy.input.notes["edge-fill"]}
       </div>
       <div
         className={getVisibilityClassName(snapshot, "control-note", { modes: "region-grow" })}
         data-modes="region-grow"
       >
-        从暗线往外扩，适合补浅线和断线。
+        {copy.input.notes["region-grow"]}
       </div>
       <div
         className={getVisibilityClassName(snapshot, "control-note", { modes: "color-grow" })}
         data-modes="color-grow"
       >
-        按颜色差往外扩，适合彩色线和偏色稿。
+        {copy.input.notes["color-grow"]}
       </div>
       <div
         className={getVisibilityClassName(snapshot, "control-note", { modes: "color-boundary" })}
         data-modes="color-boundary"
       >
-        直接找色块交界，适合上色图。
+        {copy.input.notes["color-boundary"]}
       </div>
       <div
         className={getVisibilityClassName(snapshot, "control-note", { modes: "distortion" })}
         data-modes="distortion"
       >
-        不做线稿提取，直接对原图做 SVG 位移形变。
+        {copy.input.notes.distortion}
       </div>
       <div
         className={getVisibilityClassName(snapshot, "control-note", { modes: "contour-variant-contour" })}
         data-modes="contour-variant-contour"
       >
-        直接沿笔画外轮廓走线。
+        {copy.input.notes["contour-variant-contour"]}
       </div>
       <div
         className={getVisibilityClassName(snapshot, "control-note", {
@@ -112,7 +114,7 @@ export function InputAnalysisSection({
         })}
         data-modes="contour-variant-wave-contour"
       >
-        先提取外轮廓，再沿法线做连续波浪位移，适合日式起伏线效果。
+        {copy.input.notes["contour-variant-wave-contour"]}
       </div>
       <div
         className={getVisibilityClassName(snapshot, "control-note", {
@@ -120,7 +122,7 @@ export function InputAnalysisSection({
         })}
         data-modes="contour-variant-wave-shape"
       >
-        用整张共享位移场推动轮廓和内部结构，整体更像整块形体在起伏。
+        {copy.input.notes["contour-variant-wave-shape"]}
       </div>
       <div
         className={getVisibilityClassName(snapshot, "control-note", {
@@ -128,15 +130,15 @@ export function InputAnalysisSection({
         })}
         data-modes="contour-variant-rubber-contour"
       >
-        轮廓像软橡皮一样被拖拽，形变更圆润、更有弹性。
+        {copy.input.notes["contour-variant-rubber-contour"]}
       </div>
       <div className={getVisibilityClassName(snapshot, "control-note", { modes: "path" })} data-modes="path">
-        先抽中心线，再按粗细去画。
+        {copy.input.notes.path}
       </div>
 
       <div className="control-block">
         <label className="control-label" htmlFor="image-upload">
-          图片
+          {copy.input.image}
         </label>
         <div className="upload-row">
           <label
@@ -144,7 +146,7 @@ export function InputAnalysisSection({
             htmlFor="image-upload"
             aria-disabled={importExportLocked ? "true" : "false"}
           >
-            选择文件
+            {copy.input.selectFile}
           </label>
         </div>
         <input
@@ -172,15 +174,15 @@ export function InputAnalysisSection({
         data-modes="edge edge-fill region-grow color-grow color-boundary contour path"
       >
         <label className="control-label" htmlFor="reference-overlay">
-          原图叠加
+          {copy.input.overlay}
         </label>
         <select
           id="reference-overlay"
           value={String(controlValue("reference-overlay"))}
           onChange={(event) => actions.updateSelect("reference-overlay", event.currentTarget.value)}
         >
-          <option value="off">关闭</option>
-          <option value="on">显示</option>
+          <option value="off">{copy.input.overlayOptions.off}</option>
+          <option value="on">{copy.input.overlayOptions.on}</option>
         </select>
       </div>
 
@@ -194,7 +196,7 @@ export function InputAnalysisSection({
       >
         <div className="range-head">
           <label className="control-label" htmlFor="reference-overlay-opacity">
-            叠加透明度
+            {copy.input.overlayOpacity}
           </label>
           <span className="range-value" data-readout-for="reference-overlay-opacity">
             {rangeReadout("reference-overlay-opacity")}
@@ -223,23 +225,23 @@ export function InputAnalysisSection({
         data-modes="edge edge-fill region-grow color-grow color-boundary contour path"
       >
         <label className="control-label" htmlFor="analysis-quality">
-          图像采样质量
+          {copy.input.quality}
         </label>
         <select
           id="analysis-quality"
           value={String(controlValue("analysis-quality"))}
           onChange={(event) => actions.updateSelect("analysis-quality", event.currentTarget.value)}
         >
-          <option value="low">低</option>
-          <option value="medium">中</option>
-          <option value="high">高</option>
+          <option value="low">{copy.input.qualityOptions.low}</option>
+          <option value="medium">{copy.input.qualityOptions.medium}</option>
+          <option value="high">{copy.input.qualityOptions.high}</option>
         </select>
       </div>
 
       <div className="control-block">
         <div className="range-head">
           <label className="control-label" htmlFor="scene-scale">
-            主体缩放
+            {copy.input.sceneScale}
           </label>
           <span className="range-value" data-readout-for="scene-scale">
             {rangeReadout("scene-scale")}
@@ -260,7 +262,7 @@ export function InputAnalysisSection({
       <div className="control-block">
         <div className="range-head">
           <label className="control-label" htmlFor="scene-offset-x">
-            水平偏移
+            {copy.input.sceneOffsetX}
           </label>
           <span className="range-value" data-readout-for="scene-offset-x">
             {rangeReadout("scene-offset-x")}
@@ -281,7 +283,7 @@ export function InputAnalysisSection({
       <div className="control-block">
         <div className="range-head">
           <label className="control-label" htmlFor="scene-offset-y">
-            垂直偏移
+            {copy.input.sceneOffsetY}
           </label>
           <span className="range-value" data-readout-for="scene-offset-y">
             {rangeReadout("scene-offset-y")}

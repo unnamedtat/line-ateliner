@@ -1,9 +1,16 @@
+import { useAppLocale } from "../i18n";
+
 interface ShellHeaderProps {
   uiHidden: boolean;
   onTogglePanel(): void;
 }
 
 export function ShellHeader({ uiHidden, onTogglePanel }: ShellHeaderProps) {
+  const { copy } = useAppLocale();
+  const togglePanelLabel = uiHidden
+    ? copy.header.expandPanelAriaLabel
+    : copy.header.collapsePanelAriaLabel;
+
   return (
     <div className="controls-header window-chrome">
       <div className="window-meta">
@@ -22,6 +29,8 @@ export function ShellHeader({ uiHidden, onTogglePanel }: ShellHeaderProps) {
           id="ui-toggle"
           type="button"
           aria-expanded={uiHidden ? "false" : "true"}
+          aria-label={togglePanelLabel}
+          title={togglePanelLabel}
           onClick={onTogglePanel}
         >
           {uiHidden ? "◂" : "x"}

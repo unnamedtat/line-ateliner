@@ -1,4 +1,5 @@
 import type { ControlTab } from "../legacy-ui-bridge";
+import { AUTHOR_HOMEPAGE_URL, useAppLocale } from "../i18n";
 
 interface ControlPanelHeaderProps {
   activeControlTab: ControlTab;
@@ -7,11 +8,11 @@ interface ControlPanelHeaderProps {
   onReset(): void;
 }
 
-const CONTROL_TABS: Array<{ tab: ControlTab; icon: string; label: string }> = [
-  { tab: "input", icon: "📥", label: "输入" },
-  { tab: "paper", icon: "📄", label: "纸张" },
-  { tab: "stroke", icon: "✏️", label: "笔触" },
-  { tab: "export", icon: "💾", label: "导出" }
+const CONTROL_TABS: Array<{ tab: ControlTab; icon: string }> = [
+  { tab: "input", icon: "📥" },
+  { tab: "paper", icon: "📄" },
+  { tab: "stroke", icon: "✏️" },
+  { tab: "export", icon: "💾" }
 ];
 
 export function ControlPanelHeader({
@@ -20,10 +21,12 @@ export function ControlPanelHeader({
   onSelectTab,
   onReset
 }: ControlPanelHeaderProps) {
+  const { copy, nextLocaleLabel, toggleLocale } = useAppLocale();
+
   return (
     <div className="panel-header">
       <div className="panel-header-top">
-        <div className="panel-title">控制面板</div>
+        <div className="panel-title">{copy.controls.panelTitle}</div>
         <button
           className="action-button panel-reset-button"
           id="reset-settings"
@@ -32,12 +35,32 @@ export function ControlPanelHeader({
           aria-disabled={resetLocked ? "true" : "false"}
           onClick={onReset}
         >
-          重置全部参数
+          {copy.controls.resetAll}
         </button>
       </div>
+      <div className="panel-utility-row">
+        <button
+          className="action-button panel-utility-button"
+          type="button"
+          aria-label={copy.header.localeToggleAriaLabel}
+          onClick={toggleLocale}
+        >
+          {nextLocaleLabel}
+        </button>
+        <a
+          className="action-button panel-utility-button"
+          href={AUTHOR_HOMEPAGE_URL}
+          target="_blank"
+          rel="noreferrer"
+          aria-label={copy.header.authorAriaLabel}
+        >
+          {copy.header.authorButton}
+        </a>
+      </div>
       <div className="tab-strip">
-        {CONTROL_TABS.map(({ tab, icon, label }) => {
+        {CONTROL_TABS.map(({ tab, icon }) => {
           const isActive = activeControlTab === tab;
+          const label = copy.controls.tabs[tab];
 
           return (
             <button

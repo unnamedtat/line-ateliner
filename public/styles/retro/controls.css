@@ -11,6 +11,24 @@ body.is-retro-layout .control-label {
         box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.14);
       }
 
+      body.is-retro-layout .panel-utility-row {
+        justify-content: flex-end;
+        padding: 6px 10px 0;
+        gap: 6px;
+        background: #fff;
+      }
+
+      body.is-retro-layout .panel-utility-button {
+        min-height: 26px;
+        width: auto;
+        padding: 0 9px;
+        border-width: 3px;
+        border-radius: 0;
+        background: #fff;
+        box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.14);
+        font-size: 10px;
+      }
+
       body.is-retro-layout .range-head {
         align-items: flex-end;
       }
@@ -281,5 +299,9 @@ body.is-retro-layout .control-label {
         body.is-retro-layout .panel-header-top {
           flex-direction: row;
           align-items: center;
+        }
+
+        body.is-retro-layout .panel-utility-row {
+          justify-content: flex-end;
         }
       }

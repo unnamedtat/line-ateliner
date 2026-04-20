@@ -1,4 +1,5 @@
 import { OverlayLayers } from "./OverlayLayers";
+import { useAppLocale } from "../i18n";
 
 interface CanvasShellProps {
   canvasEmptyVisible: boolean;
@@ -27,6 +28,7 @@ export function CanvasShell({
   onContinueAnalysisWait,
   onCancelAnalysisWait
 }: CanvasShellProps) {
+  const { copy } = useAppLocale();
   const toolbarLabelClassName = `toolbar-label mobile-only-control${importExportLocked ? " is-disabled" : ""}`;
 
   return (
@@ -45,8 +47,8 @@ export function CanvasShell({
               <path d="M38 68h24" stroke="currentColor" strokeWidth="3" strokeDasharray="6 6" />
             </svg>
           </div>
-          <div className="canvas-empty-copy">或点击下方「选择文件」按钮</div>
-          <div className="canvas-empty-types">支持 PNG / JPG / WebP / GIF</div>
+          <div className="canvas-empty-copy">{copy.canvas.emptyCopy}</div>
+          <div className="canvas-empty-types">{copy.canvas.emptyTypes}</div>
         </div>
         <div
           className={`canvas-processing-state${processingVisible ? "" : " is-hidden"}`}
@@ -69,7 +71,7 @@ export function CanvasShell({
               type="button"
               onClick={onContinueAnalysisWait}
             >
-              继续等待
+              {copy.canvas.continueWait}
             </button>
             <button
               className="canvas-processing-button is-secondary"
@@ -77,7 +79,7 @@ export function CanvasShell({
               type="button"
               onClick={onCancelAnalysisWait}
             >
-              停止并提示失败
+              {copy.canvas.stopWait}
             </button>
           </div>
         </div>
@@ -99,7 +101,7 @@ export function CanvasShell({
           htmlFor="image-upload"
           aria-disabled={importExportLocked ? "true" : "false"}
         >
-          选择文件
+          {copy.canvas.selectFile}
         </label>
       </div>
     </section>

@@ -5,6 +5,7 @@ import {
   getRangeReadout,
   getVisibilityClassName
 } from "../legacy-ui-bridge";
+import { useAppLocale } from "../i18n";
 
 interface MotionStrokeSectionProps {
   snapshot: LegacyUiSnapshot;
@@ -34,14 +35,15 @@ function renderRangeInput(
 }
 
 export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionProps) {
+  const { copy } = useAppLocale();
   const controlValue = (id: string) => getControlValue(snapshot, id);
   const rangeReadout = (id: string) => getRangeReadout(snapshot, id);
 
   return (
     <section className="control-group">
       <ControlGroupHeading
-        title="动态与笔触"
-        tooltip="控制沸腾感、边缘抖动和路径笔触粗细变化。它们主要影响绘制表现，不改原图分析。"
+        title={copy.motion.title}
+        tooltip={copy.motion.tooltip}
       />
 
       <div
@@ -52,7 +54,7 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
       >
         <div className="range-head">
           <label className="control-label" htmlFor="boil-hold-frames">
-            抖动速度
+            {copy.motion.boilHoldFrames}
           </label>
           <span className="range-value" data-readout-for="boil-hold-frames">
             {rangeReadout("boil-hold-frames")}
@@ -69,7 +71,7 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
       >
         <div className="range-head">
           <label className="control-label" htmlFor="edge-jitter-normal">
-            轮廓法线抖动
+            {copy.motion.edgeJitterNormal}
           </label>
           <span className="range-value" data-readout-for="edge-jitter-normal">
             {rangeReadout("edge-jitter-normal")}
@@ -86,7 +88,7 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
       >
         <div className="range-head">
           <label className="control-label" htmlFor="edge-jitter-tangent">
-            轮廓切线抖动
+            {copy.motion.edgeJitterTangent}
           </label>
           <span className="range-value" data-readout-for="edge-jitter-tangent">
             {rangeReadout("edge-jitter-tangent")}
@@ -103,7 +105,7 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
       >
         <div className="range-head">
           <label className="control-label" htmlFor="wave-amplitude">
-            波浪振幅
+            {copy.motion.waveAmplitude}
           </label>
           <span className="range-value" data-readout-for="wave-amplitude">
             {rangeReadout("wave-amplitude")}
@@ -120,7 +122,7 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
       >
         <div className="range-head">
           <label className="control-label" htmlFor="wave-frequency">
-            波浪频率
+            {copy.motion.waveFrequency}
           </label>
           <span className="range-value" data-readout-for="wave-frequency">
             {rangeReadout("wave-frequency")}
@@ -137,7 +139,7 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
       >
         <div className="range-head">
           <label className="control-label" htmlFor="wave-speed">
-            波浪速度
+            {copy.motion.waveSpeed}
           </label>
           <span className="range-value" data-readout-for="wave-speed">
             {rangeReadout("wave-speed")}
@@ -152,7 +154,7 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
       >
         <div className="range-head">
           <label className="control-label" htmlFor="contour-stroke-thickness">
-            轮廓粗细
+            {copy.motion.contourThickness}
           </label>
           <span className="range-value" data-readout-for="contour-stroke-thickness">
             {rangeReadout("contour-stroke-thickness")}
@@ -167,7 +169,7 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
       >
         <div className="range-head">
           <label className="control-label" htmlFor="distortion-scale">
-            形变强度
+            {copy.motion.distortionScale}
           </label>
           <span className="range-value" data-readout-for="distortion-scale">
             {rangeReadout("distortion-scale")}
@@ -182,7 +184,7 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
       >
         <div className="range-head">
           <label className="control-label" htmlFor="distortion-frequency">
-            噪声尺度
+            {copy.motion.distortionFrequency}
           </label>
           <span className="range-value" data-readout-for="distortion-frequency">
             {rangeReadout("distortion-frequency")}
@@ -197,7 +199,7 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
       >
         <div className="range-head">
           <label className="control-label" htmlFor="distortion-octaves">
-            噪声层级
+            {copy.motion.distortionOctaves}
           </label>
           <span className="range-value" data-readout-for="distortion-octaves">
             {rangeReadout("distortion-octaves")}
@@ -212,7 +214,7 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
       >
         <div className="range-head">
           <label className="control-label" htmlFor="distortion-speed">
-            形变速度
+            {copy.motion.distortionSpeed}
           </label>
           <span className="range-value" data-readout-for="distortion-speed">
             {rangeReadout("distortion-speed")}
@@ -227,7 +229,7 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
       >
         <div className="range-head">
           <label className="control-label" htmlFor="path-jitter-normal">
-            路径法线抖动
+            {copy.motion.pathJitterNormal}
           </label>
           <span className="range-value" data-readout-for="path-jitter-normal">
             {rangeReadout("path-jitter-normal")}
@@ -242,7 +244,7 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
       >
         <div className="range-head">
           <label className="control-label" htmlFor="path-jitter-tangent">
-            路径切线抖动
+            {copy.motion.pathJitterTangent}
           </label>
           <span className="range-value" data-readout-for="path-jitter-tangent">
             {rangeReadout("path-jitter-tangent")}
@@ -257,7 +259,7 @@ export function MotionStrokeSection({ snapshot, actions }: MotionStrokeSectionPr
       >
         <div className="range-head">
           <label className="control-label" htmlFor="width-jitter">
-            线宽抖动
+            {copy.motion.widthJitter}
           </label>
           <span className="range-value" data-readout-for="width-jitter">
             {rangeReadout("width-jitter")}

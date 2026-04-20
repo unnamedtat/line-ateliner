@@ -5,6 +5,7 @@ import {
   getRangeReadout,
   getVisibilityClassName
 } from "../legacy-ui-bridge";
+import { useAppLocale } from "../i18n";
 
 interface ExtractionPairingSectionProps {
   snapshot: LegacyUiSnapshot;
@@ -34,14 +35,15 @@ function renderRangeInput(
 }
 
 export function ExtractionPairingSection({ snapshot, actions }: ExtractionPairingSectionProps) {
+  const { copy } = useAppLocale();
   const controlValue = (id: string) => getControlValue(snapshot, id);
   const rangeReadout = (id: string) => getRangeReadout(snapshot, id);
 
   return (
     <section className="control-group">
       <ControlGroupHeading
-        title="提取与配对"
-        tooltip="这里控制线条提取阈值，以及 edge-fill 模式里两侧边缘如何配对成一条填充线。"
+        title={copy.extraction.title}
+        tooltip={copy.extraction.tooltip}
       />
 
       <div
@@ -52,7 +54,7 @@ export function ExtractionPairingSection({ snapshot, actions }: ExtractionPairin
       >
         <div className="range-head">
           <label className="control-label" htmlFor="line-threshold">
-            线亮度阈值
+            {copy.extraction.lineThreshold}
           </label>
           <span className="range-value" data-readout-for="line-threshold">
             {rangeReadout("line-threshold")}
@@ -69,7 +71,7 @@ export function ExtractionPairingSection({ snapshot, actions }: ExtractionPairin
       >
         <div className="range-head">
           <label className="control-label" htmlFor="edge-threshold">
-            边缘阈值
+            {copy.extraction.edgeThreshold}
           </label>
           <span className="range-value" data-readout-for="edge-threshold">
             {rangeReadout("edge-threshold")}
@@ -81,7 +83,7 @@ export function ExtractionPairingSection({ snapshot, actions }: ExtractionPairin
       <div className={getVisibilityClassName(snapshot, "control-block", { modes: "edge-fill" })} data-modes="edge-fill">
         <div className="range-head">
           <label className="control-label" htmlFor="edge-fill-threshold">
-            填充配对阈值
+            {copy.extraction.fillThreshold}
           </label>
           <span className="range-value" data-readout-for="edge-fill-threshold">
             {rangeReadout("edge-fill-threshold")}
@@ -93,7 +95,7 @@ export function ExtractionPairingSection({ snapshot, actions }: ExtractionPairin
       <div className={getVisibilityClassName(snapshot, "control-block", { modes: "edge-fill" })} data-modes="edge-fill">
         <div className="range-head">
           <label className="control-label" htmlFor="edge-fill-cell-size">
-            配对搜索网格
+            {copy.extraction.cellSize}
           </label>
           <span className="range-value" data-readout-for="edge-fill-cell-size">
             {rangeReadout("edge-fill-cell-size")}
@@ -105,7 +107,7 @@ export function ExtractionPairingSection({ snapshot, actions }: ExtractionPairin
       <div className={getVisibilityClassName(snapshot, "control-block", { modes: "edge-fill" })} data-modes="edge-fill">
         <div className="range-head">
           <label className="control-label" htmlFor="edge-fill-min-normal-gap">
-            最小法线间距
+            {copy.extraction.minNormalGap}
           </label>
           <span className="range-value" data-readout-for="edge-fill-min-normal-gap">
             {rangeReadout("edge-fill-min-normal-gap")}
@@ -117,7 +119,7 @@ export function ExtractionPairingSection({ snapshot, actions }: ExtractionPairin
       <div className={getVisibilityClassName(snapshot, "control-block", { modes: "edge-fill" })} data-modes="edge-fill">
         <div className="range-head">
           <label className="control-label" htmlFor="edge-fill-max-normal-gap">
-            最大法线间距
+            {copy.extraction.maxNormalGap}
           </label>
           <span className="range-value" data-readout-for="edge-fill-max-normal-gap">
             {rangeReadout("edge-fill-max-normal-gap")}
@@ -129,7 +131,7 @@ export function ExtractionPairingSection({ snapshot, actions }: ExtractionPairin
       <div className={getVisibilityClassName(snapshot, "control-block", { modes: "edge-fill" })} data-modes="edge-fill">
         <div className="range-head">
           <label className="control-label" htmlFor="edge-fill-max-tangent-gap">
-            最大切线偏移
+            {copy.extraction.maxTangentGap}
           </label>
           <span className="range-value" data-readout-for="edge-fill-max-tangent-gap">
             {rangeReadout("edge-fill-max-tangent-gap")}
@@ -141,7 +143,7 @@ export function ExtractionPairingSection({ snapshot, actions }: ExtractionPairin
       <div className={getVisibilityClassName(snapshot, "control-block", { modes: "edge-fill" })} data-modes="edge-fill">
         <div className="range-head">
           <label className="control-label" htmlFor="edge-fill-min-tangent-dot">
-            最小切线一致性
+            {copy.extraction.minTangentDot}
           </label>
           <span className="range-value" data-readout-for="edge-fill-min-tangent-dot">
             {rangeReadout("edge-fill-min-tangent-dot")}
@@ -153,7 +155,7 @@ export function ExtractionPairingSection({ snapshot, actions }: ExtractionPairin
       <div className={getVisibilityClassName(snapshot, "control-block", { modes: "edge-fill" })} data-modes="edge-fill">
         <div className="range-head">
           <label className="control-label" htmlFor="edge-fill-max-normal-dot">
-            最大法线同向性
+            {copy.extraction.maxNormalDot}
           </label>
           <span className="range-value" data-readout-for="edge-fill-max-normal-dot">
             {rangeReadout("edge-fill-max-normal-dot")}
@@ -170,7 +172,7 @@ export function ExtractionPairingSection({ snapshot, actions }: ExtractionPairin
       >
         <div className="range-head">
           <label className="control-label" htmlFor="edge-smoothness">
-            边缘平滑
+            {copy.extraction.smoothness}
           </label>
           <span className="range-value" data-readout-for="edge-smoothness">
             {rangeReadout("edge-smoothness")}
@@ -185,7 +187,7 @@ export function ExtractionPairingSection({ snapshot, actions }: ExtractionPairin
       >
         <div className="range-head">
           <label className="control-label" htmlFor="ink-threshold">
-            墨线阈值
+            {copy.extraction.inkThreshold}
           </label>
           <span className="range-value" data-readout-for="ink-threshold">
             {rangeReadout("ink-threshold")}
@@ -202,7 +204,7 @@ export function ExtractionPairingSection({ snapshot, actions }: ExtractionPairin
       >
         <div className="range-head">
           <label className="control-label" htmlFor="contrast-threshold">
-            局部对比阈值
+            {copy.extraction.contrastThreshold}
           </label>
           <span className="range-value" data-readout-for="contrast-threshold">
             {rangeReadout("contrast-threshold")}
@@ -219,7 +221,7 @@ export function ExtractionPairingSection({ snapshot, actions }: ExtractionPairin
       >
         <div className="range-head">
           <label className="control-label" htmlFor="color-threshold">
-            颜色差阈值
+            {copy.extraction.colorThreshold}
           </label>
           <span className="range-value" data-readout-for="color-threshold">
             {rangeReadout("color-threshold")}

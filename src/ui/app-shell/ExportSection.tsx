@@ -6,6 +6,7 @@ import type {
   LegacyUiSnapshot
 } from "../legacy-ui-bridge";
 import { getControlValue, getRangeReadout } from "../legacy-ui-bridge";
+import { useAppLocale } from "../i18n";
 
 interface ExportSectionProps {
   snapshot: LegacyUiSnapshot;
@@ -38,6 +39,7 @@ export function ExportSection({
   onExportGif,
   onRecoveryAction
 }: ExportSectionProps) {
+  const { copy } = useAppLocale();
   const recoveryVisible = Boolean(recoveryPrimary || recoverySecondary);
   const bindRange = (id: string) => ({
     value: Number(getControlValue(snapshot, id)),
@@ -50,14 +52,14 @@ export function ExportSection({
   return (
     <section className="control-group">
       <ControlGroupHeading
-        title="导出"
-        tooltip="导出当前动画。MP4 更适合常规交付，GIF 会逐帧编码，所以等待时间通常更长。"
+        title={copy.export.title}
+        tooltip={copy.export.tooltip}
       />
 
       <div className="control-block">
         <div className="range-head">
           <label className="control-label" htmlFor="export-duration-seconds">
-            导出时长
+            {copy.export.duration}
           </label>
           <span className="range-value" data-readout-for="export-duration-seconds">
             {getRangeReadout(snapshot, "export-duration-seconds")}
@@ -69,7 +71,7 @@ export function ExportSection({
       <div className="control-block">
         <div className="range-head">
           <label className="control-label" htmlFor="export-frame-rate">
-            导出帧率
+            {copy.export.frameRate}
           </label>
           <span className="range-value" data-readout-for="export-frame-rate">
             {getRangeReadout(snapshot, "export-frame-rate")}
@@ -81,7 +83,7 @@ export function ExportSection({
       <div className="control-block">
         <div className="range-head">
           <label className="control-label" htmlFor="export-resolution-scale">
-            导出清晰度
+            {copy.export.resolution}
           </label>
           <span className="range-value" data-readout-for="export-resolution-scale">
             {getRangeReadout(snapshot, "export-resolution-scale")}
