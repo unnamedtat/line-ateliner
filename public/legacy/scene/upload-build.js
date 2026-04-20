@@ -184,6 +184,7 @@ async function runSceneBuild(runState, message = "") {
   syncControls();
   beginAnalysisWork(runState);
   await yieldToUi();
+  resumeAnalysisWorkTime();
 
   try {
     if (!refreshLongWaitState(runState, "正在生成纸面与布局...")) {
@@ -239,6 +240,7 @@ async function runModeOutputBuild(runState, message = "", options = {}) {
   syncControls();
   beginAnalysisWork(runState);
   await yieldToUi();
+  resumeAnalysisWorkTime();
 
   try {
     clearTimeout(rebuildTimer);
@@ -300,6 +302,7 @@ function rebuildScene(message = "") {
   const runState = {
     id: ++sceneBuildSerial,
     startedAt: performance.now(),
+    activeElapsedMs: 0,
     promptShown: false,
     cancelled: false,
     failureMessage: "",
@@ -321,6 +324,7 @@ function rebuildModeOutput(message = "", options = {}) {
   const runState = {
     id: ++sceneBuildSerial,
     startedAt: performance.now(),
+    activeElapsedMs: 0,
     promptShown: false,
     cancelled: false,
     failureMessage: "",

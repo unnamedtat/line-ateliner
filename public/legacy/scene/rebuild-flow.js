@@ -230,15 +230,40 @@ function isAnalysisAbortError(error) {
 
 // Marks analysis work as active.
 function beginAnalysisWork(runState) {
+  const now = performance.now();
+  runState.activeElapsedMs = Number.isFinite(runState.activeElapsedMs) ? runState.activeElapsedMs : 0;
   analysisWorkState = {
     runState,
-    lastYieldAt: performance.now()
+    lastYieldAt: now,
+    lastResumeAt: now
   };
 }
 
 // Clears the active analysis work marker.
 function endAnalysisWork() {
   analysisWorkState = null;
+}
+
+// Accumulates only active analysis execution time.
+function accumulateAnalysisWorkTime(state, now = performance.now()) {
+  if (!state?.runState) {
+    return 0;
+  }
+
+  const delta = Math.max(0, now - (state.lastResumeAt ?? now));
+  state.runState.activeElapsedMs = (state.runState.activeElapsedMs || 0) + delta;
+  state.lastResumeAt = now;
+  return state.runState.activeElapsedMs;
+}
+
+// Resumes active analysis timing after yielding to the browser.
+function resumeAnalysisWorkTime(now = performance.now()) {
+  if (!analysisWorkState?.runState) {
+    return;
+  }
+
+  analysisWorkState.lastYieldAt = now;
+  analysisWorkState.lastResumeAt = now;
 }
 
 // Conditionally yields during long analysis work.
@@ -249,6 +274,7 @@ async function maybeYieldAnalysis(message = "", force = false) {
   }
 
   const now = performance.now();
+  accumulateAnalysisWorkTime(state, now);
   if (!force && now - state.lastYieldAt < 12) {
     return !state.runState.cancelled;
   }
@@ -259,6 +285,7 @@ async function maybeYieldAnalysis(message = "", force = false) {
   }
 
   await yieldToUi();
+  resumeAnalysisWorkTime();
   return refreshLongWaitState(state.runState, message);
 }
 
@@ -321,7 +348,7 @@ function refreshLongWaitState(runState, message = "") {
     return false;
   }
 
-  const elapsed = performance.now() - runState.startedAt;
+  const elapsed = Number.isFinite(runState.activeElapsedMs) ? runState.activeElapsedMs : 0;
   if (elapsed >= ANALYSIS_TIMEOUT_MS) {
     runState.cancelled = true;
     runState.failureMessage = "分析超过 30 秒仍未完成，已自动停止。请先降低图像采样质量或切换更轻量的算法。";
