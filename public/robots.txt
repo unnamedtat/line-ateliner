@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://line-atelier.unnamedtat.com/sitemap.xml

@@ -3,24 +3,117 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Line Atelier</title>
-    <link rel="stylesheet" href="/styles/app.css" />
-    <!-- Google tag (gtag.js) -->
-    <script
-      async
-      src="https://www.googletagmanager.com/gtag/js?id=G-XY5C3NHB08"
-    ></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag() {
-        dataLayer.push(arguments);
-      }
-      gtag("js", new Date());
+    <meta name="theme-color" content="#f4efe5" />
+    <meta name="color-scheme" content="light" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="canonical" href="https://line-atelier.unnamedtat.com/" />
+    <link rel="preconnect" href="https://www.googletagmanager.com" crossorigin />
+    <link rel="dns-prefetch" href="//www.googletagmanager.com" />
+    <title>Line Atelier | boiling lines生成器</title>
 
-      gtag("config", "G-XY5C3NHB08");
+    <!-- Google Tag Manager -->
+    <script>
+      (function (w, d, s, l, i) {
+        w[l] = w[l] || [];
+        w[l].push({ "gtm.start": new Date().getTime(), event: "gtm.js" });
+        var f = d.getElementsByTagName(s)[0],
+          j = d.createElement(s),
+          dl = l != "dataLayer" ? "&l=" + l : "";
+        j.async = true;
+        j.src = "https://www.googletagmanager.com/gtm.js?id=" + i + dl;
+        f.parentNode.insertBefore(j, f);
+      })(window, document, "script", "dataLayer", "GTM-MP3QJ9HC");
+    </script>
+    <!-- End Google Tag Manager -->
+
+    <meta
+      name="description"
+      content="Line Atelier 是一个浏览器线稿与纸张肌理实验台，支持图片转线稿、动态笔触、参数调节，并导出 GIF 与 MP4。"
+    />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
+    <meta name="application-name" content="Line Atelier" />
+    <meta name="apple-mobile-web-app-title" content="Line Atelier" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Line Atelier" />
+    <meta property="og:title" content="Line Atelier | boiling lines生成器" />
+    <meta
+      property="og:description"
+      content="快速生成可调参数的boiling lines，免费导出 GIF/MP4。"
+    />
+    <meta property="og:url" content="https://line-atelier.unnamedtat.com/" />
+    <meta
+      property="og:image"
+      content="https://line-atelier.unnamedtat.com/sitePreview.png"
+    />
+    <meta
+      property="og:image:secure_url"
+      content="https://line-atelier.unnamedtat.com/sitePreview.png"
+    />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1866" />
+    <meta property="og:image:height" content="1140" />
+    <meta
+      property="og:image:alt"
+      content="Line Atelier 的线稿与纸张肌理编辑器界面预览图"
+    />
+
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Line Atelier | boiling lines生成器" />
+    <meta
+      name="twitter:description"
+      content="快速生成可调参数的boiling lines，免费导出 GIF/MP4。"
+    />
+    <meta
+      name="twitter:image"
+      content="https://line-atelier.unnamedtat.com/sitePreview.png"
+    />
+    <meta
+      name="twitter:image:alt"
+      content="Line Atelier 的boiling lines编辑器界面预览图"
+    />
+
+    <link rel="preload" href="/styles/app.css" as="style" />
+    <link rel="stylesheet" href="/styles/app.css" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Line Atelier",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Web Browser",
+        "url": "https://line-atelier.unnamedtat.com/",
+        "image": "https://line-atelier.unnamedtat.com/sitePreview.png",
+        "inLanguage": "zh-CN",
+        "isAccessibleForFree": true,
+        "browserRequirements": "需要启用 JavaScript 的现代桌面或移动浏览器",
+        "description": "一个在线boiling lines生成工具，支持GIF/MP4导出。",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
     </script>
   </head>
   <body class="is-retro-layout">
+    <!-- Google Tag Manager (noscript) -->
+    <noscript
+      ><iframe
+        src="https://www.googletagmanager.com/ns.html?id=GTM-MP3QJ9HC"
+        height="0"
+        width="0"
+        style="display: none; visibility: hidden"
+      ></iframe
+    ></noscript>
+    <!-- End Google Tag Manager (noscript) -->
+
+    <noscript>
+      Line Atelier 需要启用 JavaScript 才能运行。你仍可查看项目说明并在启用后使用完整编辑功能。
+    </noscript>
     <div id="app"></div>
 
     <script type="module" src="/src/main.ts"></script>

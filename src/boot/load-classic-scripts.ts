@@ -5,6 +5,22 @@ function findExistingScript(src: string): HTMLScriptElement | undefined {
   );
 }
 
+// Adds preload hints so browser can fetch dependent scripts earlier.
+function primeScriptPreloads(sources: readonly string[]) {
+  for (const src of sources) {
+    const existingPreload = document.querySelector<HTMLLinkElement>(`link[rel="preload"][as="script"][href="${src}"]`);
+    if (existingPreload) {
+      continue;
+    }
+
+    const preloadLink = document.createElement("link");
+    preloadLink.rel = "preload";
+    preloadLink.as = "script";
+    preloadLink.href = src;
+    document.head.appendChild(preloadLink);
+  }
+}
+
 // Loads one classic script.
 function loadClassicScript(src: string): Promise<void> {
   const existingScript = findExistingScript(src);
@@ -46,6 +62,8 @@ function loadClassicScript(src: string): Promise<void> {
 
 // Loads classic scripts sequentially.
 export async function loadClassicScripts(sources: readonly string[]): Promise<void> {
+  primeScriptPreloads(sources);
+
   for (const source of sources) {
     await loadClassicScript(source);
   }
