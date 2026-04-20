@@ -209,9 +209,45 @@ function cancelAnalysisWait() {
   activeSceneBuild.failureMessage = "已停止这次分析。你可以调整图片或算法后重新尝试。";
 }
 
+// Returns whether the current document is hidden.
+function isDocumentHidden() {
+  if (typeof document === "undefined") {
+    return false;
+  }
+
+  return document.visibilityState === "hidden" || document.hidden === true;
+}
+
+// Queues a microtask-sized continuation that is not blocked by background timer clamping.
+function queueContinuation(callback) {
+  if (typeof queueMicrotask === "function") {
+    queueMicrotask(callback);
+    return;
+  }
+
+  Promise.resolve().then(callback);
+}
+
+// Schedules follow-up work with a frame when visible, or immediately when hidden.
+function scheduleBuildContinuation(callback) {
+  if (!isDocumentHidden() && typeof window.requestAnimationFrame === "function") {
+    window.requestAnimationFrame(() => {
+      callback();
+    });
+    return;
+  }
+
+  queueContinuation(callback);
+}
+
 // Yields control back to the browser UI thread.
 function yieldToUi() {
   return new Promise((resolve) => {
+    if (isDocumentHidden()) {
+      queueContinuation(resolve);
+      return;
+    }
+
     window.setTimeout(resolve, 0);
   });
 }
@@ -308,7 +344,7 @@ function flushQueuedSceneBuild() {
   queuedBuildKind = "";
   queuedBuildMessage = "";
   queuedModeOutputOptions = normalizeModeOutputOptions();
-  window.requestAnimationFrame(() => {
+  scheduleBuildContinuation(() => {
     if (nextKind === "output") {
       rebuildModeOutput(nextMessage || "参数已更新，正在重算当前笔触...", nextOptions);
       return;

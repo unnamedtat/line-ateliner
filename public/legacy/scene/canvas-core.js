@@ -10,6 +10,7 @@ let queuedModeOutputOptions = {
 let activeSceneBuild = null;
 let analysisWorkState = null;
 let currentOutputGeometryKey = "";
+let previewAnimationStartedAt = 0;
 let renderFrameCache = {
   mode: "",
   width: 0,
@@ -82,6 +83,7 @@ function setup() {
   if (typeof ensureRetroLayout === "function") {
     ensureRetroLayout();
   }
+  previewAnimationStartedAt = performance.now();
   const host = getCanvasHost();
   const initialSize = getCanvasHostSize();
   const renderer = createCanvas(initialSize.width, initialSize.height);

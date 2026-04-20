@@ -1,4 +1,31 @@
 // Analysis state creation and cached synchronous map accessors.
+// Creates the shared analysis state shell.
+function createAnalysisStateFromImage(analysisImage) {
+  return {
+    image: analysisImage,
+    width: analysisImage.width,
+    height: analysisImage.height,
+    cache: {
+      brightnessMap: null,
+      filteredBrightnessMaps: new Map(),
+      localContrastMaps: new Map(),
+      rgbMaps: null,
+      colorDeltaMaps: new Map(),
+      inkMask: null
+    }
+  };
+}
+
+// Creates an analysis image-like object from transferred pixels.
+function createAnalysisImageFromPixels(widthValue, heightValue, pixelBuffer) {
+  return {
+    width: widthValue,
+    height: heightValue,
+    pixels: new Uint8ClampedArray(pixelBuffer),
+    remove() {}
+  };
+}
+
 // Builds the synchronous analysis state.
 function buildAnalysisState() {
   if (analysisState?.image && typeof analysisState.image.remove === "function") {
@@ -27,21 +54,7 @@ function buildAnalysisState() {
   analysisImage.imageMode(CORNER);
   analysisImage.image(sourceImage, 0, 0, analysisWidth, analysisHeight);
   analysisImage.loadPixels();
-  analysisState = {
-    image: analysisImage,
-    width: analysisImage.width,
-    height: analysisImage.height,
-    cache: {
-      // These maps are reused across algorithm switches so we don't resample the
-      // same source image for brightness / RGB data every time the mode changes.
-      brightnessMap: null,
-      filteredBrightnessMaps: new Map(),
-      localContrastMaps: new Map(),
-      rgbMaps: null,
-      colorDeltaMaps: new Map(),
-      inkMask: null
-    }
-  };
+  analysisState = createAnalysisStateFromImage(analysisImage);
 }
 
 // Builds the asynchronous analysis state.
@@ -67,25 +80,32 @@ async function buildAnalysisStateAsync() {
   }
 
   await ensureAnalysisResponsive("正在创建分析画布...", true);
+  if (sourceImageBlob && typeof requestLegacyImageWorker === "function" && canUseLegacyImageWorker()) {
+    try {
+      const prepared = await requestLegacyImageWorker(
+        "prepare-analysis",
+        sourceImageBlob,
+        getAnalysisMaxDimension()
+      );
+      const analysisImage = createAnalysisImageFromPixels(
+        prepared.width,
+        prepared.height,
+        prepared.pixelBuffer
+      );
+      analysisState = createAnalysisStateFromImage(analysisImage);
+      return;
+    } catch (error) {
+      console.warn("Image worker analysis pipeline failed, falling back to main thread", error);
+    }
+  }
+
   const analysisImage = createGraphics(analysisWidth, analysisHeight);
   analysisImage.pixelDensity(1);
   analysisImage.background(255);
   analysisImage.imageMode(CORNER);
   analysisImage.image(sourceImage, 0, 0, analysisWidth, analysisHeight);
   analysisImage.loadPixels();
-  analysisState = {
-    image: analysisImage,
-    width: analysisImage.width,
-    height: analysisImage.height,
-    cache: {
-      brightnessMap: null,
-      filteredBrightnessMaps: new Map(),
-      localContrastMaps: new Map(),
-      rgbMaps: null,
-      colorDeltaMaps: new Map(),
-      inkMask: null
-    }
-  };
+  analysisState = createAnalysisStateFromImage(analysisImage);
 }
 
 // Gets the current analysis image.

@@ -183,6 +183,8 @@ const NEIGHBOR_DIRS = [
 let sourceImage;
 let sourceImageHref = SOURCE_IMAGE_PATH;
 let sourceImageLabel = "figure.png";
+let sourceImageBlob = null;
+let sourceImageObjectUrl = "";
 let uploadedTextureImage = null;
 let uploadedTextureLabel = "未选择纹理";
 let paperBaseLayer;
