@@ -15,8 +15,9 @@ async function startVideoExport() {
     return;
   }
 
-  const mimeType = pickVideoMimeType();
-  if (!mimeType) {
+  const mimeType = typeof pickVideoMimeType === "function" ? pickVideoMimeType() : "";
+  const canUseFixedMp4 = typeof canUseFixedTimelineMp4Encoding === "function" && canUseFixedTimelineMp4Encoding();
+  if (!canUseFixedMp4 && !mimeType) {
     const recovery = getExportFailureRecovery("video");
     setExportState({
       active: false,

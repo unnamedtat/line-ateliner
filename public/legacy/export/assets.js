@@ -1,12 +1,82 @@
 // Export asset loading and overlay helpers.
 
+// Checks whether full offscreen export rendering can be used.
+function canUseDirectOffscreenExport() {
+  return (
+    typeof requestLegacyExportWorker === "function" &&
+    canUseLegacyExportWorker() &&
+    Boolean(sceneLayout && analysisState)
+  );
+}
+
+// Builds export scene layout without mutating the live viewport.
+function buildExportSceneLayout(exportWidth, exportHeight) {
+  if (!sourceImage || !sourceImage.width || !sourceImage.height) {
+    return null;
+  }
+
+  const margin = min(exportWidth, exportHeight) * 0.07;
+  const imageAspect = sourceImage.width / sourceImage.height;
+  let drawWidth = exportWidth - margin * 2;
+  let drawHeight = drawWidth / imageAspect;
+
+  if (drawHeight > exportHeight - margin * 2) {
+    drawHeight = exportHeight - margin * 2;
+    drawWidth = drawHeight * imageAspect;
+  }
+
+  const scaleFactor = max(0.05, settings.sceneScale / 100);
+  drawWidth *= scaleFactor;
+  drawHeight *= scaleFactor;
+  const offsetX = (settings.sceneOffsetX / 100) * exportWidth;
+  const offsetY = (settings.sceneOffsetY / 100) * exportHeight;
+
+  return {
+    x: (exportWidth - drawWidth) * 0.5 + offsetX,
+    y: (exportHeight - drawHeight) * 0.5 + offsetY,
+    width: drawWidth,
+    height: drawHeight
+  };
+}
+
 // Builds the current distortion overlay markup for export.
-function buildDistortionOverlayExportMarkup(exportWidth, exportHeight) {
+function buildDistortionOverlayExportMarkup(exportWidth, exportHeight, frameValue = getRenderAnimationFrame()) {
   if (!isDistortionMode()) {
     return "";
   }
 
-  return cloneDistortionOverlayMarkup(exportWidth, exportHeight) || "";
+  ensureSourceImageEmbeddedHref();
+  const exportSceneLayout = buildExportSceneLayout(exportWidth, exportHeight);
+  if (!exportSceneLayout || !sourceImageHref) {
+    return "";
+  }
+
+  const speed = settings.distortionSpeed / 100;
+  const wobble = frameValue * (0.006 + speed * 0.03);
+  const distortionFrequency = getHundredthsSetting("distortionFrequency");
+  const baseFrequencyX = max(0.001, distortionFrequency * (1 + sin(wobble) * 0.08));
+  const baseFrequencyY = max(0.001, distortionFrequency * (1 + cos(wobble * 1.17 + 0.8) * 0.08));
+  const numOctaves = String(round(settings.distortionOctaves));
+  const displacementScale = getTenthsSetting("distortionScale").toFixed(2);
+
+  return `
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${exportWidth}" height="${exportHeight}" viewBox="0 0 ${exportWidth} ${exportHeight}">
+  <defs>
+    <filter id="export-distortion-filter">
+      <feTurbulence type="turbulence" baseFrequency="${baseFrequencyX.toFixed(4)} ${baseFrequencyY.toFixed(4)}" numOctaves="${numOctaves}" result="noise" />
+      <feDisplacementMap in="SourceGraphic" in2="noise" scale="${displacementScale}" xChannelSelector="R" yChannelSelector="G" />
+    </filter>
+  </defs>
+  <image
+    href="${sourceImageHref}"
+    x="${exportSceneLayout.x.toFixed(2)}"
+    y="${exportSceneLayout.y.toFixed(2)}"
+    width="${exportSceneLayout.width.toFixed(2)}"
+    height="${exportSceneLayout.height.toFixed(2)}"
+    preserveAspectRatio="none"
+    filter="url(#export-distortion-filter)"
+  />
+</svg>`.trim();
 }
 
 // Captures the current texture overlay as an ImageBitmap for worker composition.
@@ -26,38 +96,79 @@ async function captureTextureOverlayBitmap() {
   return createImageBitmap(textureOverlayNode);
 }
 
-// Draws the full composite export frame through the export worker when available.
-async function drawCompositeExportFrameWithWorker(targetCanvas, targetCtx) {
-  const exportWidth = targetCanvas.width;
-  const exportHeight = targetCanvas.height;
-  const mainCanvas = getMainCanvasElement();
-  if (!mainCanvas) {
-    throw new Error("Main canvas is not available.");
+// Creates a source bitmap for direct export rendering.
+async function captureSourceImageBitmap() {
+  const sourceAssetImage =
+    typeof getSceneAssetImage === "function" ? getSceneAssetImage("source") : sourceImage;
+  const drawable =
+    sourceAssetImage?.canvas || sourceAssetImage?.elt || sourceAssetImage?.image || sourceAssetImage;
+  if (!drawable || typeof createImageBitmap !== "function") {
+    return null;
   }
 
+  return createImageBitmap(drawable);
+}
+
+// Builds a direct-render export payload.
+async function buildDirectExportPayload(targetCanvas, frameValue) {
+  if (!canUseDirectOffscreenExport()) {
+    return null;
+  }
+
+  const exportWidth = targetCanvas.width;
+  const exportHeight = targetCanvas.height;
   const transferList = [];
-  const baseFrame = await createImageBitmap(mainCanvas);
-  transferList.push(baseFrame);
+  const sourceBitmap = await captureSourceImageBitmap();
+  if (sourceBitmap) {
+    transferList.push(sourceBitmap);
+  }
   const textureBitmap = await captureTextureOverlayBitmap();
   if (textureBitmap) {
     transferList.push(textureBitmap);
   }
 
-  const result = await requestLegacyExportWorker(
-    "compose-frame",
-    {
+  return {
+    payload: {
       width: exportWidth,
       height: exportHeight,
-      baseFrame,
-      distortionSvgMarkup: buildDistortionOverlayExportMarkup(exportWidth, exportHeight),
+      mode: getEffectiveRenderMode(),
+      frameValue,
+      settings: createWorkerSettingsSnapshot(),
+      sourceSize: {
+        width: sourceImage?.width || 0,
+        height: sourceImage?.height || 0
+      },
+      analysisSize: {
+        width: analysisState?.width || 0,
+        height: analysisState?.height || 0
+      },
+      edgeSamples,
+      hatchSamples,
+      strokePaths,
+      sourceBitmap,
+      distortionSvgMarkup: buildDistortionOverlayExportMarkup(exportWidth, exportHeight, frameValue),
       textureBitmap,
       textureOpacity: Number.parseFloat(textureOverlayNode?.style.opacity || "1")
     },
     transferList
+  };
+}
+
+// Draws the full export frame through the export worker when available.
+async function drawCompositeExportFrameWithWorker(targetCanvas, targetCtx, frameValue = getRenderAnimationFrame()) {
+  const request = await buildDirectExportPayload(targetCanvas, frameValue);
+  if (!request) {
+    throw new Error("Direct offscreen export is not available.");
+  }
+
+  const result = await requestLegacyExportWorker(
+    "render-frame",
+    request.payload,
+    request.transferList
   );
 
-  targetCtx.clearRect(0, 0, exportWidth, exportHeight);
-  targetCtx.drawImage(result.bitmap, 0, 0, exportWidth, exportHeight);
+  targetCtx.clearRect(0, 0, targetCanvas.width, targetCanvas.height);
+  targetCtx.drawImage(result.bitmap, 0, 0, targetCanvas.width, targetCanvas.height);
   result.bitmap?.close?.();
 }
 
@@ -163,10 +274,10 @@ async function drawTextureOverlayToContext(targetCtx, exportWidth, exportHeight)
 }
 
 // Draws the full composite export frame.
-async function drawCompositeExportFrame(targetCanvas, targetCtx) {
+async function drawCompositeExportFrame(targetCanvas, targetCtx, frameValue = getRenderAnimationFrame()) {
   if (typeof requestLegacyExportWorker === "function" && canUseLegacyExportWorker()) {
     try {
-      await drawCompositeExportFrameWithWorker(targetCanvas, targetCtx);
+      await drawCompositeExportFrameWithWorker(targetCanvas, targetCtx, frameValue);
       return;
     } catch (error) {
       console.warn("Export worker composition failed, falling back to main thread", error);

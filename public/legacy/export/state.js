@@ -8,6 +8,21 @@ let legacyExportWorker = null;
 let legacyExportWorkerRequestSerial = 0;
 const legacyExportWorkerPendingRequests = new Map();
 
+// Checks whether fixed-timeline MP4 encoding can be used in this browser.
+function canUseFixedTimelineMp4Encoding() {
+  return Boolean(
+    typeof VideoEncoder !== "undefined" &&
+      typeof VideoFrame !== "undefined" &&
+      window.__lineAtelierMp4Muxer?.Muxer &&
+      window.__lineAtelierMp4Muxer?.ArrayBufferTarget
+  );
+}
+
+// Checks whether MP4 export is available through either fixed encoding or MediaRecorder fallback.
+function canExportMp4Output() {
+  return canUseFixedTimelineMp4Encoding() || Boolean(typeof pickVideoMimeType === "function" && pickVideoMimeType());
+}
+
 // Checks whether the export worker can be used in this browser.
 function canUseLegacyExportWorker() {
   return (
@@ -224,7 +239,7 @@ function getExportEstimateSummary() {
 
 // Builds export recovery actions.
 function getExportFailureRecovery(format) {
-  const canExportMp4 = Boolean(pickVideoMimeType());
+  const canExportMp4 = canExportMp4Output();
 
   if (format === "video") {
     return {

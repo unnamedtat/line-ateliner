@@ -1,6 +1,7 @@
 import { createElement } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
+import { ArrayBufferTarget, Muxer } from "mp4-muxer";
 import { CLASSIC_SCRIPT_PATHS } from "./boot/legacy-manifest";
 import { loadClassicScripts } from "./boot/load-classic-scripts";
 import { AppShell } from "./ui/AppShell";
@@ -11,6 +12,10 @@ declare global {
     __lineAtelierImageWorkerUrl?: string;
     __lineAtelierRenderWorkerUrl?: string;
     __lineAtelierExportWorkerUrl?: string;
+    __lineAtelierMp4Muxer?: {
+      ArrayBufferTarget: typeof ArrayBufferTarget;
+      Muxer: typeof Muxer;
+    };
     __lineAtelierTestMode?: boolean;
     __forceLegacyImageFallback?: boolean;
     __forceLegacyRenderFallback?: boolean;
@@ -20,6 +25,10 @@ declare global {
 window.__lineAtelierImageWorkerUrl = new URL("./workers/legacy-image.worker.ts", import.meta.url).toString();
 window.__lineAtelierRenderWorkerUrl = new URL("./workers/legacy-render.worker.ts", import.meta.url).toString();
 window.__lineAtelierExportWorkerUrl = new URL("./workers/legacy-export.worker.ts", import.meta.url).toString();
+window.__lineAtelierMp4Muxer = {
+  ArrayBufferTarget,
+  Muxer
+};
 window.__lineAtelierTestMode = typeof navigator !== "undefined" && navigator.webdriver === true;
 
 // Shows a boot failure message.
