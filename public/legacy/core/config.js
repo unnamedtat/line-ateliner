@@ -186,6 +186,7 @@ let sourceImageLabel = "figure.png";
 let sourceImageBlob = null;
 let sourceImageObjectUrl = "";
 let uploadedTextureImage = null;
+let uploadedTextureHref = "";
 let uploadedTextureLabel = "未选择纹理";
 let paperBaseLayer;
 let paperLayer;

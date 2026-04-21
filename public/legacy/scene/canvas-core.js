@@ -11,6 +11,8 @@ let activeSceneBuild = null;
 let analysisWorkState = null;
 let currentOutputGeometryKey = "";
 let previewAnimationStartedAt = 0;
+let sceneBackgroundHiddenAt = 0;
+let sceneResumeRestorePromise = null;
 let renderFrameCache = {
   mode: "",
   width: 0,
@@ -62,6 +64,74 @@ function observeCanvasHost() {
   canvasHostObserver.observe(host);
 }
 
+// Restores the scene after the page spent too long in the background.
+async function restoreSceneAfterBackgroundPause(force = false) {
+  if (sceneResumeRestorePromise) {
+    return sceneResumeRestorePromise;
+  }
+
+  const hiddenDurationMs =
+    sceneBackgroundHiddenAt > 0 ? max(0, performance.now() - sceneBackgroundHiddenAt) : 0;
+  if (!force && hiddenDurationMs < 15000) {
+    return false;
+  }
+
+  sceneBackgroundHiddenAt = 0;
+  sceneResumeRestorePromise = (async () => {
+    try {
+      if (appStatusState.analysisActive) {
+        return false;
+      }
+
+      previewAnimationStartedAt = performance.now();
+      if (typeof restoreSourceImageAfterResume === "function") {
+        await restoreSourceImageAfterResume();
+      }
+      if (typeof restoreTextureImageAfterResume === "function") {
+        await restoreTextureImageAfterResume();
+      }
+
+      if (typeof clearRenderFrameCache === "function") {
+        clearRenderFrameCache();
+      }
+      if (typeof rebuildViewportSynchronously === "function") {
+        rebuildViewportSynchronously();
+      }
+      if (typeof syncControls === "function") {
+        syncControls();
+      }
+      return true;
+    } catch (error) {
+      console.warn("Failed to restore scene after background pause", error);
+      return false;
+    } finally {
+      sceneResumeRestorePromise = null;
+    }
+  })();
+
+  return sceneResumeRestorePromise;
+}
+
+// Starts page visibility listeners for background recovery.
+function observePageLifecycle() {
+  if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") {
+        sceneBackgroundHiddenAt = performance.now();
+        return;
+      }
+
+      void restoreSceneAfterBackgroundPause(false);
+    });
+  }
+
+  if (typeof window !== "undefined") {
+    window.addEventListener("pageshow", () => {
+      void restoreSceneAfterBackgroundPause(true);
+    });
+  }
+}
+
 // Handles canvas host resize updates.
 function handleCanvasHostResize() {
   const nextSize = getCanvasHostSize();
@@ -97,6 +167,7 @@ function setup() {
   strokeCap(ROUND);
   strokeJoin(ROUND);
   observeCanvasHost();
+  observePageLifecycle();
   initDistortionOverlay();
   initTextureOverlay();
   bindControls();

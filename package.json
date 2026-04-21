@@ -18,6 +18,9 @@
     "format:check": "prettier --check .",
     "test": "vitest run --config vitest.config.mjs --configLoader runner",
     "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:record": "playwright codegen http://127.0.0.1:4173",
     "postinstall": "node ./scripts/sync-vendor.mjs"
   },
   "dependencies": {
