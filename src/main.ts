@@ -22,7 +22,11 @@ function showBootFailure(message: string) {
 // Bootstraps the legacy app scripts.
 async function bootstrapLegacyApp() {
   if (!window.__lineAtelierBootPromise) {
+    const startedAt = performance.now();
     window.__lineAtelierBootPromise = loadClassicScripts(CLASSIC_SCRIPT_PATHS)
+      .then(() => {
+        console.info(`[boot] bootstrapLegacyApp: ${(performance.now() - startedAt).toFixed(1)}ms`);
+      })
       .catch((error: unknown) => {
         const message = error instanceof Error ? error.message : String(error);
         showBootFailure(message);
@@ -39,11 +43,13 @@ function renderAppShell() {
     throw new Error("Missing #app mount node");
   }
 
+  const startedAt = performance.now();
   const root = createRoot(mountNode);
   // Ensures legacy scripts can query all UI nodes immediately after render.
   flushSync(() => {
     root.render(createElement(AppShell));
   });
+  console.info(`[boot] renderAppShell: ${(performance.now() - startedAt).toFixed(1)}ms`);
 }
 
 async function startApp() {

@@ -5,6 +5,10 @@ function findExistingScript(src: string): HTMLScriptElement | undefined {
   );
 }
 
+function logBootTiming(label: string, durationMs: number) {
+  console.info(`[boot] ${label}: ${durationMs.toFixed(1)}ms`);
+}
+
 // Adds preload hints so browser can fetch dependent scripts earlier.
 function primeScriptPreloads(sources: readonly string[]) {
   for (const src of sources) {
@@ -25,11 +29,13 @@ function primeScriptPreloads(sources: readonly string[]) {
 function loadClassicScript(src: string): Promise<void> {
   const existingScript = findExistingScript(src);
   if (existingScript?.dataset.loaded === "true") {
+    logBootTiming(`cached ${src}`, 0);
     return Promise.resolve();
   }
 
   return new Promise((resolve, reject) => {
     const script = existingScript ?? document.createElement("script");
+    const startedAt = performance.now();
 
     const cleanup = () => {
       script.removeEventListener("load", handleLoad);
@@ -39,6 +45,7 @@ function loadClassicScript(src: string): Promise<void> {
     const handleLoad = () => {
       script.dataset.loaded = "true";
       cleanup();
+      logBootTiming(src, performance.now() - startedAt);
       resolve();
     };
 
@@ -62,9 +69,12 @@ function loadClassicScript(src: string): Promise<void> {
 
 // Loads classic scripts sequentially.
 export async function loadClassicScripts(sources: readonly string[]): Promise<void> {
+  const startedAt = performance.now();
   primeScriptPreloads(sources);
 
   for (const source of sources) {
     await loadClassicScript(source);
   }
+
+  logBootTiming("classic scripts total", performance.now() - startedAt);
 }
