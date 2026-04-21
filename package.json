@@ -21,6 +21,7 @@
     "postinstall": "node ./scripts/sync-vendor.mjs"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "gif.js.optimized": "^1.0.1",
     "p5": "1.11.3",
