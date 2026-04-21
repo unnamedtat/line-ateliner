@@ -19,7 +19,7 @@ function refreshUiState() {
 
 // Applies import and export lock states.
 function applyImportExportLocks() {
-  const importExportLocked = Boolean(appStatusState.analysisActive || exportState.active);
+  const importExportLocked = Boolean(appStatusState.analysisActive);
   const importTargets = ["image-upload", "texture-upload"];
   const exportReady = !appStatusState.analysisActive && !appStatusState.analysisFailed;
 

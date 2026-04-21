@@ -78,7 +78,7 @@ async function renderExportFrame(
   frameStartValue,
   exportSnapshot = getActiveExportSnapshot()
 ) {
-  const frameValue = getExportFrameValue(config, frameIndex, frameStartValue);
+  const frameValue = getExportFrameValue(config, frameIndex, frameStartValue, exportSnapshot);
   setExportRenderFrameValue(frameValue);
 
   if (

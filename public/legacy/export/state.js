@@ -367,9 +367,10 @@ function getExportAnimationStep(config) {
 }
 
 // Gets the non-SVG export cycle length.
-function getNonSvgExportCycleLength() {
+function getNonSvgExportCycleLength(exportSnapshot = getActiveExportSnapshot()) {
   const boilSequenceLength = Array.isArray(BOIL_SEQUENCE) ? BOIL_SEQUENCE.length : 0;
-  const holdFrames = Math.max(1, Math.round(settings?.boilHoldFrames || 1));
+  const exportSettings = exportSnapshot?.settings || settings;
+  const holdFrames = Math.max(1, Math.round(exportSettings?.boilHoldFrames || 1));
   if (!boilSequenceLength) {
     return holdFrames;
   }
@@ -378,14 +379,17 @@ function getNonSvgExportCycleLength() {
 }
 
 // Gets the export frame value.
-function getExportFrameValue(config, frameIndex, frameStartValue) {
+function getExportFrameValue(config, frameIndex, frameStartValue, exportSnapshot = getActiveExportSnapshot()) {
   const animationStep = getExportAnimationStep(config);
 
-  if (typeof isDistortionMode === "function" && isDistortionMode()) {
+  const exportMode =
+    exportSnapshot?.mode || (typeof getEffectiveRenderMode === "function" ? getEffectiveRenderMode() : "");
+
+  if (exportMode === "distortion") {
     return frameStartValue + frameIndex * animationStep;
   }
 
-  const cycleLength = getNonSvgExportCycleLength();
+  const cycleLength = getNonSvgExportCycleLength(exportSnapshot);
   if (cycleLength <= 0) {
     return frameIndex * animationStep;
   }
