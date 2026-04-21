@@ -1,18 +1,29 @@
 import { createElement } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
-import p5 from "p5";
+import { scheduleDeferredMonitoring } from "./boot/deferred-monitoring";
 import { CLASSIC_SCRIPT_PATHS } from "./boot/legacy-manifest";
 import { loadClassicScripts } from "./boot/load-classic-scripts";
 import { AppShell } from "./ui/AppShell";
+import legacyImageWorkerUrl from "./workers/legacy-image.worker?worker&url";
+import legacyRenderWorkerUrl from "./workers/legacy-render.worker?worker&url";
 
 declare global {
   interface Window {
     __lineAtelierBootPromise?: Promise<void>;
-    __lineAtelierP5Instance?: p5;
-    p5?: typeof p5;
+    __lineAtelierImageWorkerUrl?: string;
+    __lineAtelierLoadExportRuntime?: () => Promise<void>;
+    __lineAtelierP5Instance?: unknown;
+    __lineAtelierRenderWorkerUrl?: string;
+    p5?: typeof import("p5");
   }
 }
+
+window.__lineAtelierImageWorkerUrl = legacyImageWorkerUrl;
+window.__lineAtelierRenderWorkerUrl = legacyRenderWorkerUrl;
+window.__lineAtelierLoadExportRuntime = () => {
+  return import("./boot/legacy-export-runtime").then((module) => module.loadLegacyExportRuntime());
+};
 
 // Shows a boot failure message.
 function showBootFailure(message: string) {
@@ -26,12 +37,16 @@ function showBootFailure(message: string) {
 async function bootstrapLegacyApp() {
   if (!window.__lineAtelierBootPromise) {
     const startedAt = performance.now();
-    window.p5 = p5;
     window.__lineAtelierBootPromise = loadClassicScripts(CLASSIC_SCRIPT_PATHS)
-      .then(() => {
+      .then(async () => {
+        const p5ModuleStartedAt = performance.now();
+        const { default: p5 } = await import("p5");
+        window.p5 = p5;
+        console.info(`[boot] import p5 module: ${(performance.now() - p5ModuleStartedAt).toFixed(1)}ms`);
+
         const p5StartedAt = performance.now();
         if (!window.__lineAtelierP5Instance) {
-          window.__lineAtelierP5Instance = new (p5 as unknown as { new (): p5 })();
+          window.__lineAtelierP5Instance = new (p5 as unknown as { new (): unknown })();
         }
         console.info(`[boot] p5 global init: ${(performance.now() - p5StartedAt).toFixed(1)}ms`);
         console.info(`[boot] bootstrapLegacyApp: ${(performance.now() - startedAt).toFixed(1)}ms`);
@@ -73,6 +88,7 @@ async function startApp() {
 }
 
 void startApp();
+scheduleDeferredMonitoring();
 
 if (import.meta.hot) {
   import.meta.hot.accept();

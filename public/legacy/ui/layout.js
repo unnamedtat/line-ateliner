@@ -22,6 +22,22 @@ const LEGACY_UI_READY_EVENT = "lineatelier:bridge-ready";
 
 let activeControlTab = "input";
 
+function runWithExportRuntime(task) {
+  const loader = window.__lineAtelierLoadExportRuntime;
+  if (typeof loader !== "function") {
+    task();
+    return;
+  }
+
+  loader()
+    .then(() => {
+      task();
+    })
+    .catch((error) => {
+      console.warn("Failed to load export runtime", error);
+    });
+}
+
 // Ensures the React-rendered retro shell is marked ready.
 function ensureRetroLayout() {
   const panel = document.getElementById("ui-shell");
@@ -210,14 +226,18 @@ function ensureLegacyUiBridge() {
         }
       },
       startVideoExport: () => {
-        if (typeof startVideoExport === "function") {
-          startVideoExport();
-        }
+        runWithExportRuntime(() => {
+          if (typeof startVideoExport === "function") {
+            startVideoExport();
+          }
+        });
       },
       startGifExport: () => {
-        if (typeof startGifExport === "function") {
-          startGifExport();
-        }
+        runWithExportRuntime(() => {
+          if (typeof startGifExport === "function") {
+            startGifExport();
+          }
+        });
       },
       continueAnalysisWait: () => {
         if (typeof continueAnalysisWait === "function") {
@@ -230,9 +250,11 @@ function ensureLegacyUiBridge() {
         }
       },
       runExportRecoveryAction: (action) => {
-        if (typeof runExportRecoveryAction === "function") {
-          runExportRecoveryAction(action);
-        }
+        runWithExportRuntime(() => {
+          if (typeof runExportRecoveryAction === "function") {
+            runExportRecoveryAction(action);
+          }
+        });
       },
       updateSelect: (id, value) => {
         if (typeof applySelectControlChange === "function") {
@@ -285,8 +307,10 @@ function syncStatusSummary() {
 function setActiveControlTab(tab) {
   activeControlTab = tab || "input";
 
-  if (activeControlTab === "export" && typeof preloadGifLibrary === "function") {
-    preloadGifLibrary();
+  if (activeControlTab === "export" && typeof window.__lineAtelierLoadExportRuntime === "function") {
+    window.__lineAtelierLoadExportRuntime().catch((error) => {
+      console.warn("Failed to preload export runtime", error);
+    });
   }
 
   syncLegacyUiBridge();

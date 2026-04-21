@@ -3,13 +3,14 @@ import { describe, expect, it } from "vitest";
 import { CLASSIC_SCRIPT_PATHS } from "../../src/boot/legacy-manifest";
 
 describe("CLASSIC_SCRIPT_PATHS", () => {
-  it("loads p5 before legacy app scripts", () => {
-    expect(CLASSIC_SCRIPT_PATHS[0]).toBe("/vendor/p5.min.js");
+  it("keeps scene drawing in the classic startup path", () => {
+    expect(CLASSIC_SCRIPT_PATHS).toContain("/legacy/scene/draw.js");
   });
 
-  it("keeps sketch loading before export helpers", () => {
-    expect(CLASSIC_SCRIPT_PATHS.indexOf("/legacy/scene/draw.js")).toBeLessThan(
-      CLASSIC_SCRIPT_PATHS.indexOf("/legacy/export/actions.js")
-    );
+  it("keeps export helpers out of the classic startup path", () => {
+    expect(CLASSIC_SCRIPT_PATHS).not.toContain("/legacy/export/state.js");
+    expect(CLASSIC_SCRIPT_PATHS).not.toContain("/legacy/export/assets.js");
+    expect(CLASSIC_SCRIPT_PATHS).not.toContain("/legacy/export/render.js");
+    expect(CLASSIC_SCRIPT_PATHS).not.toContain("/legacy/export/actions.js");
   });
 });

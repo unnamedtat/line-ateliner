@@ -1,7 +1,7 @@
 // Export state, timing, and estimate helpers.
 // Export helpers for MP4, GIF, and PNG fallback output.
 const GIF_LIBRARY_SCRIPT = "/vendor/gif.js";
-const GIF_WORKER_SCRIPT = "/vendor/gif.worker.js";
+const GIF_WORKER_SCRIPT = window.__lineAtelierGifWorkerUrl || "/vendor/gif.worker.js";
 let gifWorkerBlobUrl = "";
 let gifLibraryLoadPromise = null;
 

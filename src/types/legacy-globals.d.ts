@@ -4,6 +4,11 @@ declare global {
   interface Window {
     __forceLegacyImageFallback?: boolean;
     __forceLegacyRenderFallback?: boolean;
+    __lineAtelierEnsureGifLibraryLoaded?: () => Promise<void>;
+    __lineAtelierGifWorkerUrl?: string;
+    __lineAtelierImageWorkerUrl?: string;
+    __lineAtelierLoadExportRuntime?: () => Promise<void>;
+    __lineAtelierRenderWorkerUrl?: string;
   }
 
   function canUseLegacyImageWorker(): boolean;

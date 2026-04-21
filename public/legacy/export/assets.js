@@ -182,6 +182,11 @@ function findGifLibraryScript() {
 
 // Ensures the GIF library script is loaded.
 async function ensureGifLibraryLoaded() {
+  if (typeof window.__lineAtelierEnsureGifLibraryLoaded === "function") {
+    await window.__lineAtelierEnsureGifLibraryLoaded();
+    return;
+  }
+
   if (typeof GIF === "function") {
     return;
   }

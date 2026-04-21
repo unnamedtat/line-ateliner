@@ -32,11 +32,5 @@ export const CLASSIC_SCRIPT_PATHS = [
   "/legacy/path/variants.js",
 
   // Scene drawing depends on prior analysis helpers.
-  "/legacy/scene/draw.js",
-
-  // Export is loaded last so it can reuse the prepared scene state.
-  "/legacy/export/state.js",
-  "/legacy/export/assets.js",
-  "/legacy/export/render.js",
-  "/legacy/export/actions.js"
+  "/legacy/scene/draw.js"
 ] as const;

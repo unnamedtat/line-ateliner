@@ -73,6 +73,7 @@ interface LegacyUiBridge {
 
 declare global {
   interface Window {
+    __lineAtelierLoadExportRuntime?: () => Promise<void>;
     __lineAtelierUiBridge?: LegacyUiBridge;
   }
 }
