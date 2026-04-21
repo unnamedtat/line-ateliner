@@ -72,7 +72,11 @@ test("restores the scene after a long background-style suspension", async ({ pag
   }).toBe("true");
 
   await page.evaluate(() => {
-    sourceImage = null;
+    if (typeof clearSceneAssetImage === "function") {
+      clearSceneAssetImage("source");
+    } else {
+      sourceImage = null;
+    }
     if (typeof clearRenderFrameCache === "function") {
       clearRenderFrameCache();
     }

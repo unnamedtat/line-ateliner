@@ -3,6 +3,7 @@ export const CLASSIC_SCRIPT_PATHS = [
 
   // Core shared state and helpers.
   "/legacy/core/config.js",
+  "/legacy/core/asset-state.js",
   "/legacy/core/utils.js",
 
   // UI theming, layout, and bindings.

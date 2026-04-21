@@ -149,7 +149,25 @@ function handleCanvasHostResize() {
 
 // Preloads the default source image.
 function preload() {
-  sourceImage = loadImage(SOURCE_IMAGE_PATH);
+  sourceImage = loadImage(SOURCE_IMAGE_PATH, (image) => {
+    if (typeof updateSceneAssetRecord === "function") {
+      updateSceneAssetRecord(
+        "source",
+        {
+          image,
+          href: SOURCE_IMAGE_PATH,
+          blob: null,
+          objectUrl: "",
+          label: "figure.png"
+        },
+        {
+          revokePreviousObjectUrl: false
+        }
+      );
+    } else {
+      sourceImage = image;
+    }
+  });
 }
 
 // Initializes the p5 sketch and UI state.

@@ -8,11 +8,14 @@ const legacyRenderWorkerPendingRequests = new Map();
 let sourceImageLoadSerial = 0;
 
 // Checks whether the image worker can be used in this browser.
+function shouldForceLegacyFallback(flagName) {
+  return window.__lineAtelierTestMode === true && window[flagName] === true;
+}
+
+// Checks whether the image worker can be used in this browser.
 function canUseLegacyImageWorker() {
-  const forceFallback =
-    window.__lineAtelierTestMode === true && window.__forceLegacyImageFallback === true;
   return (
-    !forceFallback &&
+    !shouldForceLegacyFallback("__forceLegacyImageFallback") &&
     typeof Worker !== "undefined" &&
     typeof OffscreenCanvas !== "undefined" &&
     typeof createImageBitmap === "function" &&
@@ -23,10 +26,8 @@ function canUseLegacyImageWorker() {
 
 // Checks whether the render worker can be used in this browser.
 function canUseLegacyRenderWorker() {
-  const forceFallback =
-    window.__lineAtelierTestMode === true && window.__forceLegacyRenderFallback === true;
   return (
-    !forceFallback &&
+    !shouldForceLegacyFallback("__forceLegacyRenderFallback") &&
     typeof Worker !== "undefined" &&
     typeof window.__lineAtelierRenderWorkerUrl === "string" &&
     window.__lineAtelierRenderWorkerUrl.length > 0
@@ -241,22 +242,12 @@ function createDataUrlFromP5Image(image) {
 
 // Releases the last uploaded source object URL.
 function revokeSourceImageObjectUrl() {
-  if (!sourceImageObjectUrl) {
-    return;
-  }
-
-  URL.revokeObjectURL(sourceImageObjectUrl);
-  sourceImageObjectUrl = "";
+  revokeSceneAssetObjectUrl("source");
 }
 
 // Releases the last uploaded texture object URL.
 function revokeUploadedTextureHref() {
-  if (!uploadedTextureHref || !String(uploadedTextureHref).startsWith("blob:")) {
-    return;
-  }
-
-  URL.revokeObjectURL(uploadedTextureHref);
-  uploadedTextureHref = "";
+  revokeSceneAssetObjectUrl("texture");
 }
 
 // Creates a p5 image from a transferred ImageBitmap.
@@ -319,12 +310,13 @@ async function applyPreparedSourceImage(file, prepared, loadSerial) {
       return;
     }
 
-    revokeSourceImageObjectUrl();
-    sourceImageObjectUrl = nextHref;
-    sourceImageBlob = prepared.blob;
-    sourceImage = nextSourceImage;
-    sourceImageHref = nextHref;
-    sourceImageLabel = prepared.resized ? `${file.name} (resized)` : file.name;
+    updateSceneAssetRecord("source", {
+      image: nextSourceImage,
+      href: nextHref,
+      blob: prepared.blob,
+      objectUrl: nextHref,
+      label: prepared.resized ? `${file.name} (resized)` : file.name
+    });
     syncControls();
     rebuildScene("上传成功，正在分析图片并重建线稿预览...");
   } catch (error) {
@@ -343,10 +335,13 @@ async function applyPreparedTextureImage(file, prepared) {
       nextTextureImage = await loadP5ImageFromUrl(objectUrl);
     }
 
-    revokeUploadedTextureHref();
-    uploadedTextureImage = nextTextureImage;
-    uploadedTextureHref = objectUrl;
-    uploadedTextureLabel = prepared.resized ? `${file.name} (resized)` : file.name;
+    updateSceneAssetRecord("texture", {
+      image: nextTextureImage,
+      href: objectUrl,
+      blob: prepared.blob,
+      objectUrl,
+      label: prepared.resized ? `${file.name} (resized)` : file.name
+    });
     if (settings.paperTexture !== "upload") {
       settings.paperTexture = "upload";
     }
@@ -371,12 +366,13 @@ function loadUserImageFallback(file, loadSerial) {
 
       const normalized = normalizeUploadedImage(image, MAX_UPLOADED_SOURCE_DIMENSION);
       const persistentHref = createDataUrlFromP5Image(normalized.image);
-      revokeSourceImageObjectUrl();
-      sourceImageBlob = null;
-      sourceImage = normalized.image;
-      sourceImageHref = persistentHref || objectUrl;
-      sourceImageObjectUrl = persistentHref ? "" : objectUrl;
-      sourceImageLabel = normalized.resized ? `${file.name} (resized)` : file.name;
+      updateSceneAssetRecord("source", {
+        image: normalized.image,
+        href: persistentHref || objectUrl,
+        blob: null,
+        objectUrl: persistentHref ? "" : objectUrl,
+        label: normalized.resized ? `${file.name} (resized)` : file.name
+      });
       syncControls();
       rebuildScene("上传成功，正在分析图片并重建线稿预览...");
       if (persistentHref) {
@@ -490,10 +486,13 @@ function loadUserTextureFallback(file) {
     (image) => {
       const normalized = normalizeUploadedImage(image, MAX_UPLOADED_TEXTURE_DIMENSION);
       const persistentHref = createDataUrlFromP5Image(normalized.image);
-      revokeUploadedTextureHref();
-      uploadedTextureImage = normalized.image;
-      uploadedTextureHref = persistentHref || objectUrl;
-      uploadedTextureLabel = normalized.resized ? `${file.name} (resized)` : file.name;
+      updateSceneAssetRecord("texture", {
+        image: normalized.image,
+        href: persistentHref || objectUrl,
+        blob: null,
+        objectUrl: persistentHref ? "" : objectUrl,
+        label: normalized.resized ? `${file.name} (resized)` : file.name
+      });
       if (settings.paperTexture !== "upload") {
         settings.paperTexture = "upload";
       }
@@ -513,18 +512,38 @@ function loadUserTextureFallback(file) {
 
 // Restores the source image from a persistent URL or blob after long background suspension.
 async function restoreSourceImageAfterResume() {
-  if (sourceImageBlob) {
-    const objectUrl = URL.createObjectURL(sourceImageBlob);
+  const sourceBlob = getSceneAssetBlob("source");
+  if (sourceBlob) {
+    const objectUrl = URL.createObjectURL(sourceBlob);
     try {
-      sourceImage = await loadP5ImageFromUrl(objectUrl);
+      const restoredImage = await loadP5ImageFromUrl(objectUrl);
+      updateSceneAssetRecord(
+        "source",
+        {
+          image: restoredImage
+        },
+        {
+          revokePreviousObjectUrl: false
+        }
+      );
       return true;
     } finally {
       URL.revokeObjectURL(objectUrl);
     }
   }
 
-  if (typeof sourceImageHref === "string" && sourceImageHref) {
-    sourceImage = await loadP5ImageFromUrl(sourceImageHref);
+  const sourceHref = getSceneAssetPersistentHref("source");
+  if (sourceHref) {
+    const restoredImage = await loadP5ImageFromUrl(sourceHref);
+    updateSceneAssetRecord(
+      "source",
+      {
+        image: restoredImage
+      },
+      {
+        revokePreviousObjectUrl: false
+      }
+    );
     return true;
   }
 
@@ -533,11 +552,21 @@ async function restoreSourceImageAfterResume() {
 
 // Restores the uploaded texture image after long background suspension.
 async function restoreTextureImageAfterResume() {
-  if (!uploadedTextureHref) {
+  const textureHref = getSceneAssetPersistentHref("texture");
+  if (!textureHref) {
     return false;
   }
 
-  uploadedTextureImage = await loadP5ImageFromUrl(uploadedTextureHref);
+  const restoredImage = await loadP5ImageFromUrl(textureHref);
+  updateSceneAssetRecord(
+    "texture",
+    {
+      image: restoredImage
+    },
+    {
+      revokePreviousObjectUrl: false
+    }
+  );
   return true;
 }
 

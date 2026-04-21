@@ -79,7 +79,22 @@ function ensureSourceImageEmbeddedHref() {
 
   try {
     ctx.drawImage(drawable, 0, 0, tempCanvas.width, tempCanvas.height);
-    sourceImageHref = tempCanvas.toDataURL("image/png");
+    const embeddedHref = tempCanvas.toDataURL("image/png");
+    if (typeof updateSceneAssetRecord === "function") {
+      updateSceneAssetRecord(
+        "source",
+        {
+          href: embeddedHref,
+          objectUrl: "",
+          blob: null
+        },
+        {
+          revokePreviousObjectUrl: false
+        }
+      );
+    } else {
+      sourceImageHref = embeddedHref;
+    }
   } catch (error) {
     console.warn("Failed to embed source image for export", error);
   }
