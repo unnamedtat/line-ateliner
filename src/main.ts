@@ -9,10 +9,12 @@ declare global {
   interface Window {
     __lineAtelierBootPromise?: Promise<void>;
     __lineAtelierImageWorkerUrl?: string;
+    __lineAtelierRenderWorkerUrl?: string;
   }
 }
 
 window.__lineAtelierImageWorkerUrl = new URL("./workers/legacy-image.worker.ts", import.meta.url).toString();
+window.__lineAtelierRenderWorkerUrl = new URL("./workers/legacy-render.worker.ts", import.meta.url).toString();
 
 // Shows a boot failure message.
 function showBootFailure(message: string) {

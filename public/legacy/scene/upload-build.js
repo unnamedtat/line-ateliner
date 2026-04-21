@@ -2,6 +2,9 @@
 let legacyImageWorker = null;
 let legacyImageWorkerRequestSerial = 0;
 const legacyImageWorkerPendingRequests = new Map();
+let legacyRenderWorker = null;
+let legacyRenderWorkerRequestSerial = 0;
+const legacyRenderWorkerPendingRequests = new Map();
 let sourceImageLoadSerial = 0;
 
 // Checks whether the image worker can be used in this browser.
@@ -12,6 +15,15 @@ function canUseLegacyImageWorker() {
     typeof createImageBitmap === "function" &&
     typeof window.__lineAtelierImageWorkerUrl === "string" &&
     window.__lineAtelierImageWorkerUrl.length > 0
+  );
+}
+
+// Checks whether the render worker can be used in this browser.
+function canUseLegacyRenderWorker() {
+  return (
+    typeof Worker !== "undefined" &&
+    typeof window.__lineAtelierRenderWorkerUrl === "string" &&
+    window.__lineAtelierRenderWorkerUrl.length > 0
   );
 }
 
@@ -57,6 +69,48 @@ function getLegacyImageWorker() {
   return legacyImageWorker;
 }
 
+// Resolves the shared render worker instance.
+function getLegacyRenderWorker() {
+  if (!canUseLegacyRenderWorker()) {
+    return null;
+  }
+
+  if (legacyRenderWorker) {
+    return legacyRenderWorker;
+  }
+
+  legacyRenderWorker = new Worker(window.__lineAtelierRenderWorkerUrl, {
+    type: "module"
+  });
+
+  legacyRenderWorker.addEventListener("message", (event) => {
+    const response = event.data;
+    const pending = legacyRenderWorkerPendingRequests.get(response?.id);
+    if (!pending) {
+      return;
+    }
+
+    legacyRenderWorkerPendingRequests.delete(response.id);
+    if (response.ok) {
+      pending.resolve(response);
+      return;
+    }
+
+    pending.reject(new Error(response?.error || "渲染 Worker 处理失败。"));
+  });
+
+  legacyRenderWorker.addEventListener("error", (event) => {
+    const message = event?.message || "渲染 Worker 启动失败。";
+    legacyRenderWorkerPendingRequests.forEach((pending) => {
+      pending.reject(new Error(message));
+    });
+    legacyRenderWorkerPendingRequests.clear();
+    legacyRenderWorker = null;
+  });
+
+  return legacyRenderWorker;
+}
+
 // Sends a processing request to the shared image worker.
 function requestLegacyImageWorker(kind, source, maxDimension) {
   const worker = getLegacyImageWorker();
@@ -77,6 +131,46 @@ function requestLegacyImageWorker(kind, source, maxDimension) {
       maxDimension
     });
   });
+}
+
+// Sends a processing request to the shared render worker.
+function requestLegacyRenderWorker(kind, payload) {
+  const worker = getLegacyRenderWorker();
+  if (!worker) {
+    return Promise.reject(new Error("当前环境不支持渲染 Worker。"));
+  }
+
+  return new Promise((resolve, reject) => {
+    const id = ++legacyRenderWorkerRequestSerial;
+    legacyRenderWorkerPendingRequests.set(id, {
+      resolve,
+      reject
+    });
+    worker.postMessage({
+      id,
+      kind,
+      ...payload
+    });
+  });
+}
+
+// Builds a serializable settings snapshot for worker tasks.
+function createWorkerSettingsSnapshot() {
+  return { ...settings };
+}
+
+// Builds the shared analysis payload for render worker requests.
+function createLegacyRenderAnalysisPayload() {
+  const analysisImage = analysisState?.image;
+  if (!analysisImage?.pixels || !analysisState?.width || !analysisState?.height) {
+    return null;
+  }
+
+  return {
+    width: analysisState.width,
+    height: analysisState.height,
+    pixels: analysisImage.pixels
+  };
 }
 
 // Calculates safe dimensions for uploaded images.

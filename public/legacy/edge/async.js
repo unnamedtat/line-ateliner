@@ -312,10 +312,57 @@ async function buildCurrentModeOutputAsync() {
   }
 
   const effectiveMode = getEffectiveRenderMode();
+  if (typeof requestLegacyRenderWorker === "function" && canUseLegacyRenderWorker()) {
+    const analysisPayload = createLegacyRenderAnalysisPayload();
+    if (analysisPayload) {
+      try {
+        const result = await requestLegacyRenderWorker("build-output", {
+          mode: effectiveMode,
+          settings: createWorkerSettingsSnapshot(),
+          analysis: analysisPayload
+        });
+        edgeSamples = result.edgeSamples || [];
+        hatchSamples = result.hatchSamples || [];
+        strokePaths = result.strokePaths || [];
+        currentOutputGeometryKey = result.geometryKey || "";
+        return;
+      } catch (error) {
+        console.warn("Render worker output build failed, falling back to main thread", error);
+      }
+    }
+  }
 
   if (effectiveMode === "path") {
     await buildStrokeFieldAsync();
     currentOutputGeometryKey = "path";
+  } else if (effectiveMode === "region-grow") {
+    strokePaths = buildPathsFromMask(buildRegionGrowMask(await getFilteredBrightnessMapAsync(), await getLocalContrastMapAsync(), analysisState.width, analysisState.height), analysisState.width, analysisState.height, {
+      boundaryOnly: false,
+      closePasses: MORPH_CLOSE_PASSES + 1
+    });
+    await preparePathVariantsAsync(strokePaths);
+    currentOutputGeometryKey = "region-grow";
+  } else if (effectiveMode === "color-grow") {
+    const brightnessMap = await getFilteredBrightnessMapAsync();
+    const contrastMap = await getLocalContrastMapAsync();
+    const { rMap, gMap, bMap } = await getRgbMapsAsync();
+    const colorDeltaMap = buildColorDeltaMap(rMap, gMap, bMap, analysisState.width, analysisState.height);
+    const colorMask = buildColorGrowMask(
+      brightnessMap,
+      contrastMap,
+      colorDeltaMap,
+      rMap,
+      gMap,
+      bMap,
+      analysisState.width,
+      analysisState.height
+    );
+    strokePaths = buildPathsFromMask(colorMask, analysisState.width, analysisState.height, {
+      boundaryOnly: false,
+      closePasses: MORPH_CLOSE_PASSES + 1
+    });
+    await preparePathVariantsAsync(strokePaths);
+    currentOutputGeometryKey = "color-grow";
   } else if (effectiveMode === "color-boundary") {
     await buildColorBoundaryFieldAsync();
     currentOutputGeometryKey = "color-boundary";

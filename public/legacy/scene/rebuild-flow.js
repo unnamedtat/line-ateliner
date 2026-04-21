@@ -93,6 +93,28 @@ async function rebuildCurrentModeVariantsAsync() {
     return false;
   }
 
+  if (typeof requestLegacyRenderWorker === "function" && canUseLegacyRenderWorker()) {
+    try {
+      const result = await requestLegacyRenderWorker("rebuild-variants", {
+        mode: effectiveMode,
+        settings: createWorkerSettingsSnapshot(),
+        analysisSize: {
+          width: analysisState?.width || 0,
+          height: analysisState?.height || 0
+        },
+        edgeSamples,
+        hatchSamples,
+        strokePaths
+      });
+      edgeSamples = result.edgeSamples || [];
+      hatchSamples = result.hatchSamples || [];
+      strokePaths = result.strokePaths || [];
+      return true;
+    } catch (error) {
+      console.warn("Render worker variant rebuild failed, falling back to main thread", error);
+    }
+  }
+
   if (geometryKey === "edge" || geometryKey === "edge-fill") {
     if (!edgeSamples.length && !hatchSamples.length) {
       return false;
