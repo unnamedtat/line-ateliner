@@ -356,7 +356,20 @@ async function recordVideoBlob(
   exportSnapshot = getActiveExportSnapshot()
 ) {
   if (canUseFixedTimelineMp4Encoding()) {
-    return encodeFixedTimelineVideoBlob(config, exportCanvas, exportCtx, onProgress, exportSnapshot);
+    try {
+      return await encodeFixedTimelineVideoBlob(
+        config,
+        exportCanvas,
+        exportCtx,
+        onProgress,
+        exportSnapshot
+      );
+    } catch (error) {
+      console.warn("Fixed-timeline MP4 export failed, falling back to MediaRecorder", error);
+      if (!mimeType) {
+        throw error;
+      }
+    }
   }
 
   return recordVideoBlobWithMediaRecorder(config, exportCanvas, exportCtx, mimeType, onProgress, exportSnapshot);
