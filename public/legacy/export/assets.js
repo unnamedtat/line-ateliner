@@ -1,5 +1,66 @@
 // Export asset loading and overlay helpers.
 
+// Builds the current distortion overlay markup for export.
+function buildDistortionOverlayExportMarkup(exportWidth, exportHeight) {
+  if (!isDistortionMode()) {
+    return "";
+  }
+
+  return cloneDistortionOverlayMarkup(exportWidth, exportHeight) || "";
+}
+
+// Captures the current texture overlay as an ImageBitmap for worker composition.
+async function captureTextureOverlayBitmap() {
+  if (!textureOverlayNode || textureOverlayNode.style.display === "none" || !textureOverlayNode.src) {
+    return null;
+  }
+
+  if (!textureOverlayNode.complete) {
+    await loadHtmlImage(textureOverlayNode.src);
+  }
+
+  if (typeof createImageBitmap !== "function") {
+    return null;
+  }
+
+  return createImageBitmap(textureOverlayNode);
+}
+
+// Draws the full composite export frame through the export worker when available.
+async function drawCompositeExportFrameWithWorker(targetCanvas, targetCtx) {
+  const exportWidth = targetCanvas.width;
+  const exportHeight = targetCanvas.height;
+  const mainCanvas = getMainCanvasElement();
+  if (!mainCanvas) {
+    throw new Error("Main canvas is not available.");
+  }
+
+  const transferList = [];
+  const baseFrame = await createImageBitmap(mainCanvas);
+  transferList.push(baseFrame);
+  const textureBitmap = await captureTextureOverlayBitmap();
+  if (textureBitmap) {
+    transferList.push(textureBitmap);
+  }
+
+  const result = await requestLegacyExportWorker(
+    "compose-frame",
+    {
+      width: exportWidth,
+      height: exportHeight,
+      baseFrame,
+      distortionSvgMarkup: buildDistortionOverlayExportMarkup(exportWidth, exportHeight),
+      textureBitmap,
+      textureOpacity: Number.parseFloat(textureOverlayNode?.style.opacity || "1")
+    },
+    transferList
+  );
+
+  targetCtx.clearRect(0, 0, exportWidth, exportHeight);
+  targetCtx.drawImage(result.bitmap, 0, 0, exportWidth, exportHeight);
+  result.bitmap?.close?.();
+}
+
 // Ensures the source image href is embedded.
 function ensureSourceImageEmbeddedHref() {
   if (!sourceImage || typeof sourceImageHref !== "string") {
@@ -88,6 +149,15 @@ async function drawTextureOverlayToContext(targetCtx, exportWidth, exportHeight)
 
 // Draws the full composite export frame.
 async function drawCompositeExportFrame(targetCanvas, targetCtx) {
+  if (typeof requestLegacyExportWorker === "function" && canUseLegacyExportWorker()) {
+    try {
+      await drawCompositeExportFrameWithWorker(targetCanvas, targetCtx);
+      return;
+    } catch (error) {
+      console.warn("Export worker composition failed, falling back to main thread", error);
+    }
+  }
+
   const exportWidth = targetCanvas.width;
   const exportHeight = targetCanvas.height;
   const mainCanvas = getMainCanvasElement();

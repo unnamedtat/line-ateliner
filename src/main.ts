@@ -10,6 +10,7 @@ declare global {
     __lineAtelierBootPromise?: Promise<void>;
     __lineAtelierImageWorkerUrl?: string;
     __lineAtelierRenderWorkerUrl?: string;
+    __lineAtelierExportWorkerUrl?: string;
     __lineAtelierTestMode?: boolean;
     __forceLegacyImageFallback?: boolean;
     __forceLegacyRenderFallback?: boolean;
@@ -18,6 +19,7 @@ declare global {
 
 window.__lineAtelierImageWorkerUrl = new URL("./workers/legacy-image.worker.ts", import.meta.url).toString();
 window.__lineAtelierRenderWorkerUrl = new URL("./workers/legacy-render.worker.ts", import.meta.url).toString();
+window.__lineAtelierExportWorkerUrl = new URL("./workers/legacy-export.worker.ts", import.meta.url).toString();
 window.__lineAtelierTestMode = typeof navigator !== "undefined" && navigator.webdriver === true;
 
 // Shows a boot failure message.

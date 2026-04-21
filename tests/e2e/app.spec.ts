@@ -62,3 +62,43 @@ test("falls back to the main-thread render pipeline when render worker is disabl
     return page.locator("body").getAttribute("data-export-ready");
   }).toBe("true");
 });
+
+test("restores the scene after a long background-style suspension", async ({ page }) => {
+  await page.goto("/");
+
+  await expect(page.locator("#canvas-mount canvas")).toBeVisible({ timeout: 15000 });
+  await expect.poll(async () => {
+    return page.locator("body").getAttribute("data-export-ready");
+  }).toBe("true");
+
+  await page.evaluate(() => {
+    sourceImage = null;
+    if (typeof clearRenderFrameCache === "function") {
+      clearRenderFrameCache();
+    }
+    if (Array.isArray(edgeSamples)) {
+      edgeSamples.length = 0;
+    }
+    if (Array.isArray(strokePaths)) {
+      strokePaths.length = 0;
+    }
+  });
+
+  await page.evaluate(() => {
+    return restoreSceneAfterBackgroundPause(true);
+  });
+
+  await expect.poll(() => {
+    return page.evaluate(() => {
+      return {
+        hasSource: Boolean(sourceImage && sourceImage.width && sourceImage.height),
+        exportReady: document.body.dataset.exportReady,
+        drawable: typeof hasDrawableOutput === "function" ? hasDrawableOutput() : false
+      };
+    });
+  }).toEqual({
+    hasSource: true,
+    exportReady: "true",
+    drawable: true
+  });
+});

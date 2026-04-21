@@ -94,7 +94,11 @@ async function restoreSceneAfterBackgroundPause(force = false) {
       if (typeof clearRenderFrameCache === "function") {
         clearRenderFrameCache();
       }
-      if (typeof rebuildViewportSynchronously === "function") {
+      const needsFullSceneRestore =
+        typeof hasDrawableOutput === "function" ? !hasDrawableOutput() : true;
+      if (needsFullSceneRestore && typeof rebuildSceneSynchronously === "function") {
+        rebuildSceneSynchronously();
+      } else if (typeof rebuildViewportSynchronously === "function") {
         rebuildViewportSynchronously();
       }
       if (typeof syncControls === "function") {

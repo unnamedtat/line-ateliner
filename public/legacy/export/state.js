@@ -4,6 +4,85 @@ const GIF_LIBRARY_SCRIPT = "/vendor/gif.js";
 const GIF_WORKER_SCRIPT = "/vendor/gif.worker.js";
 let gifWorkerBlobUrl = "";
 let gifLibraryLoadPromise = null;
+let legacyExportWorker = null;
+let legacyExportWorkerRequestSerial = 0;
+const legacyExportWorkerPendingRequests = new Map();
+
+// Checks whether the export worker can be used in this browser.
+function canUseLegacyExportWorker() {
+  return (
+    typeof Worker !== "undefined" &&
+    typeof createImageBitmap === "function" &&
+    typeof window.__lineAtelierExportWorkerUrl === "string" &&
+    window.__lineAtelierExportWorkerUrl.length > 0
+  );
+}
+
+// Resolves the shared export worker instance.
+function getLegacyExportWorker() {
+  if (!canUseLegacyExportWorker()) {
+    return null;
+  }
+
+  if (legacyExportWorker) {
+    return legacyExportWorker;
+  }
+
+  legacyExportWorker = new Worker(window.__lineAtelierExportWorkerUrl, {
+    type: "module"
+  });
+
+  legacyExportWorker.addEventListener("message", (event) => {
+    const response = event.data;
+    const pending = legacyExportWorkerPendingRequests.get(response?.id);
+    if (!pending) {
+      return;
+    }
+
+    legacyExportWorkerPendingRequests.delete(response.id);
+    if (response.ok) {
+      pending.resolve(response);
+      return;
+    }
+
+    pending.reject(new Error(response?.error || "导出 Worker 处理失败。"));
+  });
+
+  legacyExportWorker.addEventListener("error", (event) => {
+    const message = event?.message || "导出 Worker 启动失败。";
+    legacyExportWorkerPendingRequests.forEach((pending) => {
+      pending.reject(new Error(message));
+    });
+    legacyExportWorkerPendingRequests.clear();
+    legacyExportWorker = null;
+  });
+
+  return legacyExportWorker;
+}
+
+// Sends a composition request to the export worker.
+function requestLegacyExportWorker(kind, payload, transferList = []) {
+  const worker = getLegacyExportWorker();
+  if (!worker) {
+    return Promise.reject(new Error("当前环境不支持导出 Worker。"));
+  }
+
+  return new Promise((resolve, reject) => {
+    const id = ++legacyExportWorkerRequestSerial;
+    legacyExportWorkerPendingRequests.set(id, {
+      resolve,
+      reject
+    });
+    worker.postMessage(
+      {
+        id,
+        kind,
+        ...payload
+      },
+      transferList
+    );
+  });
+}
 
 // Sets export state and syncs the export UI.
 function setExportState(patch) {
