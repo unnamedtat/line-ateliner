@@ -120,6 +120,10 @@ export function ExportSection({
         </button>
       </div>
 
+      <div className="control-note export-foreground-warning" role="alert" aria-live="polite">
+        {copy.export.foregroundWarning}
+      </div>
+
       <div className="control-note export-estimate" id="export-estimate" data-level={exportEstimateLevel}>
         {exportEstimate}
       </div>

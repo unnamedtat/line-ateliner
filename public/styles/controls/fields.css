@@ -57,6 +57,16 @@
         color: var(--ui-muted);
       }
 
+      .export-foreground-warning {
+        color: #7a1c00;
+        font-weight: 700;
+        background: linear-gradient(135deg, rgba(255, 229, 207, 0.92), rgba(255, 214, 177, 0.9));
+        border: 1px solid rgba(215, 108, 48, 0.42);
+        border-radius: 10px;
+        padding: 8px 10px;
+        box-shadow: 0 5px 14px rgba(181, 84, 26, 0.12);
+      }
+
       .file-summary {
         min-width: 0;
         color: var(--ui-muted);

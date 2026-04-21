@@ -200,7 +200,8 @@ const messages = {
       tooltip: "导出当前动画。MP4 更适合常规交付，GIF 会逐帧编码，所以等待时间通常更长。",
       duration: "导出时长",
       frameRate: "导出帧率",
-      resolution: "导出清晰度"
+      resolution: "导出清晰度",
+      foregroundWarning: "请保持当前页面在前台，切到后台或锁屏可能导致导出失败或录制异常。"
     }
   },
   en: {
@@ -371,7 +372,8 @@ const messages = {
       tooltip: "Export the current animation. MP4 is better for standard delivery, while GIF encodes frame by frame and usually takes longer.",
       duration: "Duration",
       frameRate: "Frame Rate",
-      resolution: "Resolution"
+      resolution: "Resolution",
+      foregroundWarning: "Keep this page in the foreground while exporting. Backgrounding or locking the screen can cause export failure or recording anomalies."
     }
   }
 } as const;
