@@ -1,3 +1,10 @@
+export {};
+
+const workerScope = self as typeof self & {
+  postMessage(message: unknown, transfer?: Transferable[]): void;
+  onmessage: ((event: MessageEvent<WorkerRequest>) => void | Promise<void>) | null;
+};
+
 type WorkerRequest =
   | {
       id: number;
@@ -107,7 +114,7 @@ async function handlePrepareUpload(request: Extract<WorkerRequest, { kind: "prep
     bitmap
   };
 
-  self.postMessage(response, [bitmap]);
+  workerScope.postMessage(response, [bitmap]);
 }
 
 async function handlePrepareAnalysis(request: Extract<WorkerRequest, { kind: "prepare-analysis" }>) {
@@ -132,10 +139,10 @@ async function handlePrepareAnalysis(request: Extract<WorkerRequest, { kind: "pr
     pixelBuffer
   };
 
-  self.postMessage(response, [pixelBuffer]);
+  workerScope.postMessage(response, [pixelBuffer]);
 }
 
-self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
+workerScope.onmessage = async (event: MessageEvent<WorkerRequest>) => {
   const request = event.data;
 
   try {
@@ -154,6 +161,6 @@ self.onmessage = async (event: MessageEvent<WorkerRequest>) => {
       error: message
     };
 
-    self.postMessage(response);
+    workerScope.postMessage(response);
   }
 };

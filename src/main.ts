@@ -31,7 +31,7 @@ async function bootstrapLegacyApp() {
       .then(() => {
         const p5StartedAt = performance.now();
         if (!window.__lineAtelierP5Instance) {
-          window.__lineAtelierP5Instance = new p5();
+          window.__lineAtelierP5Instance = new (p5 as unknown as { new (): p5 })();
         }
         console.info(`[boot] p5 global init: ${(performance.now() - p5StartedAt).toFixed(1)}ms`);
         console.info(`[boot] bootstrapLegacyApp: ${(performance.now() - startedAt).toFixed(1)}ms`);

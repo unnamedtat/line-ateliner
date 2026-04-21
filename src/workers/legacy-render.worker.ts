@@ -1,3 +1,5 @@
+export {};
+
 type AnalysisInput = {
   width: number;
   height: number;
