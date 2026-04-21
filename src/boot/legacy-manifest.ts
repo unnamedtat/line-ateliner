@@ -1,6 +1,4 @@
 export const CLASSIC_SCRIPT_PATHS = [
-  "/vendor/p5.min.js",
-
   // Core shared state and helpers.
   "/legacy/core/config.js",
   "/legacy/core/asset-state.js",
