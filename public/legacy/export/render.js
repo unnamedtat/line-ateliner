@@ -21,6 +21,13 @@ function estimateVideoBitsPerSecond(config) {
   return Math.min(40000000, Math.max(6000000, bitrate));
 }
 
+// Gets the exact GIF frame delay in milliseconds using the format's 10ms timing granularity.
+function getGifFrameDelayMs(config, frameIndex) {
+  const currentCentiseconds = Math.round((frameIndex * 100) / Math.max(1, config.fps));
+  const nextCentiseconds = Math.round(((frameIndex + 1) * 100) / Math.max(1, config.fps));
+  return Math.max(10, (nextCentiseconds - currentCentiseconds) * 10);
+}
+
 // Gets the fixed-timeline MP4 muxer bindings exposed by the module runtime.
 function getFixedTimelineMp4MuxerApi() {
   return window.__lineAtelierMp4Muxer || null;
@@ -356,7 +363,20 @@ async function recordVideoBlob(
   exportSnapshot = getActiveExportSnapshot()
 ) {
   if (canUseFixedTimelineMp4Encoding()) {
-    return encodeFixedTimelineVideoBlob(config, exportCanvas, exportCtx, onProgress, exportSnapshot);
+    try {
+      return await encodeFixedTimelineVideoBlob(
+        config,
+        exportCanvas,
+        exportCtx,
+        onProgress,
+        exportSnapshot
+      );
+    } catch (error) {
+      console.warn("Fixed-timeline MP4 export failed, falling back to MediaRecorder", error);
+      if (!mimeType) {
+        throw error;
+      }
+    }
   }
 
   return recordVideoBlobWithMediaRecorder(config, exportCanvas, exportCtx, mimeType, onProgress, exportSnapshot);

@@ -174,14 +174,16 @@ async function startGifExport() {
           await captureFrames(config, exportCanvas, exportCtx, async (frameIndex) => {
             gif.addFrame(exportCanvas, {
               copy: true,
-              delay: config.frameDelayMs
+              delay: getGifFrameDelayMs(config, frameIndex)
             });
             setExportState({
               active: true,
               format: "gif",
               status: `正在采集 GIF 帧... ${frameIndex + 1}/${config.totalFrames}`
             });
-          }, exportSnapshot);
+          }, exportSnapshot, {
+            throttleToRealtime: false
+          });
         });
       }, exportSnapshot);
     });
