@@ -1,5 +1,6 @@
 import type { ControlTab } from "./legacy-ui-bridge";
 import { useLegacyUiBridge } from "./legacy-ui-bridge";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { CanvasShell } from "./app-shell/CanvasShell";
 import { ControlPanelHeader } from "./app-shell/ControlPanelHeader";
 import { ExportSection } from "./app-shell/ExportSection";
@@ -92,6 +93,7 @@ export function AppShell() {
         </div>
         <StatusBar modeSummary={snapshot.modeSummary} fileSummary={snapshot.fileSummary} />
       </div>
+      <SpeedInsights />
     </div>
   );
 }
