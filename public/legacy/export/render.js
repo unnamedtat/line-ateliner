@@ -86,11 +86,17 @@ async function renderExportFrame(
   exportSnapshot = getActiveExportSnapshot()
 ) {
   const frameValue = getExportFrameValue(config, frameIndex, frameStartValue, exportSnapshot);
-  setExportRenderFrameValue(frameValue);
+  const canRenderOffscreen =
+    typeof canUseDirectOffscreenExport === "function" &&
+    canUseDirectOffscreenExport(exportSnapshot);
+
+  if (!canRenderOffscreen) {
+    setExportRenderFrameValue(frameValue);
+  }
 
   if (
     typeof redraw === "function" &&
-    !(typeof canUseDirectOffscreenExport === "function" && canUseDirectOffscreenExport(exportSnapshot))
+    !canRenderOffscreen
   ) {
     redraw();
   }
