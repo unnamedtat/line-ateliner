@@ -174,7 +174,7 @@ async function startGifExport() {
           await captureFrames(config, exportCanvas, exportCtx, async (frameIndex) => {
             gif.addFrame(exportCanvas, {
               copy: true,
-              delay: getGifFrameDelayMs(config, frameIndex)
+              delay: config.frameDelayMs
             });
             setExportState({
               active: true,
