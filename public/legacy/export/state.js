@@ -80,10 +80,7 @@ function readLiveExportValue(id, fallback) {
 // Builds the export configuration.
 function getExportConfig() {
   const fps = Math.max(1, Math.round(readLiveExportValue("export-frame-rate", settings.exportFrameRate || 18)));
-  const durationSeconds = Math.max(
-    1,
-    Math.round(readLiveExportValue("export-duration-seconds", settings.exportDurationSeconds || 3))
-  );
+  const durationSeconds = Math.max(1, readLiveExportValue("export-duration-seconds", settings.exportDurationSeconds || 3));
   const canvasSize = getExportCanvasSize();
   const resolutionScale = Math.max(
     1,
@@ -91,14 +88,14 @@ function getExportConfig() {
   );
 
   settings.exportFrameRate = fps;
-  settings.exportDurationSeconds = durationSeconds;
+  settings.exportDurationSeconds = Number(durationSeconds.toFixed(1));
   settings.exportResolutionScale = Math.round(resolutionScale * 100);
 
   return {
     fps,
-    durationSeconds,
-    totalFrames: fps * durationSeconds,
-    frameDelayMs: Math.round(1000 / fps),
+    durationSeconds: settings.exportDurationSeconds,
+    totalFrames: Math.max(1, Math.round(fps * durationSeconds)),
+    frameDelayMs: 1000 / fps,
     baseWidth: canvasSize.width,
     baseHeight: canvasSize.height,
     width: Math.max(1, Math.round(canvasSize.width * resolutionScale)),

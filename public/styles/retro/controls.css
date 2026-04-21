@@ -15,7 +15,6 @@ body.is-retro-layout .control-label {
         justify-content: flex-end;
         padding: 6px 10px 0;
         gap: 6px;
-        background: #fff;
       }
 
       body.is-retro-layout .panel-utility-button {
@@ -302,7 +301,4 @@ body.is-retro-layout .control-label {
           align-items: center;
         }
 
-        body.is-retro-layout .panel-utility-row {
-          justify-content: flex-end;
-        }
       }
