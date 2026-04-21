@@ -147,8 +147,8 @@ const PERLIN_YWRAP = 1 << PERLIN_YWRAPB;
 const PERLIN_ZWRAPB = 8;
 const PERLIN_ZWRAP = 1 << PERLIN_ZWRAPB;
 const PERLIN_SEED = 1337;
-let perlinOctaves = 4;
-let perlinAmpFalloff = 0.5;
+const perlinOctaves = 4;
+const perlinAmpFalloff = 0.5;
 let perlin: number[] | null = null;
 
 function abs(value: number) {
@@ -165,10 +165,6 @@ function max(...values: number[]) {
 
 function floor(value: number) {
   return Math.floor(value);
-}
-
-function round(value: number) {
-  return Math.round(value);
 }
 
 function sqrt(value: number) {
@@ -1028,7 +1024,7 @@ function measurePathLength(points: PathPoint[], closed: boolean) {
   return total;
 }
 
-function finalizePath(indexPath: number[], distanceField: Float32Array, w: number, h: number) {
+function finalizePath(indexPath: number[], distanceField: Float32Array, w: number) {
   if (!indexPath || indexPath.length < MIN_PATH_PIXELS) {
     return null;
   }
@@ -1087,7 +1083,7 @@ function buildStrokePaths(skeletonMask: Uint8Array, distanceField: Float32Array,
       const key = getEdgeKey(idx, neighbor);
       if (visitedEdges.has(key)) continue;
       const traced = tracePath(idx, neighbor, skeletonMask, degrees, w, h, visitedEdges, false);
-      const path = finalizePath(traced, distanceField, w, h);
+      const path = finalizePath(traced, distanceField, w);
       if (path) {
         paths.push(path);
       }
@@ -1101,7 +1097,7 @@ function buildStrokePaths(skeletonMask: Uint8Array, distanceField: Float32Array,
       const key = getEdgeKey(idx, neighbor);
       if (visitedEdges.has(key)) continue;
       const traced = tracePath(idx, neighbor, skeletonMask, degrees, w, h, visitedEdges, true);
-      const path = finalizePath(traced, distanceField, w, h);
+      const path = finalizePath(traced, distanceField, w);
       if (path) {
         paths.push(path);
       }
