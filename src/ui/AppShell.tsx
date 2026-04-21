@@ -1,5 +1,6 @@
 import type { ControlTab } from "./legacy-ui-bridge";
 import { useLegacyUiBridge } from "./legacy-ui-bridge";
+import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/react";
 import { CanvasShell } from "./app-shell/CanvasShell";
 import { ControlPanelHeader } from "./app-shell/ControlPanelHeader";
@@ -121,6 +122,7 @@ function AppShellContent() {
           fileSummary={localizedSnapshot.fileSummary}
         />
       </div>
+      <Analytics />
       <SpeedInsights />
     </div>
   );
