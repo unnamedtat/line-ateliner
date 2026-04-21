@@ -1,22 +1,128 @@
 // Export asset loading and overlay helpers.
 
+// Builds a stable data URL from any drawable image source.
+function createStableDataUrlFromDrawable(drawable, widthValue, heightValue) {
+  if (!drawable || !widthValue || !heightValue) {
+    return "";
+  }
+
+  const tempCanvas = document.createElement("canvas");
+  tempCanvas.width = Math.max(1, widthValue);
+  tempCanvas.height = Math.max(1, heightValue);
+  const ctx = tempCanvas.getContext("2d");
+  if (!ctx) {
+    return "";
+  }
+
+  try {
+    ctx.drawImage(drawable, 0, 0, tempCanvas.width, tempCanvas.height);
+    return tempCanvas.toDataURL("image/png");
+  } catch (error) {
+    console.warn("Failed to build stable export asset URL", error);
+    return "";
+  }
+}
+
+// Loads or reuses a drawable for an export asset snapshot.
+async function ensureExportAssetDrawable(assetSnapshot) {
+  if (!assetSnapshot) {
+    return null;
+  }
+
+  if (assetSnapshot.drawable) {
+    return assetSnapshot.drawable;
+  }
+
+  if (!assetSnapshot.href) {
+    return null;
+  }
+
+  assetSnapshot.drawable = await loadHtmlImage(assetSnapshot.href);
+  return assetSnapshot.drawable;
+}
+
+// Captures the current source asset into a stable export snapshot.
+function createSourceExportSnapshot() {
+  const sourceAssetImage =
+    typeof getSceneAssetImage === "function" ? getSceneAssetImage("source") : sourceImage;
+  const drawable =
+    sourceAssetImage?.canvas || sourceAssetImage?.elt || sourceAssetImage?.image || sourceAssetImage;
+  const widthValue = sourceAssetImage?.width || sourceImage?.width || 0;
+  const heightValue = sourceAssetImage?.height || sourceImage?.height || 0;
+  const stableHref =
+    createStableDataUrlFromDrawable(drawable, widthValue, heightValue) ||
+    (typeof getSceneAssetPersistentHref === "function" ? getSceneAssetPersistentHref("source") : sourceImageHref);
+
+  return {
+    href: stableHref,
+    width: widthValue,
+    height: heightValue,
+    drawable: null
+  };
+}
+
+// Captures the current paper texture overlay into a stable export snapshot.
+function createTextureOverlayExportSnapshot() {
+  if (!textureOverlayNode || textureOverlayNode.style.display === "none") {
+    return null;
+  }
+
+  const overlayDrawable = paperLayer?.canvas || textureOverlayNode;
+  const stableHref =
+    createStableDataUrlFromDrawable(overlayDrawable, width, height) || textureOverlayNode.src || "";
+  if (!stableHref) {
+    return null;
+  }
+
+  return {
+    href: stableHref,
+    opacity: Number.parseFloat(textureOverlayNode.style.opacity || "1"),
+    drawable: null
+  };
+}
+
+// Captures all export-sensitive state at the start of an export session.
+function createExportSnapshot(config) {
+  return {
+    config: cloneExportValue(config),
+    startFrameValue: getRenderAnimationFrame(),
+    settings: cloneExportValue(settings),
+    mode: getEffectiveRenderMode(),
+    sourceSize: {
+      width: sourceImage?.width || 0,
+      height: sourceImage?.height || 0
+    },
+    analysisSize: {
+      width: analysisState?.width || 0,
+      height: analysisState?.height || 0
+    },
+    edgeSamples: cloneExportValue(edgeSamples || []),
+    hatchSamples: cloneExportValue(hatchSamples || []),
+    strokePaths: cloneExportValue(strokePaths || []),
+    sourceAsset: createSourceExportSnapshot(),
+    textureOverlay: createTextureOverlayExportSnapshot()
+  };
+}
+
 // Checks whether full offscreen export rendering can be used.
-function canUseDirectOffscreenExport() {
+function canUseDirectOffscreenExport(snapshot = getActiveExportSnapshot()) {
   return (
     typeof requestLegacyExportWorker === "function" &&
     canUseLegacyExportWorker() &&
-    Boolean(sceneLayout && analysisState)
+    Boolean(snapshot?.sourceSize?.width && snapshot?.sourceSize?.height)
   );
 }
 
 // Builds export scene layout without mutating the live viewport.
-function buildExportSceneLayout(exportWidth, exportHeight) {
-  if (!sourceImage || !sourceImage.width || !sourceImage.height) {
+function buildExportSceneLayout(exportWidth, exportHeight, snapshot = getActiveExportSnapshot()) {
+  const sourceWidth = snapshot?.sourceSize?.width || sourceImage?.width || 0;
+  const sourceHeight = snapshot?.sourceSize?.height || sourceImage?.height || 0;
+  if (!sourceWidth || !sourceHeight) {
     return null;
   }
 
   const margin = min(exportWidth, exportHeight) * 0.07;
-  const imageAspect = sourceImage.width / sourceImage.height;
+  const imageAspect = sourceWidth / sourceHeight;
   let drawWidth = exportWidth - margin * 2;
   let drawHeight = drawWidth / imageAspect;
 
@@ -25,11 +131,12 @@ function buildExportSceneLayout(exportWidth, exportHeight) {
     drawWidth = drawHeight * imageAspect;
   }
 
-  const scaleFactor = max(0.05, settings.sceneScale / 100);
+  const exportSettings = snapshot?.settings || settings;
+  const scaleFactor = max(0.05, exportSettings.sceneScale / 100);
   drawWidth *= scaleFactor;
   drawHeight *= scaleFactor;
-  const offsetX = (settings.sceneOffsetX / 100) * exportWidth;
-  const offsetY = (settings.sceneOffsetY / 100) * exportHeight;
+  const offsetX = (exportSettings.sceneOffsetX / 100) * exportWidth;
+  const offsetY = (exportSettings.sceneOffsetY / 100) * exportHeight;
 
   return {
     x: (exportWidth - drawWidth) * 0.5 + offsetX,
@@ -40,24 +147,30 @@ function buildExportSceneLayout(exportWidth, exportHeight) {
 }
 
 // Builds the current distortion overlay markup for export.
-function buildDistortionOverlayExportMarkup(exportWidth, exportHeight, frameValue = getRenderAnimationFrame()) {
-  if (!isDistortionMode()) {
+function buildDistortionOverlayExportMarkup(
+  exportWidth,
+  exportHeight,
+  frameValue = getRenderAnimationFrame(),
+  snapshot = getActiveExportSnapshot()
+) {
+  if ((snapshot?.mode || getEffectiveRenderMode()) !== "distortion") {
     return "";
   }
 
-  ensureSourceImageEmbeddedHref();
-  const exportSceneLayout = buildExportSceneLayout(exportWidth, exportHeight);
-  if (!exportSceneLayout || !sourceImageHref) {
+  const exportSceneLayout = buildExportSceneLayout(exportWidth, exportHeight, snapshot);
+  const sourceHref = snapshot?.sourceAsset?.href || sourceImageHref;
+  if (!exportSceneLayout || !sourceHref) {
     return "";
   }
 
-  const speed = settings.distortionSpeed / 100;
+  const exportSettings = snapshot?.settings || settings;
+  const speed = exportSettings.distortionSpeed / 100;
   const wobble = frameValue * (0.006 + speed * 0.03);
-  const distortionFrequency = getHundredthsSetting("distortionFrequency");
+  const distortionFrequency = (exportSettings.distortionFrequency || 0) / 100;
   const baseFrequencyX = max(0.001, distortionFrequency * (1 + sin(wobble) * 0.08));
   const baseFrequencyY = max(0.001, distortionFrequency * (1 + cos(wobble * 1.17 + 0.8) * 0.08));
-  const numOctaves = String(round(settings.distortionOctaves));
-  const displacementScale = getTenthsSetting("distortionScale").toFixed(2);
+  const numOctaves = String(round(exportSettings.distortionOctaves || 0));
+  const displacementScale = ((exportSettings.distortionScale || 0) / 10).toFixed(2);
 
   return `
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="${exportWidth}" height="${exportHeight}" viewBox="0 0 ${exportWidth} ${exportHeight}">
@@ -68,7 +181,7 @@ function buildDistortionOverlayExportMarkup(exportWidth, exportHeight, frameValu
     </filter>
   </defs>
   <image
-    href="${sourceImageHref}"
+    href="${sourceHref}"
     x="${exportSceneLayout.x.toFixed(2)}"
     y="${exportSceneLayout.y.toFixed(2)}"
     width="${exportSceneLayout.width.toFixed(2)}"
@@ -97,11 +210,8 @@ async function captureTextureOverlayBitmap() {
 }
 
 // Creates a source bitmap for direct export rendering.
-async function captureSourceImageBitmap() {
-  const sourceAssetImage =
-    typeof getSceneAssetImage === "function" ? getSceneAssetImage("source") : sourceImage;
-  const drawable =
-    sourceAssetImage?.canvas || sourceAssetImage?.elt || sourceAssetImage?.image || sourceAssetImage;
+async function captureSourceImageBitmap(snapshot = getActiveExportSnapshot()) {
+  const drawable = await ensureExportAssetDrawable(snapshot?.sourceAsset);
   if (!drawable || typeof createImageBitmap !== "function") {
     return null;
   }
@@ -110,19 +220,23 @@ async function captureSourceImageBitmap() {
 }
 
 // Builds a direct-render export payload.
-async function buildDirectExportPayload(targetCanvas, frameValue) {
-  if (!canUseDirectOffscreenExport()) {
+async function buildDirectExportPayload(targetCanvas, frameValue, snapshot = getActiveExportSnapshot()) {
+  if (!canUseDirectOffscreenExport(snapshot)) {
     return null;
   }
 
   const exportWidth = targetCanvas.width;
   const exportHeight = targetCanvas.height;
   const transferList = [];
-  const sourceBitmap = await captureSourceImageBitmap();
+  const sourceBitmap = await captureSourceImageBitmap(snapshot);
   if (sourceBitmap) {
     transferList.push(sourceBitmap);
   }
-  const textureBitmap = await captureTextureOverlayBitmap();
+  let textureBitmap = null;
+  const textureOverlayDrawable = await ensureExportAssetDrawable(snapshot?.textureOverlay);
+  if (textureOverlayDrawable && typeof createImageBitmap === "function") {
+    textureBitmap = await createImageBitmap(textureOverlayDrawable);
+  }
   if (textureBitmap) {
     transferList.push(textureBitmap);
   }
@@ -131,32 +245,31 @@ async function buildDirectExportPayload(targetCanvas, frameValue) {
     payload: {
       width: exportWidth,
       height: exportHeight,
-      mode: getEffectiveRenderMode(),
+      mode: snapshot.mode,
       frameValue,
-      settings: createWorkerSettingsSnapshot(),
-      sourceSize: {
-        width: sourceImage?.width || 0,
-        height: sourceImage?.height || 0
-      },
-      analysisSize: {
-        width: analysisState?.width || 0,
-        height: analysisState?.height || 0
-      },
-      edgeSamples,
-      hatchSamples,
-      strokePaths,
+      settings: snapshot.settings,
+      sourceSize: snapshot.sourceSize,
+      analysisSize: snapshot.analysisSize,
+      edgeSamples: snapshot.edgeSamples,
+      hatchSamples: snapshot.hatchSamples,
+      strokePaths: snapshot.strokePaths,
       sourceBitmap,
-      distortionSvgMarkup: buildDistortionOverlayExportMarkup(exportWidth, exportHeight, frameValue),
+      distortionSvgMarkup: buildDistortionOverlayExportMarkup(exportWidth, exportHeight, frameValue, snapshot),
       textureBitmap,
-      textureOpacity: Number.parseFloat(textureOverlayNode?.style.opacity || "1")
+      textureOpacity: snapshot.textureOverlay?.opacity ?? 1
     },
     transferList
   };
 }
 
 // Draws the full export frame through the export worker when available.
-async function drawCompositeExportFrameWithWorker(targetCanvas, targetCtx, frameValue = getRenderAnimationFrame()) {
-  const request = await buildDirectExportPayload(targetCanvas, frameValue);
+async function drawCompositeExportFrameWithWorker(
+  targetCanvas,
+  targetCtx,
+  frameValue = getRenderAnimationFrame(),
+  snapshot = getActiveExportSnapshot()
+) {
+  const request = await buildDirectExportPayload(targetCanvas, frameValue, snapshot);
   if (!request) {
     throw new Error("Direct offscreen export is not available.");
   }
@@ -246,8 +359,13 @@ function cloneDistortionOverlayMarkup(exportWidth, exportHeight) {
 }
 
 // Renders the distortion overlay frame.
-async function renderDistortionOverlayFrame(exportWidth, exportHeight) {
-  const svgMarkup = cloneDistortionOverlayMarkup(exportWidth, exportHeight);
+async function renderDistortionOverlayFrame(
+  exportWidth,
+  exportHeight,
+  frameValue = getRenderAnimationFrame(),
+  snapshot = getActiveExportSnapshot()
+) {
+  const svgMarkup = buildDistortionOverlayExportMarkup(exportWidth, exportHeight, frameValue, snapshot);
   if (!svgMarkup) {
     return null;
   }
@@ -274,10 +392,15 @@ async function drawTextureOverlayToContext(targetCtx, exportWidth, exportHeight)
 }
 
 // Draws the full composite export frame.
-async function drawCompositeExportFrame(targetCanvas, targetCtx, frameValue = getRenderAnimationFrame()) {
+async function drawCompositeExportFrame(
+  targetCanvas,
+  targetCtx,
+  frameValue = getRenderAnimationFrame(),
+  snapshot = getActiveExportSnapshot()
+) {
   if (typeof requestLegacyExportWorker === "function" && canUseLegacyExportWorker()) {
     try {
-      await drawCompositeExportFrameWithWorker(targetCanvas, targetCtx, frameValue);
+      await drawCompositeExportFrameWithWorker(targetCanvas, targetCtx, frameValue, snapshot);
       return;
     } catch (error) {
       console.warn("Export worker composition failed, falling back to main thread", error);
@@ -294,14 +417,25 @@ async function drawCompositeExportFrame(targetCanvas, targetCtx, frameValue = ge
   targetCtx.clearRect(0, 0, exportWidth, exportHeight);
   targetCtx.drawImage(mainCanvas, 0, 0, exportWidth, exportHeight);
 
-  if (isDistortionMode()) {
-    const distortionFrame = await renderDistortionOverlayFrame(exportWidth, exportHeight);
+  const exportMode = snapshot?.mode || getEffectiveRenderMode();
+  if (exportMode === "distortion") {
+    const distortionFrame = await renderDistortionOverlayFrame(exportWidth, exportHeight, frameValue, snapshot);
     if (distortionFrame) {
       targetCtx.drawImage(distortionFrame, 0, 0, exportWidth, exportHeight);
     }
   }
 
-  await drawTextureOverlayToContext(targetCtx, exportWidth, exportHeight);
+  if (snapshot?.textureOverlay?.href) {
+    const textureImage = await ensureExportAssetDrawable(snapshot.textureOverlay);
+    if (textureImage) {
+      targetCtx.save();
+      targetCtx.globalAlpha = Number.isFinite(snapshot.textureOverlay.opacity) ? snapshot.textureOverlay.opacity : 1;
+      targetCtx.drawImage(textureImage, 0, 0, exportWidth, exportHeight);
+      targetCtx.restore();
+    }
+  } else {
+    await drawTextureOverlayToContext(targetCtx, exportWidth, exportHeight);
+  }
 }
 
 // Builds a snapshot canvas.

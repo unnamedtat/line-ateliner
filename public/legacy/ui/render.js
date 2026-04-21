@@ -19,7 +19,7 @@ function refreshUiState() {
 
 // Applies import and export lock states.
 function applyImportExportLocks() {
-  const importExportLocked = Boolean(appStatusState.analysisActive);
+  const importExportLocked = Boolean(appStatusState.analysisActive || exportState.active);
   const importTargets = ["image-upload", "texture-upload"];
   const exportReady = !appStatusState.analysisActive && !appStatusState.analysisFailed;
 
@@ -89,7 +89,7 @@ function applyReferenceOverlayVisibility() {
 
 // Applies control tooltip metadata.
 function applyControlTooltips() {
-  Object.entries(CONTROL_TOOLTIPS).forEach(([id, tooltip]) => {
+  Object.entries(getLocalizedControlTooltips()).forEach(([id, tooltip]) => {
     const element = document.getElementById(id);
     if (!element) {
       return;

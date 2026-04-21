@@ -40,19 +40,21 @@ export function ControlPanelHeader({
       </div>
       <div className="panel-utility-row">
         <button
-          className="action-button panel-utility-button"
+          className="action-button panel-utility-button has-hover-tooltip"
           type="button"
           aria-label={copy.header.localeToggleAriaLabel}
+          data-tooltip={copy.header.localeToggleTooltip}
           onClick={toggleLocale}
         >
           {nextLocaleLabel}
         </button>
         <a
-          className="action-button panel-utility-button"
+          className="action-button panel-utility-button has-hover-tooltip"
           href={AUTHOR_HOMEPAGE_URL}
           target="_blank"
           rel="noreferrer"
           aria-label={copy.header.authorAriaLabel}
+          data-tooltip={copy.header.authorTooltip}
         >
           {copy.header.authorButton}
         </a>

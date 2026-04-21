@@ -45,7 +45,9 @@ const messages = {
     header: {
       authorButton: "作者主页",
       authorAriaLabel: "打开作者个人主页",
+      authorTooltip: "工具版本更新会在这里哦",
       localeToggleAriaLabel: "切换界面语言",
+      localeToggleTooltip: "切换界面语言 / Switch interface language",
       collapsePanelAriaLabel: "收起控制面板",
       expandPanelAriaLabel: "展开控制面板"
     },
@@ -211,7 +213,9 @@ const messages = {
     header: {
       authorButton: "Author",
       authorAriaLabel: "Open the author's homepage",
+      authorTooltip: "Tool updates will be posted here.",
       localeToggleAriaLabel: "Switch interface language",
+      localeToggleTooltip: "Switch the interface language.",
       collapsePanelAriaLabel: "Collapse control panel",
       expandPanelAriaLabel: "Expand control panel"
     },
@@ -406,6 +410,8 @@ export function AppLocaleProvider({ children }: PropsWithChildren) {
 
   useEffect(() => {
     window.localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+    (window as Window & { __lineAtelierAppLocale?: AppLocale; refreshUiState?: () => void }).__lineAtelierAppLocale =
+      locale;
 
     const copy = messages[locale];
     document.documentElement.lang = copy.document.lang;
@@ -413,6 +419,7 @@ export function AppLocaleProvider({ children }: PropsWithChildren) {
 
     const description = document.querySelector('meta[name="description"]');
     description?.setAttribute("content", copy.document.description);
+    (window as Window & { refreshUiState?: () => void }).refreshUiState?.();
   }, [locale]);
 
   const value = useMemo<LocaleContextValue>(() => {
@@ -529,7 +536,9 @@ function toEnglishLegacyText(text: string) {
     "PNG 快照导出完成。": "PNG snapshot export complete.",
     "改导出 GIF": "Try GIF Export",
     "导出 PNG 快照": "Export PNG Snapshot",
-    "改导出 MP4": "Try MP4 Export"
+    "改导出 MP4": "Try MP4 Export",
+    "当前浏览器不支持 MP4 导出": "This browser does not support MP4 export.",
+    "当前浏览器不支持固定时间轴 MP4 编码。": "This browser does not support fixed-timeline MP4 encoding."
   };
 
   if (!text) {

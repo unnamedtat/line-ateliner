@@ -116,7 +116,8 @@ body.is-retro-layout .control-label {
       }
 
       body.is-retro-layout .group-help::after,
-      body.is-retro-layout .control-block[data-tooltip]::after {
+      body.is-retro-layout .control-block[data-tooltip]::after,
+      body.is-retro-layout .has-hover-tooltip[data-tooltip]::after {
         border: 2px solid #000;
         border-radius: 0;
         background: #fffef7;

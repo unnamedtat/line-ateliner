@@ -70,20 +70,30 @@ async function pickFixedTimelineVideoEncoderConfig(config) {
 }
 
 // Renders one export frame.
-async function renderExportFrame(config, targetCanvas, targetCtx, frameIndex, frameStartValue) {
+async function renderExportFrame(
+  config,
+  targetCanvas,
+  targetCtx,
+  frameIndex,
+  frameStartValue,
+  exportSnapshot = getActiveExportSnapshot()
+) {
   const frameValue = getExportFrameValue(config, frameIndex, frameStartValue);
   setExportRenderFrameValue(frameValue);
 
-  if (typeof redraw === "function" && !(typeof canUseDirectOffscreenExport === "function" && canUseDirectOffscreenExport())) {
+  if (
+    typeof redraw === "function" &&
+    !(typeof canUseDirectOffscreenExport === "function" && canUseDirectOffscreenExport(exportSnapshot))
+  ) {
     redraw();
   }
 
-  await drawCompositeExportFrame(targetCanvas, targetCtx, frameValue);
+  await drawCompositeExportFrame(targetCanvas, targetCtx, frameValue, exportSnapshot);
   return frameValue;
 }
 
 // Runs export work with manual render control.
-async function withManualExportRendering(task) {
+async function withManualExportRendering(task, exportSnapshot = getActiveExportSnapshot()) {
   const canControlLoop =
     typeof noLoop === "function" &&
     typeof redraw === "function" &&
@@ -91,7 +101,7 @@ async function withManualExportRendering(task) {
   const wasLooping = typeof isLooping === "function" ? isLooping() : true;
   const canStayLive =
     typeof canUseDirectOffscreenExport === "function" &&
-    canUseDirectOffscreenExport();
+    canUseDirectOffscreenExport(exportSnapshot);
 
   if (!canControlLoop || !wasLooping || canStayLive) {
     try {
@@ -112,8 +122,8 @@ async function withManualExportRendering(task) {
 }
 
 // Runs export work at a temporary render size.
-async function withTemporaryExportRenderSize(config, task) {
-  if (typeof canUseDirectOffscreenExport === "function" && canUseDirectOffscreenExport()) {
+async function withTemporaryExportRenderSize(config, task, exportSnapshot = getActiveExportSnapshot()) {
+  if (typeof canUseDirectOffscreenExport === "function" && canUseDirectOffscreenExport(exportSnapshot)) {
     return task();
   }
 
@@ -159,12 +169,23 @@ async function withTemporaryExportRenderSize(config, task) {
 }
 
 // Captures all export frames.
-async function captureFrames(config, targetCanvas, targetCtx, onFrame, options = {}) {
+async function captureFrames(
+  config,
+  targetCanvas,
+  targetCtx,
+  onFrame,
+  exportSnapshot = getActiveExportSnapshot(),
+  options = {}
+) {
   const throttleToRealtime = options.throttleToRealtime !== false;
-  const frameStartValue = Number.isFinite(frameCount) ? frameCount : 0;
+  const frameStartValue = Number.isFinite(exportSnapshot?.startFrameValue)
+    ? exportSnapshot.startFrameValue
+    : Number.isFinite(frameCount)
+      ? frameCount
+      : 0;
   for (let frameIndex = 0; frameIndex < config.totalFrames; frameIndex += 1) {
     const frameStartedAt = performance.now();
-    await renderExportFrame(config, targetCanvas, targetCtx, frameIndex, frameStartValue);
+    await renderExportFrame(config, targetCanvas, targetCtx, frameIndex, frameStartValue, exportSnapshot);
     await onFrame(frameIndex);
     if (throttleToRealtime && frameIndex < config.totalFrames - 1) {
       const frameElapsed = performance.now() - frameStartedAt;
@@ -177,7 +198,13 @@ async function captureFrames(config, targetCanvas, targetCtx, onFrame, options =
 }
 
 // Encodes a fixed-timeline MP4 directly from rendered export frames.
-async function encodeFixedTimelineVideoBlob(config, exportCanvas, exportCtx, onProgress) {
+async function encodeFixedTimelineVideoBlob(
+  config,
+  exportCanvas,
+  exportCtx,
+  onProgress,
+  exportSnapshot = getActiveExportSnapshot()
+) {
   const muxerApi = getFixedTimelineMp4MuxerApi();
   const encoderSelection = await pickFixedTimelineVideoEncoderConfig(config);
   if (!muxerApi?.Muxer || !muxerApi?.ArrayBufferTarget || !encoderSelection) {
@@ -237,6 +264,7 @@ async function encodeFixedTimelineVideoBlob(config, exportCanvas, exportCtx, onP
 
         await onProgress(frameIndex);
       },
+      exportSnapshot,
       {
         throttleToRealtime: false
       }
@@ -257,7 +285,14 @@ async function encodeFixedTimelineVideoBlob(config, exportCanvas, exportCtx, onP
 }
 
 // Records a video blob from captured frames.
-async function recordVideoBlobWithMediaRecorder(config, exportCanvas, exportCtx, mimeType, onProgress) {
+async function recordVideoBlobWithMediaRecorder(
+  config,
+  exportCanvas,
+  exportCtx,
+  mimeType,
+  onProgress,
+  exportSnapshot = getActiveExportSnapshot()
+) {
   let stream = exportCanvas.captureStream(0);
   let videoTrack = stream.getVideoTracks()[0] || null;
   let supportsManualFrameCapture = typeof videoTrack?.requestFrame === "function";
@@ -297,7 +332,7 @@ async function recordVideoBlobWithMediaRecorder(config, exportCanvas, exportCtx,
         videoTrack?.requestFrame();
       }
       await onProgress(frameIndex);
-    });
+    }, exportSnapshot);
     recorder.stop();
     await stopPromise;
     return new Blob(chunks, { type: mimeType });
@@ -312,10 +347,17 @@ async function recordVideoBlobWithMediaRecorder(config, exportCanvas, exportCtx,
 }
 
 // Records or encodes a video blob from captured frames.
-async function recordVideoBlob(config, exportCanvas, exportCtx, mimeType, onProgress) {
+async function recordVideoBlob(
+  config,
+  exportCanvas,
+  exportCtx,
+  mimeType,
+  onProgress,
+  exportSnapshot = getActiveExportSnapshot()
+) {
   if (canUseFixedTimelineMp4Encoding()) {
-    return encodeFixedTimelineVideoBlob(config, exportCanvas, exportCtx, onProgress);
+    return encodeFixedTimelineVideoBlob(config, exportCanvas, exportCtx, onProgress, exportSnapshot);
   }
 
-  return recordVideoBlobWithMediaRecorder(config, exportCanvas, exportCtx, mimeType, onProgress);
+  return recordVideoBlobWithMediaRecorder(config, exportCanvas, exportCtx, mimeType, onProgress, exportSnapshot);
 }

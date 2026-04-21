@@ -86,6 +86,10 @@
         box-shadow: 0 6px 12px rgba(84, 94, 104, 0.08);
       }
 
+      .has-hover-tooltip[data-tooltip] {
+        position: relative;
+      }
+
       .group-help::after {
         content: attr(data-tooltip);
         position: absolute;
@@ -108,7 +112,36 @@
         z-index: 3;
       }
 
+      .has-hover-tooltip[data-tooltip]::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        left: 50%;
+        top: calc(100% + 10px);
+        width: min(240px, calc(100vw - 32px));
+        padding: 9px 11px;
+        border-radius: 14px;
+        background: var(--ui-tooltip-bg);
+        color: var(--ui-tooltip-text);
+        font-size: 11px;
+        line-height: 1.45;
+        text-align: center;
+        box-shadow: 0 14px 24px rgba(54, 61, 68, 0.22);
+        opacity: 0;
+        pointer-events: none;
+        transform: translate(-50%, -6px);
+        transition:
+          opacity 140ms ease,
+          transform 140ms ease;
+        z-index: 4;
+      }
+
       .group-help:hover::after {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+
+      .has-hover-tooltip[data-tooltip]:hover::after,
+      .has-hover-tooltip[data-tooltip]:focus-visible::after {
         opacity: 1;
         transform: translate(-50%, 0);
       }

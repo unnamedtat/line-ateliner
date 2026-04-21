@@ -169,6 +169,71 @@ const CONTROL_TOOLTIPS = {
   "width-jitter": "控制路径模式下线宽随时间波动的幅度。"
 };
 
+const CONTROL_TOOLTIPS_EN = {
+  "render-mode": "Switch the line-generation algorithm. Different algorithms suit different source images and line styles.",
+  "contour-variant": "Choose the specific contour style. Classic, wave, distortion, and rubber variants all reuse the same contour extraction.",
+  "image-upload": "Upload a new source image. All extraction algorithms will re-analyze from this image.",
+  "reference-overlay": "Overlay the source image on top of the result so you can compare alignment.",
+  "reference-overlay-opacity": "Control the opacity of the source overlay. Higher values make the reference image easier to see.",
+  "analysis-quality": "Controls the analysis resolution used for the source image. Higher settings preserve more detail but rebuild more slowly.",
+  "scene-scale": "Scale the whole subject uniformly. This affects both the reference overlay and the animated line result.",
+  "scene-offset-x": "Move the subject horizontally. Positive moves right, negative moves left.",
+  "scene-offset-y": "Move the subject vertically. Positive moves down, negative moves up.",
+  "background-preset": "Quickly switch paper presets without changing the source-image extraction result.",
+  "paper-fill-mode": "Choose between a solid paper base or a gradient paper base.",
+  "paper-gradient-angle": "Control the direction of the paper gradient.",
+  "paper-color": "Set the main paper color.",
+  "paper-accent-color": "Set the supporting color used in paper gradients and transitions.",
+  "paper-texture": "Choose the texture layered on top of the paper.",
+  "ink-color": "Set the primary color for linework and contour rendering across all line-based modes.",
+  "ink-opacity": "Control the overall opacity of the linework so it feels lighter or denser.",
+  "texture-color": "Set the primary texture color.",
+  "texture-accent-color": "Set the supporting texture color.",
+  "texture-upload": "Upload a custom paper texture image.",
+  "paper-texture-strength": "Control how strongly the paper texture appears.",
+  "paper-texture-opacity": "Control the overall opacity of the top texture layer.",
+  "paper-texture-scale": "Control the scale of the paper texture pattern or grain.",
+  "line-width-scale": "Scale all line widths at once. This affects both edge lines and path-based lines.",
+  "export-duration-seconds": "Set the total duration of each exported animation.",
+  "export-frame-rate": "Set the sampling frame rate for export. Higher values look smoother but usually create larger files.",
+  "export-resolution-scale": "Set the render resolution multiplier used during export. Higher values are sharper but slower.",
+  "line-threshold": "Controls how dark a pixel must be to count as a line seed. Higher values include lighter lines more easily.",
+  "edge-threshold": "Controls how strong a local edge must be before it is kept. Lower values preserve weaker edges.",
+  "edge-fill-threshold": "Controls the overall pairing threshold for edge-fill. Lower values fill more aggressively, higher values stay stricter.",
+  "edge-fill-cell-size": "Controls the grid size used during pair search. Larger values loosen the search range and make cross-region matches easier.",
+  "edge-fill-min-normal-gap": "Sets the minimum sideways distance between two edges to avoid pairing edges that are too close together.",
+  "edge-fill-max-normal-gap": "Sets the maximum sideways distance between two edges. Increase it if you want to fill thicker strokes.",
+  "edge-fill-max-tangent-gap": "Sets how much two candidate edges may drift along their tangent direction. Larger values tolerate endpoint mismatch better.",
+  "edge-fill-min-tangent-dot": "Requires the two candidate edges to point in a similar direction. Lower values are more tolerant, higher values demand stronger parallelism.",
+  "edge-fill-max-normal-dot": "Requires the two edge normals to avoid pointing the same way too strongly. Lower values enforce a more opposite-edge pairing.",
+  "edge-smoothness": "Smooth the luma map before extraction to reduce noise, at the cost of some detail.",
+  "ink-threshold": "Ink threshold used by path and contour modes. Higher values pick up lighter lines more easily.",
+  "contrast-threshold": "Controls how much local contrast is needed before something counts as a line or boundary.",
+  "color-threshold": "Controls how much color difference is needed before something counts as a boundary or growth source.",
+  "wave-amplitude": "Controls the amplitude of wave / distortion / rubber motion in contour styles.",
+  "wave-frequency": "Controls the density or field frequency of wave / distortion / rubber motion in contour styles.",
+  "wave-speed": "Controls how quickly the phase changes between boil states for wave / distortion / rubber contour styles.",
+  "distortion-scale": "Controls how far the SVG displacement filter pushes image pixels. Higher values produce stronger distortion.",
+  "distortion-frequency": "Controls the scale of the turbulence noise. Lower values create broader waves; higher values create finer jitter.",
+  "distortion-octaves": "Controls how many layers of noise are combined. More layers create richer distortion detail.",
+  "distortion-speed": "Controls how quickly the SVG distortion evolves over time.",
+  "boil-hold-frames": "Controls how quickly the boil animation steps forward. Lower values produce faster flicker.",
+  "edge-jitter-normal": "Controls edge jitter amplitude along the normal direction.",
+  "edge-jitter-tangent": "Controls edge jitter amplitude along the tangent direction.",
+  "contour-stroke-thickness": "Controls the stroke-width scale used in contour-trace modes.",
+  "path-jitter-normal": "Controls centerline-path jitter along the normal direction.",
+  "path-jitter-tangent": "Controls centerline-path jitter along the tangent direction.",
+  "width-jitter": "Controls how much path-mode line width fluctuates over time."
+};
+
+function getCurrentAppLocale() {
+  return window.__lineAtelierAppLocale === "en" ? "en" : "zh-CN";
+}
+
+function getLocalizedControlTooltips() {
+  return getCurrentAppLocale() === "en" ? CONTROL_TOOLTIPS_EN : CONTROL_TOOLTIPS;
+}
+
 const NEIGHBOR_DIRS = [
   { dx: 0, dy: -1 },
   { dx: 1, dy: -1 },

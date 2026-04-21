@@ -16,6 +16,7 @@ declare global {
       ArrayBufferTarget: typeof ArrayBufferTarget;
       Muxer: typeof Muxer;
     };
+    __lineAtelierAppLocale?: "zh-CN" | "en";
     __lineAtelierTestMode?: boolean;
     __forceLegacyImageFallback?: boolean;
     __forceLegacyRenderFallback?: boolean;

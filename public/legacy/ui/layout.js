@@ -156,6 +156,7 @@ function buildLegacyUiSnapshot() {
   const videoLabel = exportState.active && exportState.format === "video" ? "导出中..." : "导出 MP4";
   const gifLabel = exportState.active && exportState.format === "gif" ? "导出中..." : "导出 GIF";
   const isAnalyzing = Boolean(appStatusState.analysisActive);
+  const importExportLocked = Boolean(isAnalyzing || exportState.active);
   const hasFailure = Boolean(appStatusState.analysisFailed);
 
   return {
@@ -166,7 +167,7 @@ function buildLegacyUiSnapshot() {
     fileSummary: getFileSummaryLabel(),
     imageName: getImageNameLabel(),
     textureUploadSummary: uploadedTextureLabel,
-    importExportLocked: isAnalyzing,
+    importExportLocked,
     resetLocked: Boolean(exportState.active || appStatusState.analysisActive),
     canvasEmptyVisible: !canExportOutput && !isAnalyzing && !hasFailure,
     processingVisible: isAnalyzing || hasFailure,

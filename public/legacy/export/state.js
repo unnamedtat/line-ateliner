@@ -7,6 +7,32 @@ let gifLibraryLoadPromise = null;
 let legacyExportWorker = null;
 let legacyExportWorkerRequestSerial = 0;
 const legacyExportWorkerPendingRequests = new Map();
+let activeExportSnapshot = null;
+
+// Creates a safe structured clone.
+function cloneExportValue(value) {
+  if (typeof structuredClone === "function") {
+    return structuredClone(value);
+  }
+
+  return JSON.parse(JSON.stringify(value));
+}
+
+// Sets the active export snapshot.
+function setActiveExportSnapshot(snapshot) {
+  activeExportSnapshot = snapshot || null;
+  return activeExportSnapshot;
+}
+
+// Gets the active export snapshot.
+function getActiveExportSnapshot() {
+  return activeExportSnapshot;
+}
+
+// Clears the active export snapshot.
+function clearActiveExportSnapshot() {
+  activeExportSnapshot = null;
+}
 
 // Checks whether fixed-timeline MP4 encoding can be used in this browser.
 function canUseFixedTimelineMp4Encoding() {

@@ -1,4 +1,17 @@
 // User-facing export actions for MP4, GIF, and PNG.
+
+// Runs an export task with a frozen snapshot of all export-sensitive state.
+async function withFrozenExportSnapshot(config, task) {
+  const snapshot = createExportSnapshot(config);
+  setActiveExportSnapshot(snapshot);
+
+  try {
+    return await task(snapshot);
+  } finally {
+    clearActiveExportSnapshot();
+  }
+}
+
 // Starts video export.
 async function startVideoExport() {
   if (exportState.active) {
@@ -47,16 +60,18 @@ async function startVideoExport() {
   });
 
   try {
-    const videoBlob = await withManualExportRendering(async () => {
-      return withTemporaryExportRenderSize(config, async () => {
-        return recordVideoBlob(config, exportCanvas, exportCtx, mimeType, async (frameIndex) => {
-          setExportState({
-            active: true,
-            format: "video",
-            status: `正在导出 MP4... ${frameIndex + 1}/${config.totalFrames}`
-          });
+    const videoBlob = await withFrozenExportSnapshot(config, async (exportSnapshot) => {
+      return withManualExportRendering(async () => {
+        return withTemporaryExportRenderSize(config, async () => {
+          return recordVideoBlob(config, exportCanvas, exportCtx, mimeType, async (frameIndex) => {
+            setExportState({
+              active: true,
+              format: "video",
+              status: `正在导出 MP4... ${frameIndex + 1}/${config.totalFrames}`
+            });
+          }, exportSnapshot);
         });
-      });
+      }, exportSnapshot);
     });
 
     downloadBlob(videoBlob, buildExportFilename("mp4", basename));
@@ -153,20 +168,22 @@ async function startGifExport() {
   });
 
   try {
-    await withManualExportRendering(async () => {
-      await withTemporaryExportRenderSize(config, async () => {
-        await captureFrames(config, exportCanvas, exportCtx, async (frameIndex) => {
-          gif.addFrame(exportCanvas, {
-            copy: true,
-            delay: config.frameDelayMs
-          });
-          setExportState({
-            active: true,
-            format: "gif",
-            status: `正在采集 GIF 帧... ${frameIndex + 1}/${config.totalFrames}`
-          });
+    await withFrozenExportSnapshot(config, async (exportSnapshot) => {
+      await withManualExportRendering(async () => {
+        await withTemporaryExportRenderSize(config, async () => {
+          await captureFrames(config, exportCanvas, exportCtx, async (frameIndex) => {
+            gif.addFrame(exportCanvas, {
+              copy: true,
+              delay: config.frameDelayMs
+            });
+            setExportState({
+              active: true,
+              format: "gif",
+              status: `正在采集 GIF 帧... ${frameIndex + 1}/${config.totalFrames}`
+            });
+          }, exportSnapshot);
         });
-      });
+      }, exportSnapshot);
     });
 
     const blob = await new Promise((resolve) => {
@@ -230,7 +247,16 @@ async function startPngExport() {
   });
 
   try {
-    await drawCompositeExportFrame(exportCanvas, exportCtx);
+    await withFrozenExportSnapshot(
+      {
+        ...getExportConfig(),
+        totalFrames: 1,
+        frameDelayMs: 0
+      },
+      async (exportSnapshot) => {
+        await drawCompositeExportFrame(exportCanvas, exportCtx, exportSnapshot.startFrameValue, exportSnapshot);
+      }
+    );
     const blob = await canvasToBlob(exportCanvas, "image/png");
     downloadBlob(blob, buildExportFilename("png"));
     setExportState({

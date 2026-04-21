@@ -18,6 +18,11 @@ function bindControls() {
 
 // Applies a select control change.
 function applySelectControlChange(id, value) {
+  if (exportState.active) {
+    syncControls();
+    return;
+  }
+
   const binding = SELECT_BINDINGS.find((item) => item.id === id);
   if (!binding) {
     return;
@@ -31,6 +36,11 @@ const rangeControlState = new Map();
 
 // Applies a range control change.
 function applyRangeControlChange(id, value, source = "change") {
+  if (exportState.active) {
+    syncControls();
+    return;
+  }
+
   const binding = RANGE_BINDINGS.find(([rangeId]) => rangeId === id);
   if (!binding && id !== "paper-texture-opacity") {
     return;
@@ -136,6 +146,11 @@ function applyRangeControlChange(id, value, source = "change") {
 
 // Applies a color control change.
 function applyColorControlChange(id, value) {
+  if (exportState.active) {
+    syncControls();
+    return;
+  }
+
   const binding = COLOR_BINDINGS.find(([colorId]) => colorId === id);
   if (!binding) {
     return;
@@ -165,6 +180,11 @@ function applyColorControlChange(id, value) {
 
 // Applies a file control change.
 function applyFileControlChange(id, file) {
+  if (exportState.active) {
+    syncControls();
+    return;
+  }
+
   if (!file) {
     return;
   }
