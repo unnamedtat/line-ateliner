@@ -4,126 +4,6 @@ const GIF_LIBRARY_SCRIPT = "/vendor/gif.js";
 const GIF_WORKER_SCRIPT = "/vendor/gif.worker.js";
 let gifWorkerBlobUrl = "";
 let gifLibraryLoadPromise = null;
-let legacyExportWorker = null;
-let legacyExportWorkerRequestSerial = 0;
-const legacyExportWorkerPendingRequests = new Map();
-let activeExportSnapshot = null;
-
-// Creates a safe structured clone.
-function cloneExportValue(value) {
-  if (typeof structuredClone === "function") {
-    return structuredClone(value);
-  }
-
-  return JSON.parse(JSON.stringify(value));
-}
-
-// Sets the active export snapshot.
-function setActiveExportSnapshot(snapshot) {
-  activeExportSnapshot = snapshot || null;
-  return activeExportSnapshot;
-}
-
-// Gets the active export snapshot.
-function getActiveExportSnapshot() {
-  return activeExportSnapshot;
-}
-
-// Clears the active export snapshot.
-function clearActiveExportSnapshot() {
-  activeExportSnapshot = null;
-}
-
-// Checks whether fixed-timeline MP4 encoding can be used in this browser.
-function canUseFixedTimelineMp4Encoding() {
-  return Boolean(
-    typeof VideoEncoder !== "undefined" &&
-      typeof VideoFrame !== "undefined" &&
-      window.__lineAtelierMp4Muxer?.Muxer &&
-      window.__lineAtelierMp4Muxer?.ArrayBufferTarget
-  );
-}
-
-// Checks whether MP4 export is available through either fixed encoding or MediaRecorder fallback.
-function canExportMp4Output() {
-  return canUseFixedTimelineMp4Encoding() || Boolean(typeof pickVideoMimeType === "function" && pickVideoMimeType());
-}
-
-// Checks whether the export worker can be used in this browser.
-function canUseLegacyExportWorker() {
-  return (
-    typeof Worker !== "undefined" &&
-    typeof createImageBitmap === "function" &&
-    typeof window.__lineAtelierExportWorkerUrl === "string" &&
-    window.__lineAtelierExportWorkerUrl.length > 0
-  );
-}
-
-// Resolves the shared export worker instance.
-function getLegacyExportWorker() {
-  if (!canUseLegacyExportWorker()) {
-    return null;
-  }
-
-  if (legacyExportWorker) {
-    return legacyExportWorker;
-  }
-
-  legacyExportWorker = new Worker(window.__lineAtelierExportWorkerUrl, {
-    type: "module"
-  });
-
-  legacyExportWorker.addEventListener("message", (event) => {
-    const response = event.data;
-    const pending = legacyExportWorkerPendingRequests.get(response?.id);
-    if (!pending) {
-      return;
-    }
-
-    legacyExportWorkerPendingRequests.delete(response.id);
-    if (response.ok) {
-      pending.resolve(response);
-      return;
-    }
-
-    pending.reject(new Error(response?.error || "导出 Worker 处理失败。"));
-  });
-
-  legacyExportWorker.addEventListener("error", (event) => {
-    const message = event?.message || "导出 Worker 启动失败。";
-    legacyExportWorkerPendingRequests.forEach((pending) => {
-      pending.reject(new Error(message));
-    });
-    legacyExportWorkerPendingRequests.clear();
-    legacyExportWorker = null;
-  });
-
-  return legacyExportWorker;
-}
-
-// Sends a composition request to the export worker.
-function requestLegacyExportWorker(kind, payload, transferList = []) {
-  const worker = getLegacyExportWorker();
-  if (!worker) {
-    return Promise.reject(new Error("当前环境不支持导出 Worker。"));
-  }
-
-  return new Promise((resolve, reject) => {
-    const id = ++legacyExportWorkerRequestSerial;
-    legacyExportWorkerPendingRequests.set(id, {
-      resolve,
-      reject
-    });
-    worker.postMessage(
-      {
-        id,
-        kind,
-        ...payload
-      },
-      transferList
-    );
-  });
-}
 
 // Sets export state and syncs the export UI.
 function setExportState(patch) {
@@ -265,7 +145,7 @@ function getExportEstimateSummary() {
 
 // Builds export recovery actions.
 function getExportFailureRecovery(format) {
-  const canExportMp4 = canExportMp4Output();
+  const canExportMp4 = Boolean(pickVideoMimeType());
 
   if (format === "video") {
     return {
@@ -367,10 +247,9 @@ function getExportAnimationStep(config) {
 }
 
 // Gets the non-SVG export cycle length.
-function getNonSvgExportCycleLength(exportSnapshot = getActiveExportSnapshot()) {
+function getNonSvgExportCycleLength() {
   const boilSequenceLength = Array.isArray(BOIL_SEQUENCE) ? BOIL_SEQUENCE.length : 0;
-  const exportSettings = exportSnapshot?.settings || settings;
-  const holdFrames = Math.max(1, Math.round(exportSettings?.boilHoldFrames || 1));
+  const holdFrames = Math.max(1, Math.round(settings?.boilHoldFrames || 1));
   if (!boilSequenceLength) {
     return holdFrames;
   }
@@ -379,17 +258,14 @@ function getNonSvgExportCycleLength(exportSnapshot = getActiveExportSnapshot()) 
 }
 
 // Gets the export frame value.
-function getExportFrameValue(config, frameIndex, frameStartValue, exportSnapshot = getActiveExportSnapshot()) {
+function getExportFrameValue(config, frameIndex, frameStartValue) {
   const animationStep = getExportAnimationStep(config);
 
-  const exportMode =
-    exportSnapshot?.mode || (typeof getEffectiveRenderMode === "function" ? getEffectiveRenderMode() : "");
-
-  if (exportMode === "distortion") {
+  if (typeof isDistortionMode === "function" && isDistortionMode()) {
     return frameStartValue + frameIndex * animationStep;
   }
 
-  const cycleLength = getNonSvgExportCycleLength(exportSnapshot);
+  const cycleLength = getNonSvgExportCycleLength();
   if (cycleLength <= 0) {
     return frameIndex * animationStep;
   }
