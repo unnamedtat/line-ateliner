@@ -161,15 +161,6 @@ function requestLegacyRenderWorker(kind, payload) {
   });
 }
 
-async function ensureLegacyAlgorithmRuntimeLoaded() {
-  const loader = window.__lineAtelierLoadAlgorithmRuntime;
-  if (typeof loader !== "function") {
-    return;
-  }
-
-  await loader();
-}
-
 // Builds a serializable settings snapshot for worker tasks.
 function createWorkerSettingsSnapshot() {
   return { ...settings };
@@ -644,7 +635,6 @@ async function runSceneBuild(runState, message = "") {
       return true;
     }
 
-    await ensureLegacyAlgorithmRuntimeLoaded();
     await buildAnalysisStateAsync();
     await ensureAnalysisResponsive("正在生成笔触与沸腾帧缓存...", true);
 
@@ -697,7 +687,6 @@ async function runModeOutputBuild(runState, message = "", options = {}) {
       return true;
     }
 
-    await ensureLegacyAlgorithmRuntimeLoaded();
     if (!analysisState) {
       await buildAnalysisStateAsync();
       await ensureAnalysisResponsive("正在创建分析缓存...", true);

@@ -1,7 +1,6 @@
 import { createElement } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
-import { getDefaultSourceAsset } from "./boot/default-source-runtime";
 import { CLASSIC_SCRIPT_PATHS } from "./boot/legacy-manifest";
 import { loadClassicScripts } from "./boot/load-classic-scripts";
 import { AppShell } from "./ui/AppShell";
@@ -15,7 +14,6 @@ declare global {
     __lineAtelierDefaultSourceBlob?: Blob;
     __lineAtelierDefaultSourceHref?: string;
     __lineAtelierImageWorkerUrl?: string;
-    __lineAtelierLoadAlgorithmRuntime?: () => Promise<void>;
     __lineAtelierLoadExportRuntime?: () => Promise<void>;
     __lineAtelierP5Instance?: unknown;
     __lineAtelierP5BootPromise?: Promise<void>;
@@ -26,9 +24,6 @@ declare global {
 
 window.__lineAtelierImageWorkerUrl = legacyImageWorkerUrl;
 window.__lineAtelierRenderWorkerUrl = legacyRenderWorkerUrl;
-window.__lineAtelierLoadAlgorithmRuntime = () => {
-  return import("./boot/legacy-algorithm-runtime").then((module) => module.loadLegacyAlgorithmRuntime());
-};
 window.__lineAtelierLoadExportRuntime = () => {
   return import("./boot/legacy-export-runtime").then((module) => module.loadLegacyExportRuntime());
 };
@@ -46,9 +41,14 @@ async function primeDefaultSourceAsset() {
     return;
   }
 
-  const { blob, objectUrl } = await getDefaultSourceAsset();
+  const response = await fetch("/figure.avif", { cache: "force-cache" });
+  if (!response.ok) {
+    throw new Error(`默认示例资源加载失败 (${response.status})`);
+  }
+
+  const blob = await response.blob();
   window.__lineAtelierDefaultSourceBlob = blob;
-  window.__lineAtelierDefaultSourceHref = objectUrl;
+  window.__lineAtelierDefaultSourceHref = URL.createObjectURL(blob);
 }
 
 function scheduleP5Boot() {
@@ -89,6 +89,11 @@ async function bootstrapLegacyApp() {
     window.__lineAtelierBootPromise = loadClassicScripts(CLASSIC_SCRIPT_PATHS)
       .then(async () => {
         await primeDefaultSourceAsset();
+        const algorithmRuntimeStartedAt = performance.now();
+        await import("./boot/legacy-algorithm-runtime").then((module) => module.loadLegacyAlgorithmRuntime());
+        console.info(
+          `[boot] legacy algorithm runtime: ${(performance.now() - algorithmRuntimeStartedAt).toFixed(1)}ms`
+        );
         void scheduleP5Boot();
         console.info(`[boot] bootstrapLegacyApp: ${(performance.now() - startedAt).toFixed(1)}ms`);
       })
@@ -120,15 +125,12 @@ function renderAppShell() {
 async function startApp() {
   try {
     renderAppShell();
+    await bootstrapLegacyApp();
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     showBootFailure(message);
     throw error;
   }
-
-  requestAnimationFrame(() => {
-    void bootstrapLegacyApp();
-  });
 }
 
 void startApp();
