@@ -1,7 +1,6 @@
 import { createElement } from "react";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
-import { scheduleDeferredMonitoring } from "./boot/deferred-monitoring";
 import { CLASSIC_SCRIPT_PATHS } from "./boot/legacy-manifest";
 import { loadClassicScripts } from "./boot/load-classic-scripts";
 import { AppShell } from "./ui/AppShell";
@@ -111,7 +110,6 @@ async function startApp() {
 }
 
 void startApp();
-scheduleDeferredMonitoring();
 
 if (import.meta.hot) {
   import.meta.hot.accept();
