@@ -207,6 +207,9 @@ function setup() {
   syncDistortionOverlay();
   clearRenderFrameCache();
   syncControls();
+  if (typeof window.__lineAtelierMarkPreviewEngineReady === "function") {
+    window.__lineAtelierMarkPreviewEngineReady();
+  }
   if (!initialSceneBootScheduled) {
     initialSceneBootScheduled = true;
     requestAnimationFrame(() => {

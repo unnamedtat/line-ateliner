@@ -22,6 +22,49 @@ const LEGACY_UI_READY_EVENT = "lineatelier:bridge-ready";
 
 let activeControlTab = "input";
 
+function getLegacyPreviewEngineStatus() {
+  return window.__lineAtelierPreviewEngineStatus || "idle";
+}
+
+function isLegacyPreviewEngineReady() {
+  return typeof window.__lineAtelierIsPreviewEngineReady === "function"
+    ? window.__lineAtelierIsPreviewEngineReady()
+    : getLegacyPreviewEngineStatus() === "ready";
+}
+
+function getLegacyPreviewBootBadge() {
+  return getLegacyPreviewEngineStatus() === "failed" ? "预览启动失败" : "预览稍后启动";
+}
+
+function getLegacyPreviewBootCopy() {
+  const failureMessage = window.__lineAtelierPreviewEngineFailureMessage;
+  if (getLegacyPreviewEngineStatus() === "failed") {
+    return failureMessage || "预览引擎启动失败，请刷新页面后重试。";
+  }
+
+  if (getLegacyPreviewEngineStatus() === "booting") {
+    return "页面已就绪，正在后台启动预览引擎...";
+  }
+
+  return "页面已就绪，预览会在浏览器空闲时自动启动。";
+}
+
+function runLegacyUiTaskWithPreviewEngine(task) {
+  const loader = window.__lineAtelierEnsurePreviewEngineBoot;
+  if (typeof loader !== "function" || isLegacyPreviewEngineReady()) {
+    task();
+    return;
+  }
+
+  loader()
+    .then(() => {
+      task();
+    })
+    .catch((error) => {
+      console.warn("Failed to boot preview engine", error);
+    });
+}
+
 function runWithExportRuntime(task) {
   const loader = window.__lineAtelierLoadExportRuntime;
   if (typeof loader !== "function") {
@@ -166,16 +209,19 @@ function buildRangeReadoutSnapshot(controlValues) {
 function buildLegacyUiSnapshot() {
   const estimateSummary = getExportEstimateSnapshot();
   const canExportOutput = hasDrawableOutputSafe();
-  const exportLocked = exportState.active || appStatusState.analysisActive || !canExportOutput;
+  const previewReady = isLegacyPreviewEngineReady();
+  const exportLocked = !previewReady || exportState.active || appStatusState.analysisActive || !canExportOutput;
   const controlValues = buildControlValueSnapshot();
   const recovery = exportState.recovery || {};
   const videoLabel = exportState.active && exportState.format === "video" ? "导出中..." : "导出 MP4";
   const gifLabel = exportState.active && exportState.format === "gif" ? "导出中..." : "导出 GIF";
   const isAnalyzing = Boolean(appStatusState.analysisActive);
   const hasFailure = Boolean(appStatusState.analysisFailed);
+  const processingVisible = isAnalyzing || hasFailure;
 
   return {
     ready: true,
+    previewReady,
     activeControlTab,
     uiHidden: Boolean(settings.uiHidden),
     modeSummary: `${getCurrentModeLabel()}模式`,
@@ -184,10 +230,11 @@ function buildLegacyUiSnapshot() {
     textureUploadSummary: uploadedTextureLabel,
     importExportLocked: isAnalyzing,
     resetLocked: Boolean(exportState.active || appStatusState.analysisActive),
-    canvasEmptyVisible: !canExportOutput && !isAnalyzing && !hasFailure,
-    processingVisible: isAnalyzing || hasFailure,
-    processingBadge: hasFailure ? "分析失败" : "上传后正分析",
-    processingCopy: getProcessingCopy(),
+    canvasEmptyVisible: previewReady && !canExportOutput && !isAnalyzing && !hasFailure,
+    processingVisible,
+    processingBadge:
+      hasFailure ? "分析失败" : previewReady ? "上传后正分析" : getLegacyPreviewBootBadge(),
+    processingCopy: processingVisible ? getProcessingCopy() : getLegacyPreviewBootCopy(),
     processingActionsVisible: isAnalyzing && Boolean(appStatusState.analysisPromptVisible),
     exportLocked,
     exportVideoLabel: videoLabel,
@@ -226,17 +273,21 @@ function ensureLegacyUiBridge() {
         }
       },
       startVideoExport: () => {
-        runWithExportRuntime(() => {
-          if (typeof startVideoExport === "function") {
-            startVideoExport();
-          }
+        runLegacyUiTaskWithPreviewEngine(() => {
+          runWithExportRuntime(() => {
+            if (typeof startVideoExport === "function") {
+              startVideoExport();
+            }
+          });
         });
       },
       startGifExport: () => {
-        runWithExportRuntime(() => {
-          if (typeof startGifExport === "function") {
-            startGifExport();
-          }
+        runLegacyUiTaskWithPreviewEngine(() => {
+          runWithExportRuntime(() => {
+            if (typeof startGifExport === "function") {
+              startGifExport();
+            }
+          });
         });
       },
       continueAnalysisWait: () => {
@@ -250,10 +301,12 @@ function ensureLegacyUiBridge() {
         }
       },
       runExportRecoveryAction: (action) => {
-        runWithExportRuntime(() => {
-          if (typeof runExportRecoveryAction === "function") {
-            runExportRecoveryAction(action);
-          }
+        runLegacyUiTaskWithPreviewEngine(() => {
+          runWithExportRuntime(() => {
+            if (typeof runExportRecoveryAction === "function") {
+              runExportRecoveryAction(action);
+            }
+          });
         });
       },
       updateSelect: (id, value) => {
@@ -272,9 +325,11 @@ function ensureLegacyUiBridge() {
         }
       },
       updateFile: (id, file) => {
-        if (typeof applyFileControlChange === "function") {
-          applyFileControlChange(id, file);
-        }
+        runLegacyUiTaskWithPreviewEngine(() => {
+          if (typeof applyFileControlChange === "function") {
+            applyFileControlChange(id, file);
+          }
+        });
       }
     }
   };

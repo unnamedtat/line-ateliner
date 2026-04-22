@@ -24,6 +24,7 @@ export interface LegacyRangeReadouts {
 
 export interface LegacyUiSnapshot {
   ready: boolean;
+  previewReady: boolean;
   activeControlTab: ControlTab;
   uiHidden: boolean;
   modeSummary: string;
@@ -100,6 +101,7 @@ const fallbackActions: LegacyUiActions = {
 
 const defaultSnapshot: LegacyUiSnapshot = {
   ready: false,
+  previewReady: false,
   activeControlTab: "input",
   uiHidden: false,
   modeSummary: "边缘线填充模式",
@@ -108,10 +110,10 @@ const defaultSnapshot: LegacyUiSnapshot = {
   textureUploadSummary: "未选择纹理",
   importExportLocked: false,
   resetLocked: false,
-  canvasEmptyVisible: true,
+  canvasEmptyVisible: false,
   processingVisible: false,
-  processingBadge: "上传后正分析",
-  processingCopy: "正在读取图片并重建预览，请稍候。",
+  processingBadge: "预览稍后启动",
+  processingCopy: "页面已就绪，预览会在浏览器空闲时自动启动。",
   processingActionsVisible: false,
   exportLocked: true,
   exportVideoLabel: "导出 MP4",

@@ -35,7 +35,7 @@ function AppShellContent() {
         <div className="workspace-main">
           <CanvasShell
             canvasEmptyVisible={localizedSnapshot.canvasEmptyVisible}
-            previewBooting={!localizedSnapshot.ready}
+            previewBooting={!localizedSnapshot.previewReady}
             processingVisible={localizedSnapshot.processingVisible}
             processingBadge={localizedSnapshot.processingBadge}
             processingCopy={localizedSnapshot.processingCopy}

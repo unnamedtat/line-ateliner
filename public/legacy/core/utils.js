@@ -1,4 +1,16 @@
 // Small shared helpers used by UI, layout, and drawing code.
+function clampValue(value, minValue, maxValue) {
+  return Math.min(Math.max(value, minValue), maxValue);
+}
+
+function interpolateValue(start, end, amount) {
+  return start + (end - start) * amount;
+}
+
+function roundValue(value) {
+  return Math.round(value);
+}
+
 function hexToRgb(hex) {
   const normalized = hex.replace("#", "");
   const value = normalized.length === 3
@@ -18,9 +30,9 @@ function hexToRgb(hex) {
 // Interpolates two RGB colors.
 function lerpRgb(a, b, t) {
   return [
-    round(lerp(a[0], b[0], t)),
-    round(lerp(a[1], b[1], t)),
-    round(lerp(a[2], b[2], t))
+    roundValue(interpolateValue(a[0], b[0], t)),
+    roundValue(interpolateValue(a[1], b[1], t)),
+    roundValue(interpolateValue(a[2], b[2], t))
   ];
 }
 
@@ -36,8 +48,8 @@ function computeCaptionColor(base, accent) {
   const offset = luminance > 170 ? -138 : 138;
 
   return [
-    constrain(mixed[0] + offset, 34, 232),
-    constrain(mixed[1] + offset, 34, 232),
-    constrain(mixed[2] + offset, 34, 232)
+    clampValue(mixed[0] + offset, 34, 232),
+    clampValue(mixed[1] + offset, 34, 232),
+    clampValue(mixed[2] + offset, 34, 232)
   ];
 }

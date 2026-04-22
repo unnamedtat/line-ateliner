@@ -126,7 +126,7 @@ const CONTROL_VALUE_BINDINGS = [
   ["line-threshold", () => settings.lineBrightnessThreshold],
   ["edge-threshold", () => settings.edgeThreshold],
   ["edge-fill-threshold", () => settings.edgeFillThreshold],
-  ["edge-fill-cell-size", () => round(settings.edgeFillCellSize)],
+  ["edge-fill-cell-size", () => Math.round(settings.edgeFillCellSize)],
   ["edge-fill-min-normal-gap", () => settings.edgeFillMinNormalGap],
   ["edge-fill-max-normal-gap", () => settings.edgeFillMaxNormalGap],
   ["edge-fill-max-tangent-gap", () => settings.edgeFillMaxTangentGap],
@@ -290,5 +290,22 @@ function resetAllSettings() {
   };
 
   syncControls();
+  if (
+    typeof window.__lineAtelierIsPreviewEngineReady === "function" &&
+    !window.__lineAtelierIsPreviewEngineReady()
+  ) {
+    const loader = window.__lineAtelierEnsurePreviewEngineBoot;
+    if (typeof loader === "function") {
+      loader()
+        .then(() => {
+          rebuildScene("所有参数已恢复默认值，正在重建预览...");
+        })
+        .catch((error) => {
+          console.warn("Failed to boot preview engine after reset", error);
+        });
+      return;
+    }
+  }
+
   rebuildScene("所有参数已恢复默认值，正在重建预览...");
 }

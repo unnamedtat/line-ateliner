@@ -1,9 +1,52 @@
 // Scene rebuild scheduling, cancellation, and responsiveness helpers.
+function requestPreviewEngineBootForRebuild() {
+  const loader = window.__lineAtelierEnsurePreviewEngineBoot;
+  if (typeof loader !== "function") {
+    return null;
+  }
+
+  return loader().catch((error) => {
+    console.warn("Failed to boot preview engine for rebuild", error);
+    return null;
+  });
+}
+
+function runScheduledBuildWithPreviewEngine(task) {
+  const isReady =
+    typeof window.__lineAtelierIsPreviewEngineReady === "function"
+      ? window.__lineAtelierIsPreviewEngineReady()
+      : true;
+
+  if (isReady) {
+    task();
+    return;
+  }
+
+  const bootPromise = requestPreviewEngineBootForRebuild();
+  if (!bootPromise) {
+    task();
+    return;
+  }
+
+  bootPromise.then(() => {
+    if (
+      typeof window.__lineAtelierIsPreviewEngineReady === "function" &&
+      !window.__lineAtelierIsPreviewEngineReady()
+    ) {
+      return;
+    }
+    task();
+  });
+}
+
 // Schedules a full scene rebuild.
 function scheduleRebuild() {
   clearTimeout(rebuildTimer);
+  requestPreviewEngineBootForRebuild();
   rebuildTimer = setTimeout(() => {
-    rebuildScene("参数已更新，正在重建预览...");
+    runScheduledBuildWithPreviewEngine(() => {
+      rebuildScene("参数已更新，正在重建预览...");
+    });
   }, 60);
 }
 
@@ -18,8 +61,11 @@ function normalizeModeOutputOptions(options = {}) {
 function scheduleOutputRebuild(options = {}) {
   clearTimeout(rebuildTimer);
   const nextOptions = normalizeModeOutputOptions(options);
+  requestPreviewEngineBootForRebuild();
   rebuildTimer = setTimeout(() => {
-    rebuildModeOutput("参数已更新，正在重算当前笔触...", nextOptions);
+    runScheduledBuildWithPreviewEngine(() => {
+      rebuildModeOutput("参数已更新，正在重算当前笔触...", nextOptions);
+    });
   }, nextOptions.reuseGeometry ? 90 : 60);
 }
 
