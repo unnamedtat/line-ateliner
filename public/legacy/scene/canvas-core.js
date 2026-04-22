@@ -131,7 +131,10 @@ function observePageLifecycle() {
   }
 
   if (typeof window !== "undefined") {
-    window.addEventListener("pageshow", () => {
+    window.addEventListener("pageshow", (event) => {
+      if (!event.persisted) {
+        return;
+      }
       void restoreSceneAfterBackgroundPause(true);
     });
   }
@@ -150,6 +153,9 @@ function handleCanvasHostResize() {
 
 // Preloads the default source image.
 function preload() {
+  if (typeof hydrateDefaultSourceAssetFromBootstrap === "function") {
+    hydrateDefaultSourceAssetFromBootstrap();
+  }
   const initialSourcePath = sourceImageHref || SOURCE_IMAGE_PATH;
   sourceImage = loadImage(initialSourcePath, (image) => {
     if (typeof updateSceneAssetRecord === "function") {

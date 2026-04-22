@@ -26,6 +26,40 @@ const sceneAssetState = {
   })
 };
 
+// Hydrates the default source asset from the app bootstrap runtime when available.
+function hydrateDefaultSourceAssetFromBootstrap() {
+  const bootstrapHref = window.__lineAtelierDefaultSourceHref || "";
+  const bootstrapBlob = window.__lineAtelierDefaultSourceBlob || null;
+  if (!bootstrapHref && !bootstrapBlob) {
+    return getSceneAssetRecord("source");
+  }
+
+  const sourceRecord = getSceneAssetRecord("source");
+  const shouldAdoptHref =
+    typeof bootstrapHref === "string" &&
+    bootstrapHref.length > 0 &&
+    (!sourceRecord.href || sourceRecord.href === SOURCE_IMAGE_PATH);
+  const shouldAdoptBlob = !sourceRecord.blob && Boolean(bootstrapBlob);
+  const shouldAdoptObjectUrl =
+    isSceneAssetBlobHref(bootstrapHref) && (!sourceRecord.objectUrl || sourceRecord.objectUrl === SOURCE_IMAGE_PATH);
+
+  if (!shouldAdoptHref && !shouldAdoptBlob && !shouldAdoptObjectUrl) {
+    return sourceRecord;
+  }
+
+  return updateSceneAssetRecord(
+    "source",
+    {
+      href: shouldAdoptHref ? bootstrapHref : sourceRecord.href,
+      blob: shouldAdoptBlob ? bootstrapBlob : sourceRecord.blob,
+      objectUrl: shouldAdoptObjectUrl ? bootstrapHref : sourceRecord.objectUrl
+    },
+    {
+      revokePreviousObjectUrl: false
+    }
+  );
+}
+
 // Gets a scene asset record by kind.
 function getSceneAssetRecord(kind = "source") {
   return kind === "texture" ? sceneAssetState.texture : sceneAssetState.source;

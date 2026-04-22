@@ -512,6 +512,10 @@ function loadUserTextureFallback(file) {
 
 // Restores the source image from a persistent URL or blob after long background suspension.
 async function restoreSourceImageAfterResume() {
+  if (sourceImage && sourceImage.width && sourceImage.height) {
+    return false;
+  }
+
   const sourceBlob = getSceneAssetBlob("source");
   if (sourceBlob) {
     const objectUrl = URL.createObjectURL(sourceBlob);
@@ -552,6 +556,10 @@ async function restoreSourceImageAfterResume() {
 
 // Restores the uploaded texture image after long background suspension.
 async function restoreTextureImageAfterResume() {
+  if (uploadedTextureImage && uploadedTextureImage.width && uploadedTextureImage.height) {
+    return false;
+  }
+
   const textureHref = getSceneAssetPersistentHref("texture");
   if (!textureHref) {
     return false;
