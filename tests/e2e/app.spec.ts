@@ -18,7 +18,7 @@ test("loads the studio shell and canvas workspace", async ({ page }) => {
 });
 
 test("falls back to the main-thread image pipeline when image worker is disabled", async ({ page }) => {
-  const figurePath = path.resolve("public/figure.png");
+  const figurePath = path.resolve("public/figure.avif");
 
   await page.addInitScript(() => {
     window.__forceLegacyImageFallback = true;
@@ -33,7 +33,7 @@ test("falls back to the main-thread image pipeline when image worker is disabled
   await expect.poll(async () => {
     return page.locator("body").getAttribute("data-export-ready");
   }).toBe("true");
-  await expect(page.locator("[data-file-summary]").first()).toContainText("figure.png");
+  await expect(page.locator("[data-file-summary]").first()).toContainText("figure.avif");
 });
 
 test("falls back to the main-thread render pipeline when render worker is disabled", async ({ page }) => {

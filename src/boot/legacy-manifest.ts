@@ -17,20 +17,6 @@ export const CLASSIC_SCRIPT_PATHS = [
   "/legacy/scene/upload-build.js",
   "/legacy/scene/overlay-layout.js",
 
-  // Analysis primitives and mask builders.
-  "/legacy/analysis/cache.js",
-  "/legacy/analysis/async.js",
-  "/legacy/analysis/sync.js",
-  "/legacy/analysis/mask-builders.js",
-
-  // Edge and path generation.
-  "/legacy/edge/modes.js",
-  "/legacy/edge/async.js",
-  "/legacy/edge/render.js",
-  "/legacy/path/processing.js",
-  "/legacy/path/trace.js",
-  "/legacy/path/variants.js",
-
   // Scene drawing depends on prior analysis helpers.
   "/legacy/scene/draw.js"
 ] as const;

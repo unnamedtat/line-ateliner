@@ -152,7 +152,7 @@ export function InputAnalysisSection({
         <input
           id="image-upload"
           type="file"
-          accept="image/png,image/jpeg,image/webp,image/gif"
+          accept="image/avif,image/png,image/jpeg,image/webp,image/gif"
           disabled={importExportLocked}
           onChange={(event) => {
             const file = event.currentTarget.files?.[0];

@@ -2,6 +2,9 @@ export {};
 
 declare global {
   interface Window {
+    __lineAtelierAlgorithmRuntimePromise?: Promise<void>;
+    __lineAtelierDefaultSourceBlob?: Blob;
+    __lineAtelierDefaultSourceHref?: string;
     __forceLegacyImageFallback?: boolean;
     __forceLegacyRenderFallback?: boolean;
     __lineAtelierEnsureGifLibraryLoaded?: () => Promise<void>;

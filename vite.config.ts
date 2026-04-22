@@ -36,6 +36,10 @@ function bundleAnalysisPlugin(): Plugin {
 export default defineConfig({
   plugins: [react(), bundleAnalysisPlugin()],
   build: {
+    target: "es2020",
+    modulePreload: {
+      polyfill: false
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {
@@ -49,6 +53,17 @@ export default defineConfig({
 
           if (id.includes("node_modules/gif.js.optimized/")) {
             return "vendor-gif";
+          }
+
+          if (
+            id.includes("/public/legacy/analysis/") ||
+            id.includes("\\public\\legacy\\analysis\\") ||
+            id.includes("/public/legacy/edge/") ||
+            id.includes("\\public\\legacy\\edge\\") ||
+            id.includes("/public/legacy/path/") ||
+            id.includes("\\public\\legacy\\path\\")
+          ) {
+            return "legacy-algorithms";
           }
 
           if (id.includes("/public/legacy/export/") || id.includes("\\public\\legacy\\export\\")) {

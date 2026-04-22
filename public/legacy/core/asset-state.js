@@ -7,7 +7,7 @@ function createSceneAssetRecord(kind, overrides = {}) {
     href: "",
     blob: null,
     objectUrl: "",
-    label: kind === "source" ? "figure.png" : "未选择纹理",
+    label: kind === "source" ? "figure.avif" : "未选择纹理",
     version: 0,
     ...overrides
   };
@@ -15,8 +15,10 @@ function createSceneAssetRecord(kind, overrides = {}) {
 
 const sceneAssetState = {
   source: createSceneAssetRecord("source", {
-    href: SOURCE_IMAGE_PATH,
-    label: "figure.png"
+    href: window.__lineAtelierDefaultSourceHref || SOURCE_IMAGE_PATH,
+    blob: window.__lineAtelierDefaultSourceBlob || null,
+    objectUrl: window.__lineAtelierDefaultSourceHref || "",
+    label: "figure.avif"
   }),
   texture: createSceneAssetRecord("texture", {
     href: "",

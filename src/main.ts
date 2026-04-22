@@ -9,7 +9,10 @@ import legacyRenderWorkerUrl from "./workers/legacy-render.worker?worker&url";
 
 declare global {
   interface Window {
+    __lineAtelierAlgorithmRuntimePromise?: Promise<void>;
     __lineAtelierBootPromise?: Promise<void>;
+    __lineAtelierDefaultSourceBlob?: Blob;
+    __lineAtelierDefaultSourceHref?: string;
     __lineAtelierImageWorkerUrl?: string;
     __lineAtelierLoadExportRuntime?: () => Promise<void>;
     __lineAtelierP5Instance?: unknown;
@@ -31,6 +34,21 @@ function showBootFailure(message: string) {
   if (exportStatus) {
     exportStatus.textContent = `应用启动失败：${message}`;
   }
+}
+
+async function primeDefaultSourceAsset() {
+  if (window.__lineAtelierDefaultSourceBlob && window.__lineAtelierDefaultSourceHref) {
+    return;
+  }
+
+  const response = await fetch("/figure.avif", { cache: "force-cache" });
+  if (!response.ok) {
+    throw new Error(`默认示例资源加载失败 (${response.status})`);
+  }
+
+  const blob = await response.blob();
+  window.__lineAtelierDefaultSourceBlob = blob;
+  window.__lineAtelierDefaultSourceHref = URL.createObjectURL(blob);
 }
 
 function scheduleP5Boot() {
@@ -69,7 +87,13 @@ async function bootstrapLegacyApp() {
   if (!window.__lineAtelierBootPromise) {
     const startedAt = performance.now();
     window.__lineAtelierBootPromise = loadClassicScripts(CLASSIC_SCRIPT_PATHS)
-      .then(() => {
+      .then(async () => {
+        await primeDefaultSourceAsset();
+        const algorithmRuntimeStartedAt = performance.now();
+        await import("./boot/legacy-algorithm-runtime").then((module) => module.loadLegacyAlgorithmRuntime());
+        console.info(
+          `[boot] legacy algorithm runtime: ${(performance.now() - algorithmRuntimeStartedAt).toFixed(1)}ms`
+        );
         void scheduleP5Boot();
         console.info(`[boot] bootstrapLegacyApp: ${(performance.now() - startedAt).toFixed(1)}ms`);
       })

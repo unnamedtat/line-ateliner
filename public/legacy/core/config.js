@@ -1,6 +1,6 @@
 // Shared constants, presets, tooltip copy, and mutable app state.
 const INK = [44, 43, 40];
-const SOURCE_IMAGE_PATH = "/figure.png";
+const SOURCE_IMAGE_PATH = window.__lineAtelierDefaultSourceHref || "/figure.avif";
 const MAX_UPLOADED_SOURCE_DIMENSION = 2048;
 const MAX_UPLOADED_TEXTURE_DIMENSION = 2048;
 const BOIL_VARIANTS = 4;
@@ -59,7 +59,7 @@ const DEFAULT_SETTINGS = {
   paperColor: "#fff",
   paperAccentColor: "#efe3cd",
   paperGradientAngle: 18,
-  paperTexture: "speckle",
+  paperTexture: "none",
   textureColor: "#000000",
   textureAccentColor: "#fff7ea",
   paperTextureStrength: 64,
@@ -247,7 +247,7 @@ const NEIGHBOR_DIRS = [
 
 let sourceImage;
 let sourceImageHref = SOURCE_IMAGE_PATH;
-let sourceImageLabel = "figure.png";
+let sourceImageLabel = "figure.avif";
 let sourceImageBlob = null;
 let sourceImageObjectUrl = "";
 let uploadedTextureImage = null;

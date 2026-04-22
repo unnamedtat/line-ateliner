@@ -46,7 +46,6 @@ export function OverlayLayers() {
           y="0"
           width="100"
           height="100"
-          href="/figure.png"
           preserveAspectRatio="none"
           filter="url(#distortion-filter)"
         />

@@ -67,7 +67,7 @@ src/
   boot/              TypeScript bootstrap for the legacy app
   ui/                React shell and bridge components
 public/
-  figure.png         Default demo input image
+  figure.avif        Default demo input image
   legacy/
     core/            Shared constants and small helpers
     ui/              Layout, theme, state, and control bindings

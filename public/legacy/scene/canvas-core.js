@@ -150,16 +150,17 @@ function handleCanvasHostResize() {
 
 // Preloads the default source image.
 function preload() {
-  sourceImage = loadImage(SOURCE_IMAGE_PATH, (image) => {
+  const initialSourcePath = sourceImageHref || SOURCE_IMAGE_PATH;
+  sourceImage = loadImage(initialSourcePath, (image) => {
     if (typeof updateSceneAssetRecord === "function") {
       updateSceneAssetRecord(
         "source",
         {
           image,
-          href: SOURCE_IMAGE_PATH,
-          blob: null,
-          objectUrl: "",
-          label: "figure.png"
+          href: sourceImageHref || initialSourcePath,
+          blob: sourceImageBlob || null,
+          objectUrl: sourceImageObjectUrl || "",
+          label: sourceImageLabel || "figure.avif"
         },
         {
           revokePreviousObjectUrl: false

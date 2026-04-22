@@ -11,7 +11,7 @@ export const LEGACY_CONTROL_DEFAULTS: Record<string, string | number> = {
   "ink-opacity": 100,
   "reference-overlay-opacity": 95,
   "paper-fill-mode": "solid",
-  "paper-texture": "speckle",
+  "paper-texture": "none",
   "paper-color": "#fff",
   "paper-accent-color": "#efe3cd",
   "texture-color": "#000000",
