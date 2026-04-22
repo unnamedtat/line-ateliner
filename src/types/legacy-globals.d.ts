@@ -10,6 +10,7 @@ declare global {
     __lineAtelierEnsureGifLibraryLoaded?: () => Promise<void>;
     __lineAtelierGifWorkerUrl?: string;
     __lineAtelierImageWorkerUrl?: string;
+    __lineAtelierLoadAlgorithmRuntime?: () => Promise<void>;
     __lineAtelierLoadExportRuntime?: () => Promise<void>;
     __lineAtelierRenderWorkerUrl?: string;
   }
