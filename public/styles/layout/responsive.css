@@ -137,10 +137,6 @@
         user-select: none;
       }
 
-      body.is-retro-layout #ui-shell:not([data-retro-ready="1"]) {
-        opacity: 0;
-      }
-
       body.is-retro-layout .toolbar-group {
         display: none !important;
       }
