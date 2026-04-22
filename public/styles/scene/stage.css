@@ -8,6 +8,46 @@
         pointer-events: none;
       }
 
+      .canvas-preview-boot {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at top, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.76)),
+          linear-gradient(180deg, rgba(241, 232, 214, 0.9), rgba(248, 244, 238, 0.96));
+      }
+
+      .canvas-preview-boot.is-hidden {
+        display: none;
+      }
+
+      .canvas-preview-boot-image {
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        opacity: 0.18;
+        filter: saturate(0.72) contrast(0.9);
+      }
+
+      .canvas-preview-boot-copy {
+        position: absolute;
+        left: 50%;
+        bottom: 22px;
+        transform: translateX(-50%);
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.82);
+        color: #4d463d;
+        font-size: 13px;
+        line-height: 1.2;
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+      }
+
       .canvas-mount {
         position: absolute;
         inset: 0;

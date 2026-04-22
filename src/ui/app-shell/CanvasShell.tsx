@@ -3,6 +3,7 @@ import { useAppLocale } from "../i18n";
 
 interface CanvasShellProps {
   canvasEmptyVisible: boolean;
+  previewBooting: boolean;
   processingVisible: boolean;
   processingBadge: string;
   processingCopy: string;
@@ -17,6 +18,7 @@ interface CanvasShellProps {
 
 export function CanvasShell({
   canvasEmptyVisible,
+  previewBooting,
   processingVisible,
   processingBadge,
   processingCopy,
@@ -35,6 +37,16 @@ export function CanvasShell({
     <section className="canvas-shell">
       <div className="canvas-stage">
         <div className="canvas-stage-grid" aria-hidden="true"></div>
+        <div className={`canvas-preview-boot${previewBooting ? "" : " is-hidden"}`} id="canvas-preview-boot">
+          <img
+            className="canvas-preview-boot-image"
+            src="/figure.png"
+            alt=""
+            decoding="async"
+            fetchPriority="high"
+          />
+          <div className="canvas-preview-boot-copy">{processingCopy}</div>
+        </div>
         <div
           className={`canvas-empty-state${canvasEmptyVisible ? "" : " is-hidden"}`}
           id="canvas-empty-state"
