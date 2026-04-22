@@ -13,8 +13,10 @@
         inset: 0;
         z-index: 1;
         display: flex;
+        flex-direction: column;
         align-items: center;
         justify-content: center;
+        gap: 12px;
         overflow: hidden;
         background:
           radial-gradient(circle at top, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.76)),
@@ -25,19 +27,19 @@
         display: none;
       }
 
-      .canvas-preview-boot-image {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        opacity: 0.18;
-        filter: saturate(0.72) contrast(0.9);
+      .canvas-preview-boot-badge {
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.86);
+        color: #6c614f;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
       }
 
       .canvas-preview-boot-copy {
-        position: absolute;
-        left: 50%;
-        bottom: 22px;
-        transform: translateX(-50%);
+        max-width: min(320px, calc(100% - 32px));
         padding: 8px 12px;
         border-radius: 999px;
         background: rgba(255, 255, 255, 0.82);
@@ -45,7 +47,7 @@
         font-size: 13px;
         line-height: 1.2;
         letter-spacing: 0.02em;
-        white-space: nowrap;
+        text-align: center;
       }
 
       .canvas-mount {

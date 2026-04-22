@@ -13,6 +13,7 @@ let currentOutputGeometryKey = "";
 let previewAnimationStartedAt = 0;
 let sceneBackgroundHiddenAt = 0;
 let sceneResumeRestorePromise = null;
+let initialSceneBootScheduled = false;
 let renderFrameCache = {
   mode: "",
   width: 0,
@@ -193,8 +194,20 @@ function setup() {
   initDistortionOverlay();
   initTextureOverlay();
   bindControls();
+  buildPaperBaseLayer();
+  buildPaperLayer();
+  buildSceneLayout();
+  syncDistortionOverlay();
+  clearRenderFrameCache();
   syncControls();
-  rebuildScene("正在初始化预览...");
+  if (!initialSceneBootScheduled) {
+    initialSceneBootScheduled = true;
+    requestAnimationFrame(() => {
+      window.setTimeout(() => {
+        rebuildScene("正在初始化预览...");
+      }, 0);
+    });
+  }
 }
 
 // Handles window resized.
